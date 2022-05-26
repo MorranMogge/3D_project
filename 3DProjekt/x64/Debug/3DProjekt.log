@@ -1,0 +1,4 @@
+﻿  D3D11Helper.cpp
+D3D11Helper.obj : error LNK2019: unresolved external symbol D3D11CreateDeviceAndSwapChain referenced in function "bool __cdecl CreateInterfaces(unsigned int,unsigned int,struct HWND__ *,struct ID3D11Device * &,struct ID3D11DeviceContext * &,struct IDXGISwapChain * &)" (?CreateInterfaces@@YA_NIIPEAUHWND__@@AEAPEAUID3D11Device@@AEAPEAUID3D11DeviceContext@@AEAPEAUIDXGISwapChain@@@Z)
+MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
+D:\School\3Dprojektet\x64\Debug\3DProjekt.exe : fatal error LNK1120: 2 unresolved externals
