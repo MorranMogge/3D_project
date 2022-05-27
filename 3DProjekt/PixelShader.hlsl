@@ -41,7 +41,6 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-
 	input.normal = normalize(input.normal);
 	float3 vectorToLight = normalize(lightPos - input.newPos.xyz);
 	float3 vectorToCam = normalize(cameraPos - input.newPos.xyz);
@@ -56,11 +55,13 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	colour *= (ambient + diffuse);
 	//colour += specular;
 
+	float3 number = (input.normal + float3(1.0f, 1.0f, 1.0f)) / 2;
 	//return float4(1.0f, 0.0f, 0.0f, 1.0f);
 	//return float4(colour,1.0f);
-	float4 temp = float4(0.0, 0.0, 1.0f, 1.0f) * input.position;
-	return (normalize(temp));
+	//float4 temp = float4(0.0, 0.0, 1.0f, 1.0f) * input.position;
+	//return (normalize(temp));
 	//return (normalize(input.position));
 	//return float4(input.normal, 1.0f);
+	return float4(number, 1.0f);
 	//return float4(float3(1.f,1.f,1.f), 1.0f);
 }

@@ -107,7 +107,7 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 
 }
 
-void handleImGui(float xyz[], float rot[], float scale[] ,bool &rotation);
+void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation);
 void handleConstantBuffer(ConstantBuffer &cb, float xyz[]);
 void updateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
 //SceneObject loadObject(Vertex* inFile, int nrOfVertices);
@@ -120,8 +120,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	readModels(obj);
 
 	//First we set some values
-	float xyzPos[4] = { 0.f,0.f,4.5f, 0.f };
+	float xyzPos[3] = { 0.f,0.f,4.5f,};
 	float xyzRot[3] = { 0.f,0.f,0.f };
+	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
 	float xyzScale[3] = { 1.f,1.f,1.f };
 	bool x = true;
 	bool rotation = false;
@@ -285,14 +286,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			}
 			cb.Update(immediateContext, constantBuffer);*/
 
-			handleImGui(xyzPos, xyzRot,xyzScale,rotation);
+			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation);
 			if (rotation) 
 			{ 
-				xyzRot[0] += 0.01;
+				xyzRot[0] += xyzRotSpeed[0]*0.01;
 				if (xyzRot[0] >= XM_2PI) xyzRot[0] = 0;
-				xyzRot[1] += 0.01;
+				xyzRot[1] += xyzRotSpeed[1] * 0.01;
 				if (xyzRot[1] >= XM_2PI) xyzRot[1] = 0;
-				xyzRot[2] += 0.01;
+				xyzRot[2] += xyzRotSpeed[2] * 0.01;
 				if (xyzRot[2] >= XM_2PI) xyzRot[2] = 0;
 			}
 			objects[0].setScale(xyzScale);
@@ -325,7 +326,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	return 0;
 }
 
-void handleImGui(float xyz[], float rot[], float scale[], bool &rotation)
+void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -343,7 +344,9 @@ void handleImGui(float xyz[], float rot[], float scale[], bool &rotation)
 			ImGui::SliderFloat("X scale", &scale[0], -5.0f, 5.0f);
 			ImGui::SliderFloat("Y scale", &scale[1], -5.0f, 5.0f);
 			ImGui::SliderFloat("Z scale", &scale[2], -5.0f, 5.0f);
-			ImGui::SliderFloat("Rotation speed", &xyz[3], -5.0f, 5.0f);
+			ImGui::SliderFloat("X rotSpeed", &rotSpeed[0], -15.0f, 15.0f);
+			ImGui::SliderFloat("Y rotSpeed", &rotSpeed[1], -15.0f, 15.0f);
+			ImGui::SliderFloat("Z rotSpeed", &rotSpeed[2], -15.0f, 15.0f);
 			ImGui::Checkbox("Rotation", &rotation);
 		}
 		ImGui::End();

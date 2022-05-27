@@ -18,7 +18,7 @@ struct objThing
 static void readModels(objThing *test)
 {
 	//objThing test;
-	std::ifstream file("cubeMaterial_1.obj");
+	std::ifstream file("sphere2.obj");
 	//std::ifstream file("sphere.obj");
 	if (!file.is_open()) { std::cout << "Could not open file!\n"; return; }
 	std::string loadLines;
