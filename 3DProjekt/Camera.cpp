@@ -9,29 +9,33 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 	bool temp = false;
 	if (GetAsyncKeyState((VK_SHIFT)))
 	{
-		temp = true;
-		dt *= 1.4f;
+		dt *= 2.f;
+	}
+
+	if (GetAsyncKeyState((VK_LCONTROL)))
+	{
+		dt *= 0.5f;
 	}
 
 	if (GetAsyncKeyState('W'))
 	{
 		forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
-		cameraPos += forwardVec * 20 * dt;
-		lookAtPos += forwardVec * 20 * dt;
+		cameraPos += forwardVec * 10 * dt;
+		lookAtPos += forwardVec * 10 * dt;
 	}
 
 	else if (GetAsyncKeyState('S'))
 	{
 		forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
-		cameraPos -= forwardVec * 20 * dt;
-		lookAtPos -= forwardVec * 20 * dt;
+		cameraPos -= forwardVec * 10 * dt;
+		lookAtPos -= forwardVec * 10 * dt;
 	}
 
 	if (GetAsyncKeyState('D'))
 	{
 		rightVec = XMVector3TransformCoord(DEFAULT_RIGHT, rotationMX);
-		cameraPos += rightVec * 20 * dt;
-		lookAtPos += rightVec * 20 * dt;
+		cameraPos += rightVec * 10 * dt;
+		lookAtPos += rightVec * 10 * dt;
 	}
 
 	else if (GetAsyncKeyState('A'))
@@ -41,35 +45,35 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 		lookAtPos -= rightVec * 10 * dt;
 	}
 
-	if (GetAsyncKeyState('K'))
+	if (GetAsyncKeyState('I'))
 	{
-		this->AdjustRotation(-dt,0, immediateContext);
+		this->AdjustRotation(-1.5f*dt,0, immediateContext);
 	}
 	if (GetAsyncKeyState('J'))
 	{
-		this->AdjustRotation(0, -dt, immediateContext);
+		this->AdjustRotation(0, -1.5f * dt, immediateContext);
 	}
-	if (GetAsyncKeyState('I'))
+	if (GetAsyncKeyState('K'))
 	{
-		this->AdjustRotation(dt, 0, immediateContext);
+		this->AdjustRotation(1.5f * dt, 0, immediateContext);
 	}
 	if (GetAsyncKeyState('L'))
 	{
-		this->AdjustRotation(0, dt, immediateContext);
+		this->AdjustRotation(0, 1.5f * dt, immediateContext);
 	}
 
 	if (GetAsyncKeyState('E'))
 	{
 		upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
-		cameraPos += upVec * 10 * dt;
-		lookAtPos += upVec * 10 * dt;
+		cameraPos += upVec * 2.5 * dt;
+		lookAtPos += upVec * 2.5 * dt;
 	}
 
 	if (GetAsyncKeyState('Q'))
 	{
 		upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
-		cameraPos -= upVec * 10 * dt;
-		lookAtPos -= upVec * 10 * dt;
+		cameraPos -= upVec * 2.5 * dt;
+		lookAtPos -= upVec * 2.5 * dt;
 	}
 
 	if (GetAsyncKeyState(' '))
