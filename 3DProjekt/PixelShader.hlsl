@@ -25,6 +25,12 @@ cbuffer materialInfo : register (b1)
 	float shininess;
 }
 
+cbuffer cam : register(b2)
+{
+	float3 cameraPosition; // Not Working!
+	float padding;
+};
+
 struct PixelShaderInput
 {
 	float4 position : SV_POSITION;
@@ -51,7 +57,9 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	//colour += specular;
 
 	//return float4(1.0f, 0.0f, 0.0f, 1.0f);
-	return float4(colour,1.0f);
+	//return float4(colour,1.0f);
+	float4 temp = float4(0.0, 0.0, 1.0f, 1.0f) * input.position;
+	return (normalize(temp));
 	//return (normalize(input.position));
 	//return float4(input.normal, 1.0f);
 	//return float4(float3(1.f,1.f,1.f), 1.0f);

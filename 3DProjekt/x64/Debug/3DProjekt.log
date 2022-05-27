@@ -1,4 +1,32 @@
-﻿  D3D11Helper.cpp
+﻿  compilation object save succeeded; see C:\Users\Morgan\source\repos\Real3Dproject\x64\Debug\PixelShader.cso
+  compilation object save succeeded; see C:\Users\Morgan\source\repos\Real3Dproject\x64\Debug\VertexShader.cso
+  cBuffer.cpp
+  ConstantBuffer.cpp
+  D3D11Helper.cpp
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_dx11.cpp
+  imgui_impl_win32.cpp
+  imgui_tables.cpp
+  imgui_widgets.cpp
+  LightBuffer.cpp
+  Main.cpp
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\ObjParser.h(31,8): warning C4101: 'specComp': unreferenced local variable
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(233,22): warning C4305: '+=': truncation from 'double' to 'float'
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(235,22): warning C4305: '+=': truncation from 'double' to 'float'
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(237,22): warning C4305: '+=': truncation from 'double' to 'float'
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(141,19): warning C4101: 'vertexBuffer': unreferenced local variable
+  Material.cpp
+  PipelineHelper.cpp
+  Scene.cpp
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\ObjParser.h(31,8): warning C4101: 'specComp': unreferenced local variable
+  SceneObject.cpp
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\ObjParser.h(31,8): warning C4101: 'specComp': unreferenced local variable
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\SceneObject.cpp(102,67): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\SceneObject.cpp(121,30): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  WindowHelper.cpp
+  Generating Code...
 D3D11Helper.obj : error LNK2019: unresolved external symbol D3D11CreateDeviceAndSwapChain referenced in function "bool __cdecl CreateInterfaces(unsigned int,unsigned int,struct HWND__ *,struct ID3D11Device * &,struct ID3D11DeviceContext * &,struct IDXGISwapChain * &)" (?CreateInterfaces@@YA_NIIPEAUHWND__@@AEAPEAUID3D11Device@@AEAPEAUID3D11DeviceContext@@AEAPEAUIDXGISwapChain@@@Z)
 MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
-D:\School\3Dprojektet\x64\Debug\3DProjekt.exe : fatal error LNK1120: 2 unresolved externals
+C:\Users\Morgan\source\repos\Real3Dproject\x64\Debug\3DProjekt.exe : fatal error LNK1120: 2 unresolved externals

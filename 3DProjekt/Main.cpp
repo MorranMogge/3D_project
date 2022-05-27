@@ -14,6 +14,7 @@
 #include "SceneObject.h"
 #include "cBuffer.h"
 #include "ObjParser.h"
+#include "Camera.h"
 
 #include "imGUI\imconfig.h"
 #include "imGUI\imgui.h"
@@ -28,14 +29,48 @@
 
 using namespace DirectX;
 
+struct CamData
+{
+	XMFLOAT3 cameraPosition;
+	float padding;
+};
+
+bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData)
+{
+	camData.cameraPosition = XMFLOAT3(0.0f, 0.0f, -20.0f);
+	camData.padding = 0.0f;
+
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(CamData);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = (void*)&camData;
+	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+
+	HRESULT hr = device->CreateBuffer(&desc, &data, &camBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
 	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer, ID3D11Buffer* constantBuffer,
-	ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState, ID3D11Buffer* *lightBuffer, int nrOfVertices)
+	ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState, ID3D11Buffer* *lightBuffer, int nrOfVertices, Camera camera, CamData camData, ID3D11Buffer*& camBuffer)
 {
 
 
 	UINT stride	= sizeof(SimpleVertex);
 	UINT offset	= 0;
+
+
 
 	//Layout and other stuff
 	immediateContext->IASetInputLayout(inputLayout);
@@ -50,11 +85,25 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	immediateContext->VSSetShader(vShader, nullptr, 0);
 	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
+	
+
+
+
 	//Pixel Shader
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
 	immediateContext->PSSetShaderResources(0, 1, &srv);
 	immediateContext->PSSetShader(pShader, nullptr, 0);
 	immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
+
+	D3D11_MAPPED_SUBRESOURCE subCam = {};
+	camData.cameraPosition = camera.GetPositionFloat3();
+	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+	memcpy(subCam.pData, &camData, sizeof(CamData));
+	immediateContext->Unmap(camBuffer, 0);
+	immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
+
+	camData.cameraPosition = camera.GetPositionFloat3();
+	camera.sendView(immediateContext);
 
 }
 
@@ -112,7 +161,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	objects.push_back(SceneObject(&obj->mesh));
 	//objects.push_back(SceneObject());
 	//objects.push_back(loadObject());
+	Camera cam;
+	CamData camData;
+	ID3D11Buffer* camBuf;
 
+	
 	
 	
 
@@ -184,6 +237,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		}
 	}
 
+	cam.SetPosition(0, 0, -3);
+	createCamBuffer(device, camBuf, camData);
+	cam.CreateCBuffer(immediateContext, device);
+
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
 
@@ -202,6 +259,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		//This allows us to update depending on time since last frame
 		if (((std::chrono::duration<float>)(std::chrono::system_clock::now() - start)).count() > 1.0f / fps)
 		{
+			cam.moveCamera(immediateContext, cam, 1.f / 144.f);
 			verticeCounter = 0;
 			float clearColour[4] = { 0, 0, 0, 0 };
 			immediateContext->ClearRenderTargetView(rtv, clearColour);
@@ -212,7 +270,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			for (auto& o : objects)
 			{
 				cb2.setNewBuffer(immediateContext, constantBuffer, o.getWorldMatrix());		
-				Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, o.getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, o.getVerticeAmount());
+				Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, o.getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, o.getVerticeAmount(), cam, camData, camBuf);
 				immediateContext->Draw(o.getVerticeAmount(), 0);
 			}
 			
@@ -276,9 +334,9 @@ void handleImGui(float xyz[], float rot[], float scale[], bool &rotation)
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
 		{
-			ImGui::SliderFloat("X pos", &xyz[0], -5.0f, 5.0f);
-			ImGui::SliderFloat("Y pos", &xyz[1], -5.0f, 5.0f);
-			ImGui::SliderFloat("Z pos", &xyz[2], -5.0f, 5.0f);
+			ImGui::SliderFloat("X pos", &xyz[0], -15.0f, 15.0f);
+			ImGui::SliderFloat("Y pos", &xyz[1], -15.0f, 15.0f);
+			ImGui::SliderFloat("Z pos", &xyz[2], -15.0f, 15.0f);
 			ImGui::SliderFloat("X rot", &rot[0], -XM_2PI, XM_2PI);
 			ImGui::SliderFloat("Y rot", &rot[1], -XM_2PI, XM_2PI);
 			ImGui::SliderFloat("Z rot", &rot[2], -XM_2PI, XM_2PI);
