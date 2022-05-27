@@ -34,7 +34,7 @@ VertexShaderOutput main(VertexShaderInput input)
 	//output.position = mul(float4(input.position, 1.0f), test);
 	output.position = mul(float4(input.position, 1.0f), temp);
 	//Fixa normal
-	output.normal = mul(float4(input.normal, 1.0f), worldMatrix);
+	output.normal = mul(float4(input.normal, 0.0f), worldMatrix);
 	output.uv = input.uv;
 	return output;
 }
