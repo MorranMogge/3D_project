@@ -181,6 +181,7 @@
     <ClInclude Include="imGUI\imstb_truetype.h" />
     <ClInclude Include="LightBuffer.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="memoryLeakChecker.h" />
     <ClInclude Include="ObjParser.h" />
     <ClInclude Include="PipelineHelper.h" />
     <ClInclude Include="Scene.h" />
