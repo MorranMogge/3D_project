@@ -4,10 +4,6 @@
 #include <iostream>
 #include <DirectXMath.h>
 #include <vector>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 using namespace DirectX;
 
 bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode)
@@ -106,42 +102,6 @@ bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
     return !FAILED(hr);
 }
 
-bool Create2DTexture(ID3D11Device* device, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& srv)
-{
-    int width, height, channels;
-    unsigned char* img = stbi_load("../Debug/SUS.jpg", &width, &height, &channels, 4);
-
-    D3D11_TEXTURE2D_DESC textureDesc;
-    textureDesc.Width = width;
-    textureDesc.Height = height;
-    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    textureDesc.MipLevels = 1;
-    textureDesc.ArraySize = 1;
-    textureDesc.SampleDesc.Count = 1;
-    textureDesc.SampleDesc.Quality = 0;
-    textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-    textureDesc.CPUAccessFlags = 0;
-    textureDesc.MiscFlags = 0;
-
-    D3D11_SUBRESOURCE_DATA data;
-    data.pSysMem = &img[0];
-    data.SysMemPitch = (width * 4);
-    data.SysMemSlicePitch = 0;
-
-    HRESULT hr = device->CreateTexture2D(&textureDesc, &data, &texture);
-
-    if (FAILED(hr))
-    {
-        std::cerr << "Failed to create texture!" << std::endl;
-        return false;
-    }
-
-    hr = device->CreateShaderResourceView(texture, nullptr, &srv);
-
-    return !FAILED(hr);
-}
-
 bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& samplerState)
 {
     D3D11_SAMPLER_DESC samplerDesc;
@@ -181,11 +141,11 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pix
         return false;
     }*/
 
-    if (!Create2DTexture(device, texture, srv))
+    /*if (!Create2DTexture(device, texture, srv))
     {
         std::cerr << "Error creating texture or srv!" << std::endl;
         return false;
-    }
+    }*/
 
     if (!CreateSamplerState(device, samplerState))
     {

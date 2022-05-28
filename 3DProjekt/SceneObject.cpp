@@ -116,6 +116,12 @@ bool SceneObject::setVertexBuffer(ID3D11Device* device)
 	return !FAILED(hr);
 }
 
+bool SceneObject::setTextureSrv(ID3D11ShaderResourceView*& texture)
+{
+	textureSrv = texture;
+	return textureSrv!=nullptr;
+}
+
 int SceneObject::getVerticeAmount() const
 {
 	return this->vertices.size();

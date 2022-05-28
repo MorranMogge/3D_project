@@ -15,6 +15,7 @@
 #include "cBuffer.h"
 #include "ObjParser.h"
 #include "Camera.h"
+#include "TextureLoader.h"
 
 #include "imGUI\imconfig.h"
 #include "imGUI\imgui.h"
@@ -116,8 +117,15 @@ void updateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+
 	objThing* obj = new objThing;
 	readModels(obj);
+	std::vector<ID3D11ShaderResourceView*> textureSrvs;
+	
 
 	//First we set some values
 	float xyzPos[3] = { 0.f,0.f,4.5f,};
@@ -179,9 +187,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
 
 	ID3D11Device			* device;
 	ID3D11DeviceContext		* immediateContext;
@@ -242,6 +247,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	createCamBuffer(device, camBuf, camData);
 	cam.CreateCBuffer(immediateContext, device);
 
+	LoadTexutres(device, textureSrvs);
+
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
 
@@ -271,7 +278,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			for (auto& o : objects)
 			{
 				cb2.setNewBuffer(immediateContext, constantBuffer, o.getWorldMatrix());		
-				Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, o.getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, o.getVerticeAmount(), cam, camData, camBuf);
+				Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, o.getVertexBuffer(), constantBuffer, textureSrvs[0], samplerState, lightBuffer, o.getVerticeAmount(), cam, camData, camBuf);
 				immediateContext->Draw(o.getVerticeAmount(), 0);
 			}
 			
@@ -306,6 +313,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		}
 	}
 
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	device->Release();
 	immediateContext->Release();
 	swapChain->Release();
@@ -319,7 +330,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	lightBuffer[0]->Release();
 	lightBuffer[1]->Release();
 	constantBuffer->Release();
-	texture->Release();
+	//texture->Release();
 	srv->Release();
 	samplerState->Release();
 

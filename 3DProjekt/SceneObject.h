@@ -35,6 +35,7 @@ private:
 	SimpleVertex* testVertices;
     DirectX::XMMATRIX worldMatrix;
 	ID3D11Buffer* vertexBuffer;
+	ID3D11ShaderResourceView* textureSrv;
 
 public:
 	SceneObject(std::vector<SimpleVertex>* inVertices);
@@ -44,6 +45,7 @@ public:
 	void setVertices(objThing obj);
 
 	bool setVertexBuffer(ID3D11Device* device);
+	bool setTextureSrv(ID3D11ShaderResourceView* &texture);
 
     int getVerticeAmount() const;
     DirectX::XMMATRIX getWorldMatrix() const;

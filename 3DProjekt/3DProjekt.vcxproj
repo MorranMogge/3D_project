@@ -161,6 +161,7 @@
     <ClCompile Include="PipelineHelper.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="WindowHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +186,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="WindowHelper.h" />
   </ItemGroup>
   <ItemGroup>
