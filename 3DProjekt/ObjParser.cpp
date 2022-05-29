@@ -8,7 +8,7 @@ void readModels(std::vector<objThing> &objArr)
 	while (std::getline(objFile, fileName))
 	{
 		objArr.push_back(objThing());
-		std::ifstream file(fileName+".obj");
+		std::ifstream file("Models/"+fileName + ".obj");
 		if (!file.is_open()) { std::cout << "Could not open obj!\n"; return; }
 
 		std::string loadLines;
