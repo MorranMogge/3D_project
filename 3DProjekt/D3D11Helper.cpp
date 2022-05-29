@@ -1,4 +1,6 @@
 #include "D3D11Helper.h"
+#include "memoryLeakChecker.h"
+
 bool CreateInterfaces(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, IDXGISwapChain*& swapChain)
 {
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};

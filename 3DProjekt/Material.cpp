@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "memoryLeakChecker.h"
 
 Material::Material()
     :materialInfo(material

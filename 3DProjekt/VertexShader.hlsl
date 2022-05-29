@@ -16,7 +16,7 @@ struct VertexShaderOutput
 cbuffer constantBuf : register (b0)
 {
 	float4x4 worldMatrix;
-	float4x4 projectionMatrix;
+	//float4x4 projectionMatrix;
 };
 
 cbuffer Matrices : register(b1)

@@ -16,6 +16,7 @@
 #include "ObjParser.h"
 #include "Camera.h"
 #include "TextureLoader.h"
+#include "memoryLeakChecker.h"
 
 #include "imGUI\imconfig.h"
 #include "imGUI\imgui.h"
@@ -63,8 +64,9 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 }
 
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
-	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* vertexBuffer, ID3D11Buffer* constantBuffer,
-	ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState, ID3D11Buffer* *lightBuffer, int nrOfVertices, Camera camera, CamData camData, ID3D11Buffer*& camBuffer)
+	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* constantBuffer,
+	ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState, ID3D11Buffer* *lightBuffer, Camera camera, CamData camData, 
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> objects, CBuffer cb2, ID3D11Buffer* tmp)
 {
 
 
@@ -75,16 +77,18 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 
 	//Layout and other stuff
 	immediateContext->IASetInputLayout(inputLayout);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	immediateContext->RSSetViewports(1, &viewport);
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 
 	//Triangle stuff
-	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+
 
 	//Vertex Shader
 	immediateContext->VSSetShader(vShader, nullptr, 0);
-	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	
 
 	
 
@@ -106,6 +110,12 @@ void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, 
 	camData.cameraPosition = camera.GetPositionFloat3();
 	camera.sendView(immediateContext);
 
+	for (int i = 0; i < objects.size(); i++)
+	{
+		//cb2.setNewBuffer(immediateContext, constantBuffer, objects[i].getWorldMatrix());
+		
+		objects[i].draw();
+	}
 }
 
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation);
@@ -117,12 +127,13 @@ void updateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
-
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
-	objThing* obj = new objThing;
+	//objThing* obj = DBG_NEW objThing;
+	std::vector<objThing> obj;
 	readModels(obj);
 	std::vector<ID3D11ShaderResourceView*> textureSrvs;
 	
@@ -167,7 +178,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	temp.push_back({ {0.0f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} });
 	temp.push_back({ {0.0f, -0.5f, 0.0f}, {0, 0, -1}, {0, 1} });*/
 
-	objects.push_back(SceneObject(&obj->mesh));
+	
 	//objects.push_back(SceneObject());
 	//objects.push_back(loadObject());
 	Camera cam;
@@ -235,13 +246,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-	for (auto& o : objects)
-	{
-		if (!o.setVertexBuffer(device))
-		{
-			return -6;
-		}
-	}
+	
 
 	cam.SetPosition(0, 0, -3);
 	createCamBuffer(device, camBuf, camData);
@@ -249,11 +254,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	LoadTexutres(device, textureSrvs);
 
+	
+
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
 
 	MSG msg = {};
 	
+	objects.push_back(SceneObject(&obj[1].mesh));
+	objects[0].setImmediateContext(immediateContext);
+	objects[0].setTextureSrv(textureSrvs[0]);
+	objects[0].createConstBuf(device);
+
+	objects.push_back(SceneObject(&obj[0].mesh));
+	objects[1].setImmediateContext(immediateContext);
+	objects[1].setTextureSrv(textureSrvs[0]);
+	objects[1].createConstBuf(device);
+
+	for (auto& o : objects)
+	{
+		if (!o.setVertexBuffer(device))
+		{
+			return -6;
+		}
+	}
 
 	while (msg.message != WM_QUIT)
 	{
@@ -275,12 +299,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			//cb2.setNewBuffer(immediateContext, constantBuffer, objects[0].getWorldMatrix());
 			//Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, objects[0].getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, objects[0].getVerticeAmount(), 3);
 			
-			for (auto& o : objects)
-			{
-				cb2.setNewBuffer(immediateContext, constantBuffer, o.getWorldMatrix());		
-				Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, o.getVertexBuffer(), constantBuffer, textureSrvs[0], samplerState, lightBuffer, o.getVerticeAmount(), cam, camData, camBuf);
-				immediateContext->Draw(o.getVerticeAmount(), 0);
-			}
+			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, constantBuffer, textureSrvs[0], samplerState, 
+					lightBuffer, cam, camData, camBuf, objects, cb2, objects[0].getVertexBuffer());
+			//for (auto& o : objects)
+			//{
+			//		
+			//
+			//	//immediateContext->Draw(o.getVerticeAmount(), 0);
+			//}
 			
 			//cb2.setNewBuffer(immediateContext, constantBuffer, objects[0].getWorldMatrix());
 			//Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, objects[0].getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, objects[0].getVerticeAmount());
@@ -330,8 +356,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	lightBuffer[0]->Release();
 	lightBuffer[1]->Release();
 	constantBuffer->Release();
+
+	//Releases all textures
+	for (int i = 0; i < textureSrvs.size(); i++)
+	{
+		textureSrvs[i]->Release();
+	}
 	//texture->Release();
-	srv->Release();
+	//srv->Release();
 	samplerState->Release();
 
 	return 0;

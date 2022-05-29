@@ -8,6 +8,7 @@
 #include "imGUI\imstb_textedit.h"
 #include "imGUI\imstb_truetype.h"
 #include "imGUI\imgui_impl_win32.h"
+#include "memoryLeakChecker.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

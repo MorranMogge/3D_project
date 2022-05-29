@@ -1,4 +1,5 @@
 #include "cBuffer.h"
+#include "memoryLeakChecker.h"
 
 CBuffer::CBuffer()
 {

@@ -4,6 +4,8 @@
 #include <iostream>
 #include <DirectXMath.h>
 #include <vector>
+#include "memoryLeakChecker.h"
+
 using namespace DirectX;
 
 bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, std::string& vShaderByteCode)

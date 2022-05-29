@@ -1,6 +1,6 @@
 #include "LightBuffer.h"
 #include <array>
-
+#include "memoryLeakChecker.h"
 
 
 LightBuffer::LightBuffer()

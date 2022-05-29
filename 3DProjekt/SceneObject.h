@@ -31,27 +31,41 @@
 class SceneObject
 {
 private:
-    std::vector<SimpleVertex> vertices;
-	SimpleVertex* testVertices;
-    DirectX::XMMATRIX worldMatrix;
+	UINT stride;
+	UINT offset;    
+
+	//No need to send this in draw argument anymore
+	ID3D11DeviceContext* immediateContext;
+
+	//Position
+	ID3D11Buffer* constantBuffer;
+	DirectX::XMMATRIX worldMatrix;
+	DirectX::XMFLOAT4X4 wrlMtx;
+
+	//Vertices and texture
+	std::vector<SimpleVertex> vertices;
 	ID3D11Buffer* vertexBuffer;
 	ID3D11ShaderResourceView* textureSrv;
+
+	void updateConstantBuffer();
 
 public:
 	SceneObject(std::vector<SimpleVertex>* inVertices);
 	SceneObject();
 	~SceneObject();
-	void Draw();
+	bool setImmediateContext(ID3D11DeviceContext* immediateContext);
+	void draw();
 	void setVertices(objThing obj);
 
 	bool setVertexBuffer(ID3D11Device* device);
 	bool setTextureSrv(ID3D11ShaderResourceView* &texture);
+	bool createConstBuf(ID3D11Device* device);
 
     int getVerticeAmount() const;
     DirectX::XMMATRIX getWorldMatrix() const;
 	ID3D11Buffer* getVertexBuffer();
-	void setWorldPos(float* arr);
-	void setRot(float* arr);
-	void setScale(float* arr);
+	void setWorldPos(float arr[]);
+	void setRot(float arr[]);
+	void setScale(float arr[]);
 
 };

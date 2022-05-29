@@ -1,4 +1,5 @@
 #include "ConstantBuffer.h"
+#include "memoryLeakChecker.h"
 
 ConstantBuffer::ConstantBuffer()
 {
