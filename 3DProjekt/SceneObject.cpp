@@ -20,9 +20,9 @@ SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
 	this->vertices = inVertices;
 		
 	worldMatrix = DirectX::XMMatrixIdentity();
-	worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
-	worldMatrix *= DirectX::XMMatrixRotationY(0);
-	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
+	//worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
+	//worldMatrix *= DirectX::XMMatrixRotationY(0);
+	//worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 }
 
 SceneObject::SceneObject()
@@ -133,7 +133,6 @@ ID3D11Buffer* SceneObject::getVertexBuffer()
 
 void SceneObject::setWorldPos(float arr[])
 {
-	//worldMatrix = DirectX::XMMatrixIdentity();
 	worldMatrix *= DirectX::XMMatrixTranslation(arr[0], arr[1], arr[2]);
 	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 }
@@ -143,7 +142,6 @@ void SceneObject::setRot(float arr[])
 	worldMatrix *=	DirectX::XMMatrixRotationZ(arr[2])* 
 					DirectX::XMMatrixRotationX(arr[0])* 
 					DirectX::XMMatrixRotationY(arr[1]);
-	//worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 }
 
 void SceneObject::setScale(float arr[])

@@ -159,8 +159,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	objects.push_back(SceneObject(&obj[0].mesh));
 	objects[1].setImmediateContext(immediateContext);
-	objects[1].setTextureSrv(textureSrvs[0]);
+	objects[1].setTextureSrv(textureSrvs[textureSrvs.size() - 1]);
 	objects[1].createConstBuf(device);
+
+	objects.push_back(SceneObject(&obj[2].mesh));
+	objects[2].setImmediateContext(immediateContext);
+	objects[2].setTextureSrv(textureSrvs[1]);
+	objects[2].createConstBuf(device);
+	float tempArr[]{ 0,-5,0 };
+	//objects[2].setScale(tempArr);
+	tempArr[1] = -5;
+	objects[2].setWorldPos(tempArr);
 
 	for (auto& o : objects)
 	{

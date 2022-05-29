@@ -13,7 +13,7 @@ bool LoadTexutres(ID3D11Device* device, std::vector<ID3D11ShaderResourceView*>& 
 	while (std::getline(file, textureName))
 	{
 		ID3D11ShaderResourceView* newSrv;
-		if (!createSRVforPic(device, newSrv, textureName)) return 0;
+		if (!createSRVforPic(device, newSrv, "../Debug/"+textureName)) return 0;
 		textureSrvs.push_back(newSrv);
 	}
 	file.close();

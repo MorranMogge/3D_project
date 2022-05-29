@@ -1,2 +1,3 @@
-../Debug/SUS.jpg
-../Debug/Seal.png
+SUS.jpg
+Seal.png
+face.png
