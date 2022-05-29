@@ -37,93 +37,9 @@ struct CamData
 	float padding;
 };
 
-bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData)
-{
-	camData.cameraPosition = XMFLOAT3(0.0f, 0.0f, -20.0f);
-	camData.padding = 0.0f;
-
-	D3D11_BUFFER_DESC desc;
-	desc.ByteWidth = sizeof(CamData);
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-	desc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = (void*)&camData;
-	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
-
-	HRESULT hr = device->CreateBuffer(&desc, &data, &camBuffer);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport,
-	ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11Buffer* constantBuffer,
-	ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState, ID3D11Buffer* *lightBuffer, Camera camera, CamData camData, 
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> objects, CBuffer cb2, ID3D11Buffer* tmp)
-{
-
-
-	UINT stride	= sizeof(SimpleVertex);
-	UINT offset	= 0;
-
-
-
-	//Layout and other stuff
-	immediateContext->IASetInputLayout(inputLayout);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	immediateContext->RSSetViewports(1, &viewport);
-	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
-
-	//Triangle stuff
-	//immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-
-
-	//Vertex Shader
-	immediateContext->VSSetShader(vShader, nullptr, 0);
-	
-
-	
-
-
-
-	//Pixel Shader
-	immediateContext->PSSetSamplers(0, 1, &samplerState);
-	immediateContext->PSSetShaderResources(0, 1, &srv);
-	immediateContext->PSSetShader(pShader, nullptr, 0);
-	immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
-
-	D3D11_MAPPED_SUBRESOURCE subCam = {};
-	camData.cameraPosition = camera.GetPositionFloat3();
-	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
-	memcpy(subCam.pData, &camData, sizeof(CamData));
-	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
-
-	camData.cameraPosition = camera.GetPositionFloat3();
-	camera.sendView(immediateContext);
-
-	for (int i = 0; i < objects.size(); i++)
-	{
-		//cb2.setNewBuffer(immediateContext, constantBuffer, objects[i].getWorldMatrix());
-		
-		objects[i].draw();
-	}
-}
-
+bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation);
-void handleConstantBuffer(ConstantBuffer &cb, float xyz[]);
-void updateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer);
-//SceneObject loadObject(Vertex* inFile, int nrOfVertices);
-//SceneObject loadObject();
-
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> objects);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -132,7 +48,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
-	//objThing* obj = DBG_NEW objThing;
 	std::vector<objThing> obj;
 	readModels(obj);
 	std::vector<ID3D11ShaderResourceView*> textureSrvs;
@@ -160,37 +75,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	std::chrono::time_point<std::chrono::system_clock> start;
 	start = std::chrono::system_clock::now();
 
-	//ConstantBuffer cb;
-
 	CBuffer cb2;
 	LightBuffer lb;
 	Material mat;
 	std::vector<SceneObject> objects;
-
-	/*Vertex* quad = new Vertex[3]
-	{
-		{ {-0.5f, 0.5f, 0.0f}, {0, 0, -1}, {0, 0} },
-		{ {0.5f, 0.5f, 0.0f}, {0, 0, -1}, {1, 0} },
-		{ {0.5f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} }
-	};*/
-	/*std::vector<Vertex> temp;
-	temp.push_back({ {-1.0f, 0.5f, 0.0f}, {0, 0, -1}, {0, 0} });
-	temp.push_back({ {0.0f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} });
-	temp.push_back({ {0.0f, -0.5f, 0.0f}, {0, 0, -1}, {0, 1} });*/
-
-	
-	//objects.push_back(SceneObject());
-	//objects.push_back(loadObject());
 	Camera cam;
 	CamData camData;
 	ID3D11Buffer* camBuf;
-
-	
-	
-	
-
-	
-
 
 	if (!SetupWindow(hInstance, WIDTH, HEIGHT, nCmdShhow, window))
 	{
@@ -288,7 +179,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		}
 
 
-		//This allows us to update depending on time since last frame
+		//This allows us to update depending on time since last frame (in this case 144 times per second)
 		if (((std::chrono::duration<float>)(std::chrono::system_clock::now() - start)).count() > 1.0f / fps)
 		{
 			cam.moveCamera(immediateContext, cam, 1.f / 144.f);
@@ -296,28 +187,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			float clearColour[4] = { 0, 0, 0, 0 };
 			immediateContext->ClearRenderTargetView(rtv, clearColour);
 			immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-			//cb2.setNewBuffer(immediateContext, constantBuffer, objects[0].getWorldMatrix());
-			//Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, objects[0].getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, objects[0].getVerticeAmount(), 3);
 			
-			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, constantBuffer, textureSrvs[0], samplerState, 
-					lightBuffer, cam, camData, camBuf, objects, cb2, objects[0].getVertexBuffer());
-			//for (auto& o : objects)
-			//{
-			//		
-			//
-			//	//immediateContext->Draw(o.getVerticeAmount(), 0);
-			//}
-			
-			//cb2.setNewBuffer(immediateContext, constantBuffer, objects[0].getWorldMatrix());
-			//Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, objects[0].getVertexBuffer(), constantBuffer, srv, samplerState, lightBuffer, objects[0].getVerticeAmount());
-			
-			
-			/*handleConstantBuffer(cb, xyzPos);
-			if (rotation)
-			{
-				cb.NewUpdate(xyzPos[3]);
-			}
-			cb.Update(immediateContext, constantBuffer);*/
+			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
+				samplerState, lightBuffer, cam, camData, camBuf, objects);
 
 			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation);
 			if (rotation) 
@@ -352,7 +224,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	vShader->Release();
 	pShader->Release();
 	inputLayout->Release();
-	//vertexBuffer->Release();
 	lightBuffer[0]->Release();
 	lightBuffer[1]->Release();
 	constantBuffer->Release();
@@ -367,6 +238,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	samplerState->Release();
 
 	return 0;
+}
+
+bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData)
+{
+	camData.cameraPosition = XMFLOAT3(0.0f, 0.0f, -20.0f);
+	camData.padding = 0.0f;
+
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(CamData);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = (void*)&camData;
+	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+
+	HRESULT hr = device->CreateBuffer(&desc, &data, &camBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation)
@@ -419,23 +316,44 @@ void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void handleConstantBuffer(ConstantBuffer& cb, float xyz[])
+void Render
+(
+	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
+	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
+	ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData,
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> objects
+)
 {
-	cb.setXValue(xyz[0]);
-	cb.setYValue(xyz[1]);
-	cb.setZValue(xyz[2]);
-}
+	//Layout and other stuff
+	immediateContext->IASetInputLayout(inputLayout);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediateContext->RSSetViewports(1, &viewport);
+	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 
-void updateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
-{
-}
+	//Vertex Shader
+	immediateContext->VSSetShader(vShader, nullptr, 0);
 
-//SceneObject loadObject(Vertex* inFile, int nrOfVertices)
-//{
-//	return SceneObject(inFile, nrOfVertices);
-//}
-//
-//SceneObject loadObject()
-//{
-//	return SceneObject();
-//}
+	//Pixel Shader
+	immediateContext->PSSetShader(pShader, nullptr, 0);
+	immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
+
+	//We only need to change sampler if we want to sample texture in a different way
+	immediateContext->PSSetSamplers(0, 1, &samplerState);
+
+	//This makes it possible to see from the camera's perspective
+	D3D11_MAPPED_SUBRESOURCE subCam = {};
+	camData.cameraPosition = camera.GetPositionFloat3();
+	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+	memcpy(subCam.pData, &camData, sizeof(CamData));
+	immediateContext->Unmap(camBuffer, 0);
+	immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
+
+	//Send it to the vertex shader, index = 1 if no index is added to argument
+	camera.sendView(immediateContext);
+
+	//Draw every single object in the scene
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i].draw();
+	}
+}
