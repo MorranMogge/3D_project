@@ -43,7 +43,7 @@ private:
 	DirectX::XMFLOAT4X4 wrlMtx;
 
 	//Vertices and texture
-	std::vector<SimpleVertex> vertices;
+	std::vector<SimpleVertex>* vertices;
 	ID3D11Buffer* vertexBuffer;
 	ID3D11ShaderResourceView* textureSrv;
 

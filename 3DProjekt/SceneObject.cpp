@@ -17,7 +17,7 @@ SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
 	:stride(sizeof(SimpleVertex)), offset(0)
 {
 	
-	this->vertices = *inVertices;
+	this->vertices = inVertices;
 		
 	worldMatrix = DirectX::XMMatrixIdentity();
 	worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
@@ -28,12 +28,12 @@ SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
 SceneObject::SceneObject()
 	:stride(sizeof(SimpleVertex)), offset(0)
 {
-	this->vertices.push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
-	this->vertices.push_back(SimpleVertex({ 10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
-	this->vertices.push_back(SimpleVertex({ -10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 0, 1 }));
-	this->vertices.push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
-	this->vertices.push_back(SimpleVertex({ 10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 1, 0 }));
-	this->vertices.push_back(SimpleVertex({ 10.0f, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
+	this->vertices->push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
+	this->vertices->push_back(SimpleVertex({ 10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
+	this->vertices->push_back(SimpleVertex({ -10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 0, 1 }));
+	this->vertices->push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
+	this->vertices->push_back(SimpleVertex({ 10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 1, 0 }));
+	this->vertices->push_back(SimpleVertex({ 10.0f, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
 
 	worldMatrix = DirectX::XMMatrixIdentity();
 	worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
@@ -67,19 +67,19 @@ void SceneObject::draw()
 	immediateContext->PSSetShaderResources(0, 1, &textureSrv);
 
 	//Start the pipeline
-	immediateContext->Draw(vertices.size(), 0);
+	immediateContext->Draw(vertices->size(), 0);
 }
 
 void SceneObject::setVertices(objThing obj)
 {
-	this->vertices = obj.mesh;
+	this->vertices = &obj.mesh;
 }
 
 bool SceneObject::setVertexBuffer(ID3D11Device* device)
 {
 
 	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.ByteWidth = sizeof(SimpleVertex)*this->vertices.size();
+	bufferDesc.ByteWidth = sizeof(SimpleVertex)*this->vertices->size();
 	bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufferDesc.CPUAccessFlags = 0;
@@ -87,7 +87,7 @@ bool SceneObject::setVertexBuffer(ID3D11Device* device)
 	bufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data = {};
-	data.pSysMem = vertices.data();
+	data.pSysMem = vertices->data();
 	data.SysMemPitch = 0;
 	data.SysMemSlicePitch = 0;
 
@@ -118,7 +118,7 @@ bool SceneObject::createConstBuf(ID3D11Device* device)
 
 int SceneObject::getVerticeAmount() const
 {
-	return this->vertices.size();
+	return this->vertices->size();
 }
 
 DirectX::XMMATRIX SceneObject::getWorldMatrix() const

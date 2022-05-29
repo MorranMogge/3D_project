@@ -6,4 +6,7 @@ D:\School\Real3Dproject\3DProjekt\Main.cpp(201,39): warning C4244: '+=': convers
 D:\School\Real3Dproject\3DProjekt\Main.cpp(232,20): warning C4018: '<': signed/unsigned mismatch
 D:\School\Real3Dproject\3DProjekt\Main.cpp(102,19): warning C4101: 'vertexBuffer': unreferenced local variable
 D:\School\Real3Dproject\3DProjekt\Main.cpp(355,20): warning C4018: '<': signed/unsigned mismatch
+  Scene.cpp
+  SceneObject.cpp
+  Generating Code...
   3DProjekt.vcxproj -> D:\School\Real3Dproject\Debug\3DProjekt.exe
