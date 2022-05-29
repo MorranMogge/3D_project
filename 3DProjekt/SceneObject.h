@@ -34,6 +34,10 @@ private:
 	UINT stride;
 	UINT offset;    
 
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT3 rot;
+	DirectX::XMFLOAT3 scale;
+
 	//No need to send this in draw argument anymore
 	ID3D11DeviceContext* immediateContext;
 
@@ -48,7 +52,7 @@ private:
 	ID3D11ShaderResourceView* textureSrv;
 
 	void updateConstantBuffer();
-
+	void updateWorldMatrix();
 public:
 	SceneObject(std::vector<SimpleVertex>* inVertices);
 	SceneObject();
@@ -61,6 +65,7 @@ public:
 	bool setTextureSrv(ID3D11ShaderResourceView* &texture);
 	bool createConstBuf(ID3D11Device* device);
 
+	void releaseCom();
     int getVerticeAmount() const;
     DirectX::XMMATRIX getWorldMatrix() const;
 	ID3D11Buffer* getVertexBuffer();

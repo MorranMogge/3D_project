@@ -2,15 +2,15 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\School\Real3Dproject\Debug\3DProjekt.exe</FullPath>
+      <FullPath>C:\Users\Morgan\source\repos\Real3Dproject\Debug\3DProjekt.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>D:\School\Real3Dproject\Debug\PixelShader.cso</FullPath>
+      <FullPath>C:\Users\Morgan\source\repos\Real3Dproject\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\School\Real3Dproject\Debug\VertexShader.cso</FullPath>
+      <FullPath>C:\Users\Morgan\source\repos\Real3Dproject\Debug\VertexShader.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

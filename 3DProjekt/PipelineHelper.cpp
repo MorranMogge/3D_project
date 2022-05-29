@@ -71,38 +71,38 @@ bool CreateInputLayout(ID3D11Device* device, ID3D11InputLayout*& inputLayout, co
     return !FAILED(hr);
 }
 
-bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
-{
-    SimpleVertex quad[6] =
-    {
-        //First triangle
-        { {-0.5f, 0.5f, 0.0f}, {0, 0, -1}, {0, 0} },
-        { {0.5f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} },
-        { {-0.5f, -0.5f, 0.0f}, {0, 0, -1}, {0, 1} },
-
-        //Second triangle
-        { {-0.5f, 0.5f, 0.0f}, {0, 0, -1}, {0, 0} },
-        { {0.5f, 0.5f, 0.0f}, {0, 0, -1}, {1, 0} },
-        { {0.5f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} }
-    };
-
-    D3D11_BUFFER_DESC bufferDesc;
-    bufferDesc.ByteWidth            = sizeof(quad);
-    bufferDesc.Usage                = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.BindFlags            = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags       = 0;
-    bufferDesc.MiscFlags            = 0;
-    bufferDesc.StructureByteStride  = 0;
-
-    D3D11_SUBRESOURCE_DATA data;
-    data.pSysMem            = quad;
-    data.SysMemPitch        = 0;
-    data.SysMemSlicePitch   = 0;
-
-    HRESULT hr = device->CreateBuffer(&bufferDesc, &data, &vertexBuffer);
-
-    return !FAILED(hr);
-}
+//bool CreateVertexBuffer(ID3D11Device* device, ID3D11Buffer*& vertexBuffer)
+//{
+//    SimpleVertex quad[6] =
+//    {
+//        //First triangle
+//        { {-0.5f, 0.5f, 0.0f}, {0, 0, -1}, {0, 0} },
+//        { {0.5f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} },
+//        { {-0.5f, -0.5f, 0.0f}, {0, 0, -1}, {0, 1} },
+//
+//        //Second triangle
+//        { {-0.5f, 0.5f, 0.0f}, {0, 0, -1}, {0, 0} },
+//        { {0.5f, 0.5f, 0.0f}, {0, 0, -1}, {1, 0} },
+//        { {0.5f, -0.5f, 0.0f}, {0, 0, -1}, {1, 1} }
+//    };
+//
+//    D3D11_BUFFER_DESC bufferDesc;
+//    bufferDesc.ByteWidth            = sizeof(quad);
+//    bufferDesc.Usage                = D3D11_USAGE_IMMUTABLE;
+//    bufferDesc.BindFlags            = D3D11_BIND_VERTEX_BUFFER;
+//    bufferDesc.CPUAccessFlags       = 0;
+//    bufferDesc.MiscFlags            = 0;
+//    bufferDesc.StructureByteStride  = 0;
+//
+//    D3D11_SUBRESOURCE_DATA data;
+//    data.pSysMem            = quad;
+//    data.SysMemPitch        = 0;
+//    data.SysMemSlicePitch   = 0;
+//
+//    HRESULT hr = device->CreateBuffer(&bufferDesc, &data, &vertexBuffer);
+//
+//    return !FAILED(hr);
+//}
 
 bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& samplerState)
 {
@@ -122,7 +122,7 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& samplerState)
 }
 
 bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, 
-                    ID3D11InputLayout*& inputLayout, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& srv, ID3D11SamplerState*& samplerState)
+                    ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& samplerState)
 {
     std::string vShaderByteCode;
     if (!LoadShaders(device, vShader, pShader, vShaderByteCode))

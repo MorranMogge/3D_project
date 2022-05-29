@@ -1,3 +1,4 @@
 sphere2
 cubeMaterial_3
 ground
+hollow kinght

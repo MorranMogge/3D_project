@@ -13,4 +13,13 @@ struct objThing
 	std::vector<SimpleVertex> mesh;
 };
 
+struct newObjThing
+{
+	std::vector<int> indexes;
+	std::vector<float> specularComp;
+	std::vector<ID3D11ShaderResourceView*> textureSrvs;
+	std::vector<SimpleVertex> mesh;
+};
+
 void readModels(std::vector<objThing> &test);
+void newReadModels(std::vector<newObjThing>& objArr);

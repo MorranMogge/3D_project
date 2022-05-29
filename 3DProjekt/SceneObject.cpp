@@ -4,6 +4,7 @@
 
 void SceneObject::updateConstantBuffer()
 {
+	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 	DirectX::XMStoreFloat4x4(&wrlMtx, worldMatrix);
 
 	D3D11_MAPPED_SUBRESOURCE mapRes;
@@ -13,8 +14,17 @@ void SceneObject::updateConstantBuffer()
 	immediateContext->Unmap(constantBuffer, 0);
 }
 
+void SceneObject::updateWorldMatrix()
+{
+	worldMatrix = DirectX::XMMatrixIdentity();
+	worldMatrix *= DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	worldMatrix *= DirectX::XMMatrixRotationZ(rot.z) * DirectX::XMMatrixRotationX(rot.x) * DirectX::XMMatrixRotationY(rot.y);
+	worldMatrix *= DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	
+}
+
 SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
-	:stride(sizeof(SimpleVertex)), offset(0)
+	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({1,1,1})
 {
 	
 	this->vertices = inVertices;
@@ -26,7 +36,7 @@ SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
 }
 
 SceneObject::SceneObject()
-	:stride(sizeof(SimpleVertex)), offset(0)
+	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({ 1,1,1 })
 {
 	this->vertices->push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
 	this->vertices->push_back(SimpleVertex({ 10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
@@ -56,8 +66,12 @@ void SceneObject::draw()
 	//Some objects differ in their pipeline so we need
 	//to make sure each is correct for each object
 
-	//Set correct positions
+	//Update
+	updateWorldMatrix();
 	updateConstantBuffer();
+
+
+	//Set correct positions
 	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
 	//Set the correct vertices
@@ -116,6 +130,12 @@ bool SceneObject::createConstBuf(ID3D11Device* device)
 	return !FAILED(hr);
 }
 
+void SceneObject::releaseCom()
+{
+	constantBuffer->Release();
+	vertexBuffer->Release();
+}
+
 int SceneObject::getVerticeAmount() const
 {
 	return this->vertices->size();
@@ -133,19 +153,21 @@ ID3D11Buffer* SceneObject::getVertexBuffer()
 
 void SceneObject::setWorldPos(float arr[])
 {
-	worldMatrix *= DirectX::XMMatrixTranslation(arr[0], arr[1], arr[2]);
-	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
+	pos.x = arr[0];
+	pos.y = arr[1];
+	pos.z = arr[2];
 }
 
 void SceneObject::setRot(float arr[])
 {
-	worldMatrix *=	DirectX::XMMatrixRotationZ(arr[2])* 
-					DirectX::XMMatrixRotationX(arr[0])* 
-					DirectX::XMMatrixRotationY(arr[1]);
+	rot.x = arr[0];
+	rot.y = arr[1];
+	rot.z = arr[2];
 }
 
 void SceneObject::setScale(float arr[])
 {
-	worldMatrix = DirectX::XMMatrixIdentity();
-	worldMatrix *= DirectX::XMMatrixScaling(arr[0], arr[1], arr[2]);
+	scale.x = arr[0];
+	scale.y = arr[1];
+	scale.z = arr[2];
 }

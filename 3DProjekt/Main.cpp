@@ -39,7 +39,7 @@ struct CamData
 
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> objects);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -51,7 +51,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	std::vector<objThing> obj;
 	readModels(obj);
 	std::vector<ID3D11ShaderResourceView*> textureSrvs;
-	
 
 	//First we set some values
 	float xyzPos[3] = { 0.f,0.f,4.5f,};
@@ -99,10 +98,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ID3D11VertexShader		* vShader;
 	ID3D11PixelShader		* pShader;
 	ID3D11InputLayout		* inputLayout;
-	ID3D11Buffer			* vertexBuffer;
-	ID3D11Buffer			* constantBuffer;
-	ID3D11Texture2D			* texture;
-	ID3D11ShaderResourceView* srv;
 	ID3D11SamplerState		* samplerState;
 	ID3D11Buffer			* lightBuffer[2];
 	D3D11_VIEWPORT			  viewport;
@@ -113,15 +108,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-	if (!SetupPipeline(device, vShader, pShader, inputLayout, texture, srv, samplerState))
+	if (!SetupPipeline(device, vShader, pShader, inputLayout, samplerState))
 	{
 		std::cerr << "Failed to setup pipeline!" << std::endl;
-		return -1;
-	}
-
-	if (!cb2.setConstBuf(device, constantBuffer))
-	{
-		std::cerr << "Failed to setup constant buffer!" << std::endl;
 		return -1;
 	}
 
@@ -152,9 +141,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	MSG msg = {};
 	
-	objects.push_back(SceneObject(&obj[1].mesh));
+	objects.push_back(SceneObject(&obj[3].mesh));
 	objects[0].setImmediateContext(immediateContext);
-	objects[0].setTextureSrv(textureSrvs[0]);
+	objects[0].setTextureSrv(textureSrvs[3]);
 	objects[0].createConstBuf(device);
 
 	objects.push_back(SceneObject(&obj[0].mesh));
@@ -235,16 +224,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	inputLayout->Release();
 	lightBuffer[0]->Release();
 	lightBuffer[1]->Release();
-	constantBuffer->Release();
+	samplerState->Release();
+	camBuf->Release();
+	cam.noMoreMemoryLeaks();
 
 	//Releases all textures
 	for (int i = 0; i < textureSrvs.size(); i++)
 	{
 		textureSrvs[i]->Release();
 	}
-	//texture->Release();
-	//srv->Release();
-	samplerState->Release();
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i].releaseCom();
+	}
+
 
 	return 0;
 }
@@ -330,7 +323,7 @@ void Render
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData,
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> objects
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects
 )
 {
 	//Layout and other stuff
