@@ -41,7 +41,7 @@ private:
 public:
 	LightBuffer();
 	bool setLightBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffer);
-
+	void setNormal(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& lightBuffer, bool normal);
 
 
 	

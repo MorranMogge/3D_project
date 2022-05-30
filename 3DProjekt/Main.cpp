@@ -38,7 +38,7 @@ struct CamData
 };
 
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
-void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation);
+void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal);
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
@@ -59,6 +59,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float xyzScale[3] = { 1.f,1.f,1.f };
 	bool x = true;
 	bool rotation = false;
+	bool normal = false;
 
 	//Window size
 	const UINT WIDTH = 1520;
@@ -100,6 +101,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ID3D11InputLayout		* inputLayout;
 	ID3D11SamplerState		* samplerState;
 	ID3D11Buffer			* lightBuffer[2];
+	ID3D11Buffer			* values;
 	D3D11_VIEWPORT			  viewport;
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
@@ -189,7 +191,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
 				samplerState, lightBuffer, cam, camData, camBuf, objects);
 
-			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation);
+			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal);
+			lb.setNormal(immediateContext, lightBuffer[0], normal);
 			if (rotation) 
 			{ 
 				xyzRot[0] += xyzRotSpeed[0]*0.01;
@@ -268,7 +271,7 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 	return true;
 }
 
-void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation)
+void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -290,6 +293,7 @@ void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool
 			ImGui::SliderFloat("Y rotSpeed", &rotSpeed[1], -15.0f, 15.0f);
 			ImGui::SliderFloat("Z rotSpeed", &rotSpeed[2], -15.0f, 15.0f);
 			ImGui::Checkbox("Rotation", &rotation);
+			ImGui::Checkbox("Normal", &normal);
 		}
 		ImGui::End();
 	}

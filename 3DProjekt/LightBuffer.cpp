@@ -42,3 +42,13 @@ bool LightBuffer::setLightBuffer(ID3D11Device* device, ID3D11Buffer*& lightBuffe
 
     return !FAILED(hr);
 }
+
+void LightBuffer::setNormal(ID3D11DeviceContext* immediateContext, ID3D11Buffer*& lightBuffer, bool normal)
+{
+    lightB.padd1 = normal;
+    D3D11_MAPPED_SUBRESOURCE mapRes;
+    ZeroMemory(&mapRes, sizeof(D3D11_MAPPED_SUBRESOURCE));
+    HRESULT hr = immediateContext->Map(lightBuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &mapRes);
+    memcpy(mapRes.pData, &lightB, sizeof(lightB));
+    immediateContext->Unmap(lightBuffer, 0);
+}
