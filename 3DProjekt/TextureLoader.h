@@ -8,4 +8,5 @@
 
 bool createSRVforPic(ID3D11Device* device, ID3D11ShaderResourceView*& srv, std::string fileName);
 bool LoadTexutres(ID3D11Device* device, std::vector<ID3D11ShaderResourceView*>& textureSrvs);
+ID3D11ShaderResourceView* createSRVforPic(ID3D11Device* device, std::string fileName);
 

@@ -1,13 +1,3 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (3DProjekt-DESKTOP-IJ99B3L-2.vcxproj, 3DProjekt-DESKTOP-IJ99B3L.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  compilation object save succeeded; see C:\Users\Morgan\source\repos\Real3Dproject\Debug\PixelShader.cso
-  LightBuffer.cpp
-  Main.cpp
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(198,37): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(200,39): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(202,39): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(235,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(239,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(104,19): warning C4101: 'values': unreferenced local variable
-C:\Users\Morgan\source\repos\Real3Dproject\3DProjekt\Main.cpp(361,20): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
-  3DProjekt.vcxproj -> C:\Users\Morgan\source\repos\Real3Dproject\Debug\3DProjekt.exe
+  ObjParser.cpp
+  3DProjekt.vcxproj -> D:\School\Real3Dproject\Debug\3DProjekt.exe

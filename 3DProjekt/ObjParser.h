@@ -22,4 +22,4 @@ struct newObjThing
 };
 
 void readModels(std::vector<objThing> &test);
-void newReadModels(std::vector<newObjThing>& objArr);
+void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr);

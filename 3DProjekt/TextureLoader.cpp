@@ -60,3 +60,45 @@ bool createSRVforPic(ID3D11Device* device, ID3D11ShaderResourceView*& srv, std::
 	texture->Release();
 	return !FAILED(hr);
 }
+
+ID3D11ShaderResourceView* createSRVforPic(ID3D11Device* device, std::string fileName)
+{
+	ID3D11ShaderResourceView* tempSrv = nullptr;
+	int width, height, channel;
+	unsigned char* picture = stbi_load(fileName.c_str(), &width, &height, &channel, STBI_rgb_alpha);
+
+	D3D11_TEXTURE2D_DESC textureDesc;
+	ZeroMemory(&textureDesc, sizeof(D3D11_TEXTURE2D_DESC));
+
+	textureDesc.Width = (UINT)width;
+	textureDesc.Height = (UINT)height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA subResource;
+	ZeroMemory(&subResource, sizeof(D3D11_SUBRESOURCE_DATA));
+
+	subResource.pSysMem = picture;
+	subResource.SysMemPitch = (UINT)width * 4;
+
+	ID3D11Texture2D* texture = {};
+	HRESULT hr = device->CreateTexture2D(&textureDesc, &subResource, &texture);
+	if (FAILED(hr)) { std::cout << "Could not create Texture2D!\n"; return nullptr; }
+
+	if (texture != nullptr)
+	{
+		hr = device->CreateShaderResourceView(texture, nullptr, &tempSrv);
+		if (FAILED(hr)) { std::cout << "Could not create srv!\n"; return nullptr; }
+	}
+
+	stbi_image_free(picture);
+	texture->Release();
+	return tempSrv;
+}

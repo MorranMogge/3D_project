@@ -10,7 +10,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd plataform.png
+map_Kd C:\\Users\\Caleb\\Pictures\\AprenZ\\30dias\\3\\plataform.png
 
 newmtl Material.002
 Ns 225.000000
@@ -21,8 +21,8 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd flores.png
-map_d flores.png
+map_Kd C:\\Users\\Caleb\\Pictures\\AprenZ\\30dias\\3\\flores.png
+map_d C:\\Users\\Caleb\\Pictures\\AprenZ\\30dias\\3\\flores.png
 
 newmtl None
 Ns 0.000000
@@ -33,4 +33,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd 4_None_color.png
+map_Kd C:\\Users\\Caleb\\Pictures\\AprenZ\\30dias\\3\\Untitled.png
