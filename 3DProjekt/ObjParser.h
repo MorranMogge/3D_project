@@ -19,6 +19,8 @@ struct newObjThing
 	std::vector<float> specularComp;
 	std::vector<ID3D11ShaderResourceView*> textureSrvs;
 	std::vector<SimpleVertex> mesh;
+	std::vector<DWORD> indices;
+	std::vector<int> verticeCount;
 };
 
 void readModels(std::vector<objThing> &test);

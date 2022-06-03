@@ -28,11 +28,38 @@ SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
 {
 	
 	this->vertices = inVertices;
-		
+	
 	worldMatrix = DirectX::XMMatrixIdentity();
 	//worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
 	//worldMatrix *= DirectX::XMMatrixRotationY(0);
 	//worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
+}
+
+SceneObject::SceneObject(newObjThing inObj)
+	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({ 1,1,1 })
+{
+	for (int i = 0; i < inObj.indexes.size(); i++)
+	{
+		indexes.push_back(inObj.indexes[i]);
+	}
+	for (int i = 0; i < inObj.textureSrvs.size(); i++)
+	{
+		textureSrv.push_back(inObj.textureSrvs[i]);
+	}
+	for (int i = 0; i < inObj.verticeCount.size(); i++)
+	{
+		this->verticeCount.push_back(inObj.verticeCount[i]);
+	}
+	/*for (int i = 0; i < inObj.mesh.size(); i++)
+	{
+		vertices->push_back(inObj.mesh[i]);
+	}*/
+	//this->vertices = &inObj.mesh;
+	/*for (int i = 0; i < inObj.mesh.size(); i++)
+	{
+		textureSrv.push_back(inObj.textureSrvs[i]);
+	}*/
+	worldMatrix = DirectX::XMMatrixIdentity();
 }
 
 SceneObject::SceneObject()
@@ -78,15 +105,69 @@ void SceneObject::draw()
 	immediateContext->IASetVertexBuffers(0,1, &vertexBuffer, &stride, &offset);
 
 	//Set the correct texture
-	immediateContext->PSSetShaderResources(0, 1, &textureSrv);
+	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
 	//Start the pipeline
-	immediateContext->Draw(vertices->size(), 0);
+	for (int i = 0; i < indexes.size(); i++)
+	{
+		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i*3]);
+		immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
+		//immediateContext->DrawIndexed(20, indexes[i], 0);
+	}
+	//immediateContext->PSSetShaderResources(0, 1, &textureSrv[rand()%((indexes.size() - 1)*3)]);
+	//immediateContext->DrawIndexed(indexes[indexes.size() - 1] - indexes[indexes.size() - 2], indexes[indexes.size() - 2], 0);
+	//immediateContext->Draw(vertices->size(), 0);
+}
+
+void SceneObject::draw(bool testDraw)
+{
+	//Some objects differ in their pipeline so we need
+	//to make sure each is correct for each object
+
+	//Update
+	updateWorldMatrix();
+	updateConstantBuffer();
+
+
+	//Set correct positions
+	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
+	//Set the correct vertices
+	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+
+	//Set the correct texture
+	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
+
+	//Start the pipeline
+	if (!testDraw)
+	{
+		immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
+		immediateContext->Draw(indices->size(), 0);
+	}
+	else
+	{
+
+		for (int i = 0; i < indexes.size(); i++)
+		{
+			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3]);
+			immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
+		}
+	}
 }
 
 void SceneObject::setVertices(objThing obj)
 {
 	this->vertices = &obj.mesh;
+}
+
+void SceneObject::setVertices(std::vector<SimpleVertex>* inVertices)
+{
+	this->vertices = inVertices;
+}
+
+void SceneObject::setIndices(std::vector<DWORD>* indices)
+{
+	this->indices = indices;
 }
 
 bool SceneObject::setVertexBuffer(ID3D11Device* device)
@@ -112,8 +193,9 @@ bool SceneObject::setVertexBuffer(ID3D11Device* device)
 
 bool SceneObject::setTextureSrv(ID3D11ShaderResourceView*& texture)
 {
-	textureSrv = texture;
-	return textureSrv!=nullptr;
+	textureSrv.push_back(texture);
+	//textureSrv[0] = texture;
+	return textureSrv[0]!=nullptr;
 }
 
 bool SceneObject::createConstBuf(ID3D11Device* device)
@@ -127,6 +209,23 @@ bool SceneObject::createConstBuf(ID3D11Device* device)
 	bufferDesc.StructureByteStride = 0;
 
 	HRESULT hr = device->CreateBuffer(&bufferDesc, 0, &constantBuffer);
+	return !FAILED(hr);
+}
+
+bool SceneObject::createIndexBuffer(ID3D11Device* device)
+{
+	D3D11_BUFFER_DESC indexBufferDesc;
+	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(DWORD) * indices->size();
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBufferData;
+	indexBufferData.pSysMem = indices->data();
+	HRESULT hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
 	return !FAILED(hr);
 }
 

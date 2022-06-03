@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <chrono>
 #include <vector>
+#include <time.h>
 
 #include "WindowHelper.h"
 #include "D3D11Helper.h"
@@ -38,11 +39,12 @@ struct CamData
 };
 
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
-void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects);
+void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool test);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
+	srand((unsigned)time(0));
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -50,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	std::vector<objThing> obj;
 	std::vector<newObjThing> newObj;
-	readModels(obj);
+	//readModels(obj);
 	std::vector<ID3D11ShaderResourceView*> textureSrvs;
 
 	//First we set some values
@@ -61,6 +63,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	bool x = true;
 	bool rotation = false;
 	bool normal = false;
+	bool test = true;
 
 	//Window size
 	const UINT WIDTH = 1520;
@@ -145,28 +148,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	MSG msg = {};
 	
-	objects.push_back(SceneObject(&obj[1].mesh));
+	objects.push_back(SceneObject(newObj[0]));
 	objects[0].setImmediateContext(immediateContext);
-	//objects[0].setTextureSrv(textureSrvs[3]);
-	objects[0].setTextureSrv(newObj[3].textureSrvs[1]);
 	objects[0].createConstBuf(device);
-
-	objects.push_back(SceneObject(&obj[0].mesh));
-	objects[1].setImmediateContext(immediateContext);
-	objects[1].setTextureSrv(textureSrvs[textureSrvs.size() - 1]);
-	objects[1].createConstBuf(device);
-
-	objects.push_back(SceneObject(&newObj[3].mesh));
-
-	objects[2].setImmediateContext(immediateContext);
-	objects[2].setTextureSrv(textureSrvs[1]);
-	objects[2].createConstBuf(device);
-	float tempArr[]{ 0,-5,0 };
-	//objects[2].setScale(tempArr);
-	tempArr[1] = -5;
-	objects[2].setWorldPos(tempArr);
-
-
+	objects[0].setVertices(&newObj[0].mesh);
+	objects[0].setIndices(&newObj[0].indices);
+	objects[0].createIndexBuffer(device);
 
 	for (auto& o : objects)
 	{
@@ -188,24 +175,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		//This allows us to update depending on time since last frame (in this case 144 times per second)
 		if (((std::chrono::duration<float>)(std::chrono::system_clock::now() - start)).count() > 1.0f / fps)
 		{
-			cam.moveCamera(immediateContext, cam, 1.f / 144.f);
+			cam.moveCamera(immediateContext, cam, 1.f / fps);
 			verticeCounter = 0;
 			float clearColour[4] = { 0, 0, 0, 0 };
 			immediateContext->ClearRenderTargetView(rtv, clearColour);
 			immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, lightBuffer, cam, camData, camBuf, objects);
+				samplerState, lightBuffer, cam, camData, camBuf, objects, test);
 
-			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal);
+			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
 			lb.setNormal(immediateContext, lightBuffer[0], normal);
 			if (rotation) 
 			{ 
-				xyzRot[0] += xyzRotSpeed[0]*0.01;
+				xyzRot[0] += xyzRotSpeed[0] * 0.01 * 144/fps;
 				if (xyzRot[0] >= XM_2PI) xyzRot[0] = 0;
-				xyzRot[1] += xyzRotSpeed[1] * 0.01;
+				xyzRot[1] += xyzRotSpeed[1] * 0.01 * 144 / fps;
 				if (xyzRot[1] >= XM_2PI) xyzRot[1] = 0;
-				xyzRot[2] += xyzRotSpeed[2] * 0.01;
+				xyzRot[2] += xyzRotSpeed[2] * 0.01 * 144 / fps;
 				if (xyzRot[2] >= XM_2PI) xyzRot[2] = 0;
 			}
 			objects[0].setScale(xyzScale);
@@ -277,7 +264,7 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 	return true;
 }
 
-void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal)
+void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool& test, float &fps)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -300,6 +287,8 @@ void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool
 			ImGui::SliderFloat("Z rotSpeed", &rotSpeed[2], -15.0f, 15.0f);
 			ImGui::Checkbox("Rotation", &rotation);
 			ImGui::Checkbox("Normal", &normal);
+			ImGui::Checkbox("Indexed", &test);
+			ImGui::SliderFloat("FPS CAP", &fps, 1.f, 144.0f);
 		}
 		ImGui::End();
 	}
@@ -333,7 +322,7 @@ void Render
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData,
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool test
 )
 {
 	//Layout and other stuff
@@ -366,6 +355,6 @@ void Render
 	//Draw every single object in the scene
 	for (int i = 0; i < objects.size(); i++)
 	{
-		objects[i].draw();
+		objects[i].draw(test);
 	}
 }

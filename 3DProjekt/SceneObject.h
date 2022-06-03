@@ -34,6 +34,7 @@ private:
 	UINT stride;
 	UINT offset;    
 
+
 	DirectX::XMFLOAT3 pos;
 	DirectX::XMFLOAT3 rot;
 	DirectX::XMFLOAT3 scale;
@@ -47,23 +48,32 @@ private:
 	DirectX::XMFLOAT4X4 wrlMtx;
 
 	//Vertices and texture
+	std::vector<int> indexes;
 	std::vector<SimpleVertex>* vertices;
 	ID3D11Buffer* vertexBuffer;
-	ID3D11ShaderResourceView* textureSrv;
+	std::vector<ID3D11ShaderResourceView*> textureSrv;
+	ID3D11Buffer* indexBuffer;
+	std::vector<DWORD> *indices;
+	std::vector<int> verticeCount;
 
 	void updateConstantBuffer();
 	void updateWorldMatrix();
 public:
 	SceneObject(std::vector<SimpleVertex>* inVertices);
+	SceneObject(newObjThing inObj);
 	SceneObject();
 	~SceneObject();
 	bool setImmediateContext(ID3D11DeviceContext* immediateContext);
 	void draw();
+	void draw(bool testDraw);
 	void setVertices(objThing obj);
+	void setVertices(std::vector<SimpleVertex>* inVertices);
+	void setIndices(std::vector<DWORD>* indices);
 
 	bool setVertexBuffer(ID3D11Device* device);
 	bool setTextureSrv(ID3D11ShaderResourceView* &texture);
 	bool createConstBuf(ID3D11Device* device);
+	bool createIndexBuffer(ID3D11Device* device);
 
 	void releaseCom();
     int getVerticeAmount() const;

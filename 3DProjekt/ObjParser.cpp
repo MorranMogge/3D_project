@@ -22,7 +22,6 @@ void readModels(std::vector<objThing> &objArr)
 		{
 			std::stringstream readCharacters(loadLines);
 			std::getline(readCharacters, wantedString, ' ');
-			//std::getline(file, loadLines, ' ');
 			if (wantedString == "v")
 			{
 				positions.push_back({ 0.0f,0.0f,0.0f });
@@ -185,23 +184,63 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 						objArr[objArr.size() - 1].textureSrvs[i + objArr[objArr.size() - 1].indexes.size() * 3] = noTexture;
 					}
 				}
-				objArr[objArr.size() - 1].indexes.push_back(objArr[objArr.size() - 1].mesh.size());
+				objArr[objArr.size() - 1].indexes.push_back(objArr[objArr.size() - 1].indices.size());
 			}
 			else if (wantedString == "f")
 			{
-				for (int i = 0; i < 3; i++)
+				int tmp = 3;
+				bool add = true;
+				for (int i = 0; i < tmp; i++)
 				{
+					add = true;
 					std::getline(readCharacters, wantedString, '/');
 					index[0] = std::stoi(wantedString) - 1;
 					std::getline(readCharacters, wantedString, '/');
 					index[1] = std::stoi(wantedString) - 1;
 					std::getline(readCharacters, wantedString, ' ');
 					index[2] = std::stoi(wantedString) - 1;
+					
 
-					objArr[objArr.size() - 1].mesh.push_back(SimpleVertex({ positions[index[0]].x, positions[index[0]].y, positions[index[0]].z },
-						{ normals[index[2]].x, normals[index[2]].y, normals[index[2]].z }, { UV[index[1]].x,UV[index[1]].y }));
+					SimpleVertex tempVertice({ positions[index[0]].x, positions[index[0]].y, positions[index[0]].z }, { normals[index[2]].x, normals[index[2]].y, normals[index[2]].z }, { UV[index[1]].x,UV[index[1]].y });
+					for (int j = 0; j < objArr[objArr.size() - 1].mesh.size(); j++)
+					{
+						if (objArr[objArr.size() - 1].mesh[j] == tempVertice)
+						{
+							add = false;
+							objArr[objArr.size() - 1].indices.push_back(j);
+							break;
+						}
+					}
+						/*for (int j = 0; j < objArr[objArr.size() - 1].mesh.size(); j++)
+					{
+						if (objArr[objArr.size() - 1].mesh[j].pos[0] == positions[index[0]].x &&
+							objArr[objArr.size() - 1].mesh[j].pos[1] == positions[index[0]].y &&
+							objArr[objArr.size() - 1].mesh[j].pos[2] == positions[index[0]].z &&
+							objArr[objArr.size() - 1].mesh[j].n[0] == normals[index[2]].x &&
+							objArr[objArr.size() - 1].mesh[j].n[1] == normals[index[2]].y &&
+							objArr[objArr.size() - 1].mesh[j].n[2] == normals[index[2]].z &&
+							objArr[objArr.size() - 1].mesh[j].uv[0] == UV[index[1]].x &&
+							objArr[objArr.size() - 1].mesh[j].uv[1] == UV[index[1]].y)
+							add = false; break;
+					}*/ 
+					if (add)
+					{
+						objArr[objArr.size() - 1].indices.push_back(objArr[objArr.size() - 1].mesh.size());
+						objArr[objArr.size() - 1].mesh.push_back(tempVertice);
+						
+					}
 				}
 			}
 		}
+		if (objArr[objArr.size() - 1].indexes.size() > 0)
+		{
+			for (int i = 0; i < objArr[objArr.size() - 1].indexes.size() - 1; i++)
+			{
+				objArr[objArr.size() - 1].verticeCount.push_back(objArr[objArr.size() - 1].indexes[i + 1] - objArr[objArr.size() - 1].indexes[i]);
+			}
+			int tempIndex = objArr[objArr.size() - 1].indexes.size()-1;
+			objArr[objArr.size() - 1].verticeCount.push_back(objArr[objArr.size() - 1].indices.size() - objArr[objArr.size() - 1].indexes[tempIndex]);
+		}
+		
 	}
 }

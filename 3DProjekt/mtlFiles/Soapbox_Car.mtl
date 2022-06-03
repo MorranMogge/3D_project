@@ -1,0 +1,34 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 20.12.2019 03:41:27
+
+newmtl wheel
+map_Ka wheel.png
+map_Kd wheel.png
+map_Ks wheel.png
+
+newmtl steer
+map_Ka steer.png
+map_Kd steer.png
+map_Ks steer.png
+
+newmtl default
+map_Ka Chassis.png
+map_Kd Chassis.png
+map_Ks Chassis.png
+
+newmtl old_default
+	Ns 100.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 1.0000 1.0000 1.0000
+	Ks 1.0000 1.0000 1.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Albedo.png
+	map_Kd F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Albedo.png
+	map_Ks F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Specular.png
+	map_bump F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Normal.png
+	bump F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Normal.png
