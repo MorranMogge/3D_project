@@ -2,19 +2,22 @@
 # File Created: 20.12.2019 03:41:27
 
 newmtl wheel
+Ns 100.0000
 map_Ka wheel.png
 map_Kd wheel.png
 map_Ks wheel.png
 
 newmtl steer
+Ns 100.0000
 map_Ka steer.png
 map_Kd steer.png
 map_Ks steer.png
 
 newmtl default
-map_Ka Chassis.png
-map_Kd Chassis.png
-map_Ks Chassis.png
+Ns 100.0000
+map_Ka Car.png
+map_Kd Car.png
+map_Ks Car.png
 
 newmtl old_default
 	Ns 100.0000

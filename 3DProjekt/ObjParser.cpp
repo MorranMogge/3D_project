@@ -70,14 +70,13 @@ void readModels(std::vector<objThing> &objArr)
 	}
 }
 
-void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
+void newReadModels(ID3D11Device* device, ID3D11ShaderResourceView* &missingTexture, materialChecker& mat, std::vector<newObjThing>& objArr)
 {
 	std::ifstream objFile("objectFile.txt");
 	std::string fileName;
 	bool going = true;
 	if (!objFile.is_open()) { std::cout << "Could not open objFile.txt!\n"; return; }
-	ID3D11ShaderResourceView* noTexture;
-	if (!createSRVforPic(device, noTexture, "Textures/noTexture.png")) return;
+	if (!createSRVforPic(device, missingTexture, "Textures/noTexture.png")) return;
 	while (std::getline(objFile, fileName))
 	{
 		std::ifstream file("Models/" + fileName + ".obj");
@@ -94,7 +93,6 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 		{
 			std::stringstream readCharacters(loadLines);
 			std::getline(readCharacters, wantedString, ' ');
-			//std::getline(file, loadLines, ' ');
 			if (wantedString == "mtllib") 
 			{ 
 				std::getline(readCharacters, wantedString); 
@@ -130,12 +128,10 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 			}
 			else if (wantedString == "usemtl") 
 			{
-				//Save amount of vertices
 				std::getline(readCharacters, wantedString);
 				std::string savedMtlName = wantedString;
 				std::ifstream mtilFile("mtlFiles/" + mtlFileName);
 				if (!mtilFile.is_open()) { std::cout << "Could not open mtl!\n"; continue; }
-				//objArr[objArr.size() - 1].indexes.push_back(objArr.size() - 1);
 				for (int i = 0; i < 3; i++)
 				{
 					objArr[objArr.size() - 1].textureSrvs.push_back(nullptr);
@@ -159,18 +155,55 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 							else if (wantedString == "map_Kd")
 							{
 								std::getline(newNewReadCharacters, wantedString);
-								objArr[objArr.size() - 1].textureSrvs[0 + objArr[objArr.size() - 1].indexes.size()*3] = createSRVforPic(device, "Textures/" + wantedString);
+								for (int i = 0; i < mat.textureNames.size(); i++)
+								{
+									if (wantedString == mat.textureNames[i])
+									{
+										objArr[objArr.size() - 1].textureSrvs[0 + objArr[objArr.size() - 1].indexes.size() * 3] = mat.textureSrvs[i];
+									}
+								}
+								
+								if (objArr[objArr.size() - 1].textureSrvs[0 + objArr[objArr.size() - 1].indexes.size() * 3] == nullptr)
+								{
+									objArr[objArr.size() - 1].textureSrvs[0 + objArr[objArr.size() - 1].indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
+									mat.textureNames.push_back(wantedString);
+									mat.textureSrvs.push_back(objArr[objArr.size() - 1].textureSrvs[0 + objArr[objArr.size() - 1].indexes.size() * 3]);
+								}
 
 							}
 							else if (wantedString == "map_Ks")
 							{
 								std::getline(newNewReadCharacters, wantedString);
-								objArr[objArr.size() - 1].textureSrvs[1 + objArr[objArr.size() - 1].indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
+								for (int i = 0; i < mat.textureNames.size(); i++)
+								{
+									if (wantedString == mat.textureNames[i])
+									{
+										objArr[objArr.size() - 1].textureSrvs[1 + objArr[objArr.size() - 1].indexes.size() * 3] = mat.textureSrvs[i];
+									}
+								}
+								if (objArr[objArr.size() - 1].textureSrvs[1 + objArr[objArr.size() - 1].indexes.size() * 3] == nullptr)
+								{
+									objArr[objArr.size() - 1].textureSrvs[1 + objArr[objArr.size() - 1].indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
+									mat.textureNames.push_back(wantedString);
+									mat.textureSrvs.push_back(objArr[objArr.size() - 1].textureSrvs[1 + objArr[objArr.size() - 1].indexes.size() * 3]);
+								}
 							}
 							else if (wantedString == "map_Ka")
 							{
 								std::getline(newNewReadCharacters, wantedString);
-								objArr[objArr.size() - 1].textureSrvs[2 + objArr[objArr.size() - 1].indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
+								for (int i = 0; i < mat.textureNames.size(); i++)
+								{
+									if (wantedString == mat.textureNames[i])
+									{
+										objArr[objArr.size() - 1].textureSrvs[2 + objArr[objArr.size() - 1].indexes.size() * 3] = mat.textureSrvs[i];
+									}
+								}
+								if (objArr[objArr.size() - 1].textureSrvs[2 + objArr[objArr.size() - 1].indexes.size() * 3] == nullptr)
+								{
+									objArr[objArr.size() - 1].textureSrvs[2 + objArr[objArr.size() - 1].indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
+									mat.textureNames.push_back(wantedString);
+									mat.textureSrvs.push_back(objArr[objArr.size() - 1].textureSrvs[2 + objArr[objArr.size() - 1].indexes.size() * 3]);
+								}
 							}
 						}
 					}
@@ -181,10 +214,11 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 				{
 					if (objArr[objArr.size() - 1].textureSrvs[i + objArr[objArr.size() - 1].indexes.size() * 3] == nullptr)
 					{
-						objArr[objArr.size() - 1].textureSrvs[i + objArr[objArr.size() - 1].indexes.size() * 3] = noTexture;
+						objArr[objArr.size() - 1].textureSrvs[i + objArr[objArr.size() - 1].indexes.size() * 3] = missingTexture;
 					}
 				}
 				objArr[objArr.size() - 1].indexes.push_back(objArr[objArr.size() - 1].indices.size());
+				mtilFile.close();
 			}
 			else if (wantedString == "f")
 			{
@@ -211,18 +245,6 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 							break;
 						}
 					}
-						/*for (int j = 0; j < objArr[objArr.size() - 1].mesh.size(); j++)
-					{
-						if (objArr[objArr.size() - 1].mesh[j].pos[0] == positions[index[0]].x &&
-							objArr[objArr.size() - 1].mesh[j].pos[1] == positions[index[0]].y &&
-							objArr[objArr.size() - 1].mesh[j].pos[2] == positions[index[0]].z &&
-							objArr[objArr.size() - 1].mesh[j].n[0] == normals[index[2]].x &&
-							objArr[objArr.size() - 1].mesh[j].n[1] == normals[index[2]].y &&
-							objArr[objArr.size() - 1].mesh[j].n[2] == normals[index[2]].z &&
-							objArr[objArr.size() - 1].mesh[j].uv[0] == UV[index[1]].x &&
-							objArr[objArr.size() - 1].mesh[j].uv[1] == UV[index[1]].y)
-							add = false; break;
-					}*/ 
 					if (add)
 					{
 						objArr[objArr.size() - 1].indices.push_back(objArr[objArr.size() - 1].mesh.size());
@@ -241,6 +263,8 @@ void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr)
 			int tempIndex = objArr[objArr.size() - 1].indexes.size()-1;
 			objArr[objArr.size() - 1].verticeCount.push_back(objArr[objArr.size() - 1].indices.size() - objArr[objArr.size() - 1].indexes[tempIndex]);
 		}
-		
+		file.close();
 	}
+	
+	objFile.close();
 }

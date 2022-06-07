@@ -50,10 +50,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
-	std::vector<objThing> obj;
 	std::vector<newObjThing> newObj;
-	//readModels(obj);
-	std::vector<ID3D11ShaderResourceView*> textureSrvs;
+	materialChecker material;
 
 	//First we set some values
 	float xyzPos[3] = { 0.f,0.f,4.5f,};
@@ -99,6 +97,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	IDXGISwapChain			* swapChain;
 	ID3D11RenderTargetView	* rtv;
 	ID3D11Texture2D			* dsTexture;
+	ID3D11ShaderResourceView* missingTexture;
 	ID3D11DepthStencilView	* dsView;
 	ID3D11VertexShader		* vShader;
 	ID3D11PixelShader		* pShader;
@@ -133,26 +132,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	}
 
 	
-	newReadModels(device, newObj);
+	newReadModels(device, missingTexture, material,newObj);
 
 	cam.SetPosition(0, 0, -3);
 	createCamBuffer(device, camBuf, camData);
 	cam.CreateCBuffer(immediateContext, device);
-
-	LoadTexutres(device, textureSrvs);
-
-	
 
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
 
 	MSG msg = {};
 	
-	objects.push_back(SceneObject(newObj[0]));
+	objects.push_back(SceneObject(newObj[2]));
 	objects[0].setImmediateContext(immediateContext);
 	objects[0].createConstBuf(device);
-	objects[0].setVertices(&newObj[0].mesh);
-	objects[0].setIndices(&newObj[0].indices);
+	objects[0].setVertices(&newObj[2].mesh);
+	objects[0].setIndices(&newObj[2].indices);
 	objects[0].createIndexBuffer(device);
 
 	for (auto& o : objects)
@@ -223,17 +218,27 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	samplerState->Release();
 	camBuf->Release();
 	cam.noMoreMemoryLeaks();
+	missingTexture->Release();
 
 	//Releases all textures
-	for (int i = 0; i < textureSrvs.size(); i++)
-	{
-		textureSrvs[i]->Release();
-	}
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i].releaseCom();
 	}
-
+	for (int i = 0; i < material.textureSrvs.size(); i++)
+	{
+		material.textureSrvs[i]->Release();
+	}
+	/*for (int i = 0; i < newObj.size(); i++)
+	{
+		for (int j = 0; j < newObj[i].textureSrvs.size(); j++)
+		{
+			if (newObj[i].textureSrvs[j] != nullptr)
+			{
+				newObj[i].textureSrvs[j]->Release();
+			}
+		}
+	}*/
 
 	return 0;
 }

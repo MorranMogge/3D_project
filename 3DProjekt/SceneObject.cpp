@@ -233,6 +233,7 @@ void SceneObject::releaseCom()
 {
 	constantBuffer->Release();
 	vertexBuffer->Release();
+	indexBuffer->Release();
 }
 
 int SceneObject::getVerticeAmount() const

@@ -13,6 +13,12 @@ struct objThing
 	std::vector<SimpleVertex> mesh;
 };
 
+struct materialChecker
+{
+	std::vector<ID3D11ShaderResourceView*> textureSrvs;
+	std::vector<std::string> textureNames;
+};
+
 struct newObjThing
 {
 	std::vector<int> indexes;
@@ -24,4 +30,4 @@ struct newObjThing
 };
 
 void readModels(std::vector<objThing> &test);
-void newReadModels(ID3D11Device* device, std::vector<newObjThing>& objArr);
+void newReadModels(ID3D11Device* device, ID3D11ShaderResourceView* &missingTexture, materialChecker &mat, std::vector<newObjThing>& objArr);
