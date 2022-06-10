@@ -54,10 +54,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	materialChecker material;
 
 	//First we set some values
-	float xyzPos[3] = { 0.f,0.f,4.5f,};
+	float xyzPos[3] = { 0.f,0.f,0.0f,};
 	float xyzRot[3] = { 0.f,0.f,0.f };
 	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
 	float xyzScale[3] = { 1.f,1.f,1.f };
+	float testValues[3] = { 0.0f,5.0f,0.0f };
 	bool x = true;
 	bool rotation = false;
 	bool normal = false;
@@ -132,7 +133,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	}
 
 	
-	newReadModels(device, missingTexture, material,newObj);
+	newerReadModels(device, missingTexture, material, newObj);
 
 	cam.SetPosition(0, 0, -3);
 	createCamBuffer(device, camBuf, camData);
@@ -143,12 +144,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	MSG msg = {};
 	
-	objects.push_back(SceneObject(newObj[2]));
+	objects.push_back(SceneObject(newObj[0]));
 	objects[0].setImmediateContext(immediateContext);
 	objects[0].createConstBuf(device);
-	objects[0].setVertices(&newObj[2].mesh);
-	objects[0].setIndices(&newObj[2].indices);
+	objects[0].setVertices(&newObj[0].mesh);
+	objects[0].setIndices(&newObj[0].indices);
 	objects[0].createIndexBuffer(device);
+
+
+	objects.push_back(SceneObject(newObj[1]));
+	objects[1].setImmediateContext(immediateContext);
+	objects[1].createConstBuf(device);
+	objects[1].setVertices(&newObj[1].mesh);
+	objects[1].setIndices(&newObj[1].indices);
+	objects[1].createIndexBuffer(device);
+	objects[1].setWorldPos(testValues);
+	testValues[0] = 0.25f;
+	testValues[1] = 0.25f;
+	testValues[2] = 0.25f;
+	objects[1].setScale(testValues);
 
 	for (auto& o : objects)
 	{
@@ -229,16 +243,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	{
 		material.textureSrvs[i]->Release();
 	}
-	/*for (int i = 0; i < newObj.size(); i++)
-	{
-		for (int j = 0; j < newObj[i].textureSrvs.size(); j++)
-		{
-			if (newObj[i].textureSrvs[j] != nullptr)
-			{
-				newObj[i].textureSrvs[j]->Release();
-			}
-		}
-	}*/
 
 	return 0;
 }

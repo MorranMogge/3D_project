@@ -12,7 +12,7 @@ LightBuffer::LightBuffer()
         { 0.2f, 0.2f,  0.2f},     //ambient
         { 0.75f, 0.75f, 0.75f},   //diffuse
         { 1.0f, 1.0f, 1.0f},      //specular
-        { 0.0f, 0.0f, -6.0f },    //Light pos
+        { 0.0f, 5.0f, 0.0f },    //Light pos
 
         //Camera
         { 0.0f, 0.0f, -3.0f }     //Camera pos

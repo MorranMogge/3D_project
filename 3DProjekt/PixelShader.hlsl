@@ -41,19 +41,20 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
+	float3 colour = textur.Sample(sampl, input.uv).xyz;
 	input.normal = normalize(input.normal);
 	float3 vectorToLight = normalize(lightPos - input.newPos.xyz);
-	float3 vectorToCam = normalize(cameraPos - input.newPos.xyz);
+	float3 vectorToCam = normalize(cameraPosition - input.newPos.xyz);
 	float3 reflection = reflect(-vectorToLight, input.normal);
 	reflection = normalize(reflection);
 
-	float3 ambient = ambientMatCoefficient * ambientLight;
-	float3 diffuse = diffuseMatCoefficient * diffuseLight * max(dot(input.normal, vectorToLight),0.0f);
+	float3 ambient = ambientMatCoefficient * colour;
+	float3 diffuse = diffuseMatCoefficient * colour * max(dot(input.normal, vectorToLight),0.0f);
 	float3 specular = (specularMatCoefficient * specularLight * pow(max(dot(reflection, vectorToCam), 0.0f), shininess));
 
-	float3 colour = textur.Sample(sampl, input.uv).xyz;
-	colour *= (ambient + diffuse);
-	//colour += specular;
+	
+	colour = (ambient + diffuse);
+	colour += specular;
 
 	float3 number = (input.normal + float3(1.0f, 1.0f, 1.0f)) / 2;
 	//return float4(1.0f, 0.0f, 0.0f, 1.0f);

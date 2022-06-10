@@ -31,3 +31,4 @@ struct newObjThing
 
 void readModels(std::vector<objThing> &test);
 void newReadModels(ID3D11Device* device, ID3D11ShaderResourceView* &missingTexture, materialChecker &mat, std::vector<newObjThing>& objArr);
+void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTexture, materialChecker& mat, std::vector<newObjThing>& objArr);

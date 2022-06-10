@@ -1,24 +1,10 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (3DProjekt-DESKTOP-IJ99B3L-2.vcxproj, 3DProjekt-DESKTOP-IJ99B3L.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   Main.cpp
-D:\School\Real3Dproject\3DProjekt\Main.cpp(186,49): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(188,51): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(190,51): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(224,20): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\Main.cpp(228,20): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\Main.cpp(107,19): warning C4101: 'values': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(361,20): warning C4018: '<': signed/unsigned mismatch
-  ObjParser.cpp
-D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(158,27): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(177,27): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(194,27): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(239,24): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(259,22): warning C4018: '<': signed/unsigned mismatch
-  Scene.cpp
-  SceneObject.cpp
-D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(41,20): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(45,20): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(49,20): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(111,20): warning C4018: '<': signed/unsigned mismatch
-D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(150,21): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
+D:\School\Real3Dproject\3DProjekt\Main.cpp(200,49): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(202,51): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(204,51): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(238,20): warning C4018: '<': signed/unsigned mismatch
+D:\School\Real3Dproject\3DProjekt\Main.cpp(242,20): warning C4018: '<': signed/unsigned mismatch
+D:\School\Real3Dproject\3DProjekt\Main.cpp(108,19): warning C4101: 'values': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\Main.cpp(365,20): warning C4018: '<': signed/unsigned mismatch
   3DProjekt.vcxproj -> D:\School\Real3Dproject\Debug\3DProjekt.exe

@@ -4,7 +4,7 @@
 Material::Material()
     :materialInfo(material
     (
-        0.75f,  //ambient
+        0.25f,  //ambient
         0.75f,  //diffuse
         0.95f,  //specular
         110.0f  //shininess
