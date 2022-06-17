@@ -1,4 +1,7 @@
-Texture2D textur : register(t0);
+Texture2D ambient : register(t0);
+Texture2D diffuse : register(t1);
+Texture2D specular : register(t2);
+
 SamplerState sampl;
 
 cbuffer lightBuffer : register (b0)
@@ -41,24 +44,27 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-	float3 colour = textur.Sample(sampl, input.uv).xyz;
+	float3 ambientColour = ambient.Sample(sampl, input.uv).xyz;
+	float3 diffuseColour = diffuse.Sample(sampl, input.uv).xyz;
+	float3 specularColour = specular.Sample(sampl, input.uv).xyz;
+
 	input.normal = normalize(input.normal);
 	float3 vectorToLight = normalize(lightPos - input.newPos.xyz);
 	float3 vectorToCam = normalize(cameraPosition - input.newPos.xyz);
 	float3 reflection = reflect(-vectorToLight, input.normal);
 	reflection = normalize(reflection);
 
-	float3 ambient = ambientMatCoefficient * colour;
-	float3 diffuse = diffuseMatCoefficient * colour * max(dot(input.normal, vectorToLight),0.0f);
-	float3 specular = (specularMatCoefficient * specularLight * pow(max(dot(reflection, vectorToCam), 0.0f), shininess));
+	float3 ambientClr = ambientMatCoefficient * ambientColour;
+	float3 diffuseClr = diffuseMatCoefficient * diffuseColour * max(dot(input.normal, vectorToLight),0.0f);
+	float3 specularClr = (specularMatCoefficient * specularColour * pow(max(dot(reflection, vectorToCam), 0.0f), shininess));
 
 	
-	colour = (ambient + diffuse);
-	colour += specular;
+	float3 finalColour = (ambientClr + diffuseClr);
+	finalColour += specularClr;
 
 	float3 number = (input.normal + float3(1.0f, 1.0f, 1.0f)) / 2;
 	//return float4(1.0f, 0.0f, 0.0f, 1.0f);
-	if (padd1 == 0.0f) return float4(colour,1.0f);
+	if (padd1 == 0.0f) return float4(finalColour,1.0f);
 	//float4 temp = float4(0.0, 0.0, 1.0f, 1.0f) * input.position;
 	//return (normalize(temp));
 	//return (normalize(input.position));

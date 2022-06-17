@@ -1,6 +1,6 @@
 # This file uses centimeters as units for non-parametric coordinates.
 
-mtllib cubeMaterial.mtl
+mtllib cube.mtl
 v -2.500000 -2.500000 2.500000
 v 2.500000 -2.500000 2.500000
 v -2.500000 2.500000 2.500000
@@ -58,7 +58,7 @@ vn -1.000000 0.000000 0.000000
 vn -1.000000 0.000000 0.000000
 vn -1.000000 0.000000 0.000000
 s 1
-usemtl pCube27SG
+usemtl Material
 f 1/18/1 2/2/2 3/19/3
 f 3/19/3 2/2/2 4/16/4
 s 2

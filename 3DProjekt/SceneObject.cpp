@@ -50,6 +50,7 @@ SceneObject::SceneObject(newObjThing inObj)
 	{
 		this->verticeCount.push_back(inObj.verticeCount[i]);
 	}
+
 	/*for (int i = 0; i < inObj.mesh.size(); i++)
 	{
 		vertices->push_back(inObj.mesh[i]);
@@ -110,7 +111,9 @@ void SceneObject::draw()
 	//Start the pipeline
 	for (int i = 0; i < indexes.size(); i++)
 	{
-		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i*3]);
+		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
+		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
+		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
 		immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
 		//immediateContext->DrawIndexed(20, indexes[i], 0);
 	}
@@ -139,6 +142,14 @@ void SceneObject::draw(bool testDraw)
 	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
 	//Start the pipeline
+	/*for (int i = 0; i < indexes.size(); i++)
+	{
+		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
+		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
+		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
+		immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
+	}*/
+
 	if (!testDraw)
 	{
 		immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
@@ -149,7 +160,9 @@ void SceneObject::draw(bool testDraw)
 
 		for (int i = 0; i < indexes.size(); i++)
 		{
-			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3]);
+			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
+			immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
+			immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
 			immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
 		}
 	}

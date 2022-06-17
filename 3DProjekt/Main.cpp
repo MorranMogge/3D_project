@@ -38,9 +38,11 @@ struct CamData
 	float padding;
 };
 
+bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11ShaderResourceView* &srv, ID3D11RenderTargetView*& rtv, int width, int height);
+bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool test);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11PixelShader* geometryPass, bool test);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -97,11 +99,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ID3D11DeviceContext		* immediateContext;
 	IDXGISwapChain			* swapChain;
 	ID3D11RenderTargetView	* rtv;
+	ID3D11RenderTargetView	* gBufferRtvs[3];
+	ID3D11Texture2D			* gBuffers[3];
+	ID3D11ShaderResourceView* gBufferSrvs[3];
 	ID3D11Texture2D			* dsTexture;
 	ID3D11ShaderResourceView* missingTexture;
 	ID3D11DepthStencilView	* dsView;
 	ID3D11VertexShader		* vShader;
 	ID3D11PixelShader		* pShader;
+	ID3D11PixelShader		* geometryPass;
 	ID3D11InputLayout		* inputLayout;
 	ID3D11SamplerState		* samplerState;
 	ID3D11Buffer			* lightBuffer[2];
@@ -114,7 +120,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-	if (!SetupPipeline(device, vShader, pShader, inputLayout, samplerState))
+	if (!SetupPipeline(device, vShader, pShader, geometryPass, inputLayout, samplerState))
 	{
 		std::cerr << "Failed to setup pipeline!" << std::endl;
 		return -1;
@@ -132,6 +138,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
+	for (int i = 0; i < 3; i++)
+	{
+		if (!createTextures(device, gBuffers[i], gBufferSrvs[i], gBufferRtvs[i], WIDTH, HEIGHT))
+		{
+			return 10;
+		}
+	}
 	
 	newerReadModels(device, missingTexture, material, newObj);
 
@@ -144,11 +157,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	MSG msg = {};
 	
-	objects.push_back(SceneObject(newObj[0]));
+	objects.push_back(SceneObject(newObj[2]));
 	objects[0].setImmediateContext(immediateContext);
 	objects[0].createConstBuf(device);
-	objects[0].setVertices(&newObj[0].mesh);
-	objects[0].setIndices(&newObj[0].indices);
+	objects[0].setVertices(&newObj[2].mesh);
+	objects[0].setIndices(&newObj[2].indices);
 	objects[0].createIndexBuffer(device);
 
 
@@ -187,11 +200,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			cam.moveCamera(immediateContext, cam, 1.f / fps);
 			verticeCounter = 0;
 			float clearColour[4] = { 0, 0, 0, 0 };
+			for (int i = 0; i < 3; i++)
+			{
+				immediateContext->ClearRenderTargetView(gBufferRtvs[i], clearColour);
+			}
 			immediateContext->ClearRenderTargetView(rtv, clearColour);
 			immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, lightBuffer, cam, camData, camBuf, objects, test);
+				samplerState, lightBuffer, cam, camData, camBuf, objects, gBufferRtvs, geometryPass, test);
 
 			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
 			lb.setNormal(immediateContext, lightBuffer[0], normal);
@@ -331,7 +348,7 @@ void Render
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData,
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool test
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11PixelShader* geometryPass, bool test
 )
 {
 	//Layout and other stuff
@@ -345,7 +362,7 @@ void Render
 
 	//Pixel Shader
 	immediateContext->PSSetShader(pShader, nullptr, 0);
-	immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
+	//immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
 
 	//We only need to change sampler if we want to sample texture in a different way
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
@@ -357,13 +374,61 @@ void Render
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
 	immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
-
-	//Send it to the vertex shader, index = 1 if no index is added to argument
 	camera.sendView(immediateContext);
 
+	//Send it to the vertex shader, index = 1 if no index is added to argument
 	//Draw every single object in the scene
+
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i].draw(test);
 	}
+
+	/*int dinmamma = 4;
+	immediateContext->PSSetShader(pShader, nullptr, 0);
+
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i].draw(test);
+	}*/
+}
+
+bool createTextures(ID3D11Device* device, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& srv, ID3D11RenderTargetView*& rtv, int width, int height)
+{
+
+	D3D11_TEXTURE2D_DESC textureDesc;
+	ZeroMemory(&textureDesc, sizeof(D3D11_TEXTURE2D_DESC));
+	textureDesc.Width = (UINT)width;
+	textureDesc.Height = (UINT)height;
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	textureDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA subResource;
+	ZeroMemory(&subResource, sizeof(D3D11_SUBRESOURCE_DATA));
+
+	subResource.pSysMem = {};
+	subResource.SysMemPitch = 0;
+
+	ID3D11Texture2D* tempTexture;
+	HRESULT hr = device->CreateTexture2D(&textureDesc, NULL, &texture);
+
+	if (FAILED(hr)) return false;
+	hr = device->CreateRenderTargetView(texture, NULL, &rtv);
+	if (FAILED(hr)) return false;
+	hr = device->CreateShaderResourceView(texture, nullptr, &srv);
+	return !FAILED(hr);
+}
+
+bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv)
+{
+	HRESULT hr = device->CreateRenderTargetView(buffer, nullptr, &rtv);
+	buffer->Release();
+	return !FAILED(hr);
 }

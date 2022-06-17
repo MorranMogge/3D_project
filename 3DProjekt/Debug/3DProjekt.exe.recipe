@@ -7,6 +7,15 @@
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
+      <FullPath>D:\School\Real3Dproject\Debug\ComputeShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\School\Real3Dproject\Debug\GeometryPass.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>D:\School\Real3Dproject\Debug\tempPixel.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
       <FullPath>D:\School\Real3Dproject\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>

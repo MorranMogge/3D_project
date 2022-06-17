@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <vector>
 #include <array>
+#include "structs.h"
 
 #include "ObjParser.h"
 
@@ -33,7 +34,6 @@ class SceneObject
 private:
 	UINT stride;
 	UINT offset;    
-
 
 	DirectX::XMFLOAT3 pos;
 	DirectX::XMFLOAT3 rot;
