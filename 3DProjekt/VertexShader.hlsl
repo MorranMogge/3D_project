@@ -7,7 +7,6 @@ struct VertexShaderInput
 
 struct VertexShaderOutput
 {
-    //float4 position : TEST;
 	float4 position : SV_POSITION;
 	float4 newPos : NEWPOSITION;
 	float4 normal : NORMAL;

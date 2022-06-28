@@ -8,11 +8,11 @@
 
 using namespace DirectX;
 
-bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& geometryPass, ID3D11PixelShader*& pShader,std::string& vShaderByteCode)
+bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11ComputeShader*& cShader, ID3D11PixelShader*& pShader,std::string& vShaderByteCode)
 {
     std::string shaderData;
     std::ifstream reader;
-    reader.open("../Debug/VertexShader.cso", std::ios::binary | std::ios::ate);
+    reader.open("../x64/Debug/VertexShader.cso", std::ios::binary | std::ios::ate);
     if (!reader.is_open())
     {
         std::cout << "Could not open vertex shader file!" << std::endl;
@@ -35,7 +35,8 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
     shaderData.clear();
     reader.close();
 
-    reader.open("../Debug/tempPixel.cso", std::ios::binary | std::ios::ate);
+
+    reader.open("../x64/Debug/tempPixel.cso", std::ios::binary | std::ios::ate);
     if (!reader.is_open())
     {
         std::cout << "Could not open pixel shader file!" << std::endl;
@@ -57,10 +58,10 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
     shaderData.clear();
     reader.close();
 
-    reader.open("../Debug/GeometryPass.cso", std::ios::binary | std::ios::ate);
+    reader.open("../x64/Debug/ComputeShader.cso", std::ios::binary | std::ios::ate);
     if (!reader.is_open())
     {
-        std::cout << "Could not open pixel shader file!" << std::endl;
+        std::cout << "Could not open Compute shader file!" << std::endl;
         return false;
     }
 
@@ -70,11 +71,13 @@ bool LoadShaders(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pixel
 
     shaderData.assign((std::istreambuf_iterator<char>(reader)), std::istreambuf_iterator<char>());
 
-    if (FAILED(device->CreatePixelShader(shaderData.c_str(), shaderData.length(), nullptr, &geometryPass)))
+    if (FAILED(device->CreateComputeShader(shaderData.c_str(), shaderData.length(), nullptr, &cShader)))
     {
-        std::cerr << "Failed to create pixel shader!" << std::endl;
+        std::cerr << "Failed to create Compute shader!" << std::endl;
         return false;
     }
+    shaderData.clear();
+    reader.close();
 
     return true;
 }
@@ -130,9 +133,10 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& samplerState)
 {
     D3D11_SAMPLER_DESC samplerDesc;
     samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    //samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
     samplerDesc.MipLODBias = 0;
     samplerDesc.MaxAnisotropy = 16;
     samplerDesc.BorderColor[0] = samplerDesc.BorderColor[1] = samplerDesc.BorderColor[2] = samplerDesc.BorderColor[3] = 0;
@@ -144,10 +148,10 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& samplerState)
 }
 
 bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, 
-    ID3D11PixelShader*& geometryPass, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& samplerState)
+    ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& samplerState)
 {
     std::string vShaderByteCode;
-    if (!LoadShaders(device, vShader, geometryPass, pShader, vShaderByteCode))
+    if (!LoadShaders(device, vShader, cShader, pShader, vShaderByteCode))
     {
         std::cerr << "Error loading shaders!" << std::endl;
         return false;

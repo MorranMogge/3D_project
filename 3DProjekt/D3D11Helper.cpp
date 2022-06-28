@@ -17,7 +17,7 @@ bool CreateInterfaces(UINT width, UINT height, HWND window, ID3D11Device*& devic
 	swapChainDesc.SampleDesc.Count		= 1;
 	swapChainDesc.SampleDesc.Quality	= 0;
 
-	swapChainDesc.BufferUsage	= DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferUsage	= DXGI_USAGE_UNORDERED_ACCESS | DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.BufferCount	= 1;
 	swapChainDesc.OutputWindow	= window;
 	swapChainDesc.Windowed		= true;
@@ -47,6 +47,20 @@ bool CreateRenderTargetView(ID3D11Device* device, IDXGISwapChain* swapChain, ID3
 	}
 
 	HRESULT hr = device->CreateRenderTargetView(backBuffer, nullptr, &rtv);
+	backBuffer->Release();
+	return !FAILED(hr);
+}
+
+bool CreateUAV(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11UnorderedAccessView*& uaView)
+{
+	ID3D11Texture2D* backBuffer = nullptr;
+	if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer))))
+	{
+		std::cerr << "Failed to get back buffer!" << std::endl;
+		return false;
+	}
+
+	HRESULT hr = device->CreateUnorderedAccessView(backBuffer, NULL, &uaView);
 	backBuffer->Release();
 	return !FAILED(hr);
 }
@@ -86,7 +100,7 @@ void SetViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height)
 	viewport.MaxDepth	= 1;
 }
 
-bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, IDXGISwapChain*& swapChain, ID3D11RenderTargetView*& rtv, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport)
+bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, IDXGISwapChain*& swapChain, ID3D11RenderTargetView*& rtv, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport, ID3D11UnorderedAccessView*& uaView)
 {
 	if (!CreateInterfaces(width, height, window, device, immediateContext, swapChain))
 	{
@@ -101,6 +115,12 @@ bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3
 	}
 
 	if (!CreateDepthStencil(device, width, height, dsTexture, dsView))
+	{
+		std::cerr << "Error creating depth stencil view!" << std::endl;
+		return false;
+	}
+
+	if (!CreateUAV(device, swapChain, uaView))
 	{
 		std::cerr << "Error creating depth stencil view!" << std::endl;
 		return false;

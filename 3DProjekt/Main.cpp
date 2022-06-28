@@ -42,7 +42,7 @@ bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11Shade
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11PixelShader* geometryPass, bool test);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool test);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -67,8 +67,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	bool test = true;
 
 	//Window size
-	const UINT WIDTH = 1520;
-	const UINT HEIGHT = 876;
+	const UINT WIDTH = 32*32;
+	const UINT HEIGHT = 32*18;
 
 	int verticeCounter = 0;
 
@@ -94,33 +94,42 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-
+	//Basic stuff
 	ID3D11Device			* device;
 	ID3D11DeviceContext		* immediateContext;
 	IDXGISwapChain			* swapChain;
-	ID3D11RenderTargetView	* rtv;
+	ID3D11DepthStencilView	* dsView;
+	ID3D11InputLayout		* inputLayout;
+	ID3D11RenderTargetView	* rtv; //Switch to 3 later
+	ID3D11SamplerState		* samplerState;
+	D3D11_VIEWPORT			  viewport;
+
+	//Shaders
+	ID3D11VertexShader		* vShader;
+	ID3D11PixelShader		* pShader;
+	ID3D11ComputeShader		* csShader;
+	ID3D11PixelShader		* geometryPass; //Unsure if to keep
+
+	//Deferred rendering
+	ID3D11UnorderedAccessView* uaView;
 	ID3D11RenderTargetView	* gBufferRtvs[3];
 	ID3D11Texture2D			* gBuffers[3];
 	ID3D11ShaderResourceView* gBufferSrvs[3];
 	ID3D11Texture2D			* dsTexture;
 	ID3D11ShaderResourceView* missingTexture;
-	ID3D11DepthStencilView	* dsView;
-	ID3D11VertexShader		* vShader;
-	ID3D11PixelShader		* pShader;
-	ID3D11PixelShader		* geometryPass;
-	ID3D11InputLayout		* inputLayout;
-	ID3D11SamplerState		* samplerState;
+	
+
 	ID3D11Buffer			* lightBuffer[2];
 	ID3D11Buffer			* values;
-	D3D11_VIEWPORT			  viewport;
+	
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, uaView))
 	{
 		std::cerr << "Failed to setup d3d11!" << std::endl;
 		return -1;
 	}
 
-	if (!SetupPipeline(device, vShader, pShader, geometryPass, inputLayout, samplerState))
+	if (!SetupPipeline(device, vShader, pShader, csShader, inputLayout, samplerState))
 	{
 		std::cerr << "Failed to setup pipeline!" << std::endl;
 		return -1;
@@ -199,16 +208,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		{
 			cam.moveCamera(immediateContext, cam, 1.f / fps);
 			verticeCounter = 0;
-			float clearColour[4] = { 0, 0, 0, 0 };
-			for (int i = 0; i < 3; i++)
+			/*for (int i = 0; i < 3; i++)
 			{
 				immediateContext->ClearRenderTargetView(gBufferRtvs[i], clearColour);
-			}
-			immediateContext->ClearRenderTargetView(rtv, clearColour);
-			immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+			}*/
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, lightBuffer, cam, camData, camBuf, objects, gBufferRtvs, geometryPass, test);
+				samplerState, lightBuffer, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test);
 
 			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
 			lb.setNormal(immediateContext, lightBuffer[0], normal);
@@ -224,6 +230,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			objects[0].setScale(xyzScale);
 			objects[0].setRot(xyzRot);
 			objects[0].setWorldPos(xyzPos);
+
+			
 
 			swapChain->Present(0, 0);
 
@@ -345,44 +353,61 @@ void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool
 
 void Render
 (
-	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsView,
+	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData,
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11PixelShader* geometryPass, bool test
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, bool test
 )
 {
+	//
+	//float clearColour[4] = { 0, 0, 0, 0 };
+	float clearColour[4] = { camera.GetPositionFloat3().x/100, camera.GetPositionFloat3().y / 100, camera.GetPositionFloat3().z / 100, 0 };
+	//immediateContext->ClearRenderTargetView(rtv, clearColour);
+	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+
+	for (int i = 0; i < 3; i++)
+	{
+		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
+	}
+	immediateContext->OMSetRenderTargets(3, rtvs, dsView);
+
 	//Layout and other stuff
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->RSSetViewports(1, &viewport);
-	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
+	//immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 
 	//Vertex Shader
 	immediateContext->VSSetShader(vShader, nullptr, 0);
 
-	//Pixel Shader
-	immediateContext->PSSetShader(pShader, nullptr, 0);
-	//immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
-
-	//We only need to change sampler if we want to sample texture in a different way
-	immediateContext->PSSetSamplers(0, 1, &samplerState);
-
-	//This makes it possible to see from the camera's perspective
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
 	camData.cameraPosition = camera.GetPositionFloat3();
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
-	immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
-	camera.sendView(immediateContext);
 
-	//Send it to the vertex shader, index = 1 if no index is added to argument
-	//Draw every single object in the scene
+	//Pixel Shader
+	immediateContext->PSSetShader(pShader, nullptr, 0);
+	immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
+	//immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
+	immediateContext->PSSetSamplers(0, 1, &samplerState);
+	camera.sendView(immediateContext);
 
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i].draw(test);
 	}
+
+	ID3D11RenderTargetView* nullRtv = nullptr;
+	immediateContext->OMSetRenderTargets(1, &nullRtv, dsView);
+	immediateContext->CSSetShader(csShader, nullptr, 0);
+	immediateContext->CSSetShaderResources(0, 3, srvs);
+	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
+
+	immediateContext->Dispatch(32, 32, 1);
+
+	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 
 	/*int dinmamma = 4;
 	immediateContext->PSSetShader(pShader, nullptr, 0);
