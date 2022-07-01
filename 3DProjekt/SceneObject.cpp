@@ -41,6 +41,7 @@ SceneObject::SceneObject(newObjThing inObj)
 	for (int i = 0; i < inObj.indexes.size(); i++)
 	{
 		indexes.push_back(inObj.indexes[i]);
+		shinyness.push_back(materialInfo(inObj.specularComp[i]));
 	}
 	for (int i = 0; i < inObj.textureSrvs.size(); i++)
 	{
@@ -160,6 +161,7 @@ void SceneObject::draw(bool testDraw)
 
 		for (int i = 0; i < indexes.size(); i++)
 		{
+			//immediateContext->PSSetConstantBuffers(0, 1, &matBuffer[i]);
 			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
 			immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
 			immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
@@ -202,6 +204,36 @@ bool SceneObject::setVertexBuffer(ID3D11Device* device)
 	HRESULT hr = device->CreateBuffer(&bufferDesc, &data, &vertexBuffer);
 
 	return !FAILED(hr);
+}
+
+bool SceneObject::setMatBuffer(ID3D11Device* device)
+{
+	for (int i = 0; i < shinyness.size(); i++)
+	{
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.ByteWidth = sizeof(materialInfo);
+		bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+		bufferDesc.StructureByteStride = 0;
+
+		D3D11_SUBRESOURCE_DATA data = {};
+		data.pSysMem = &shinyness[i];
+		data.SysMemPitch = 0;
+		data.SysMemSlicePitch = 0;
+
+		ID3D11Buffer* tempBuffer;
+		
+		HRESULT hr = device->CreateBuffer(&bufferDesc, &data, &tempBuffer);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+		matBuffer.push_back(tempBuffer);
+	}
+
+	return true;
 }
 
 bool SceneObject::setTextureSrv(ID3D11ShaderResourceView*& texture)

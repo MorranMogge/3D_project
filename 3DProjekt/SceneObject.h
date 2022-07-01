@@ -4,7 +4,6 @@
 #include <vector>
 #include <array>
 #include "structs.h"
-
 #include "ObjParser.h"
 
 //struct Vertex
@@ -29,11 +28,25 @@
 //};
 
 
+struct materialInfo
+{
+	float shinyness;
+	float padding[3];
+
+	materialInfo(float shiny)
+	{
+		shinyness = shiny;
+	}
+};
+
 class SceneObject
 {
 private:
 	UINT stride;
-	UINT offset;    
+	UINT offset;
+
+	std::vector<materialInfo> shinyness;
+	std::vector<ID3D11Buffer*> matBuffer;
 
 	DirectX::XMFLOAT3 pos;
 	DirectX::XMFLOAT3 rot;
@@ -71,6 +84,7 @@ public:
 	void setIndices(std::vector<DWORD>* indices);
 
 	bool setVertexBuffer(ID3D11Device* device);
+	bool setMatBuffer(ID3D11Device* device);
 	bool setTextureSrv(ID3D11ShaderResourceView* &texture);
 	bool createConstBuf(ID3D11Device* device);
 	bool createIndexBuffer(ID3D11Device* device);

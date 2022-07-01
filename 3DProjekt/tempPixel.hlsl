@@ -4,11 +4,19 @@ Texture2D specular : register(t2);
 
 SamplerState sampl;
 
+cbuffer materialInfo
+{
+    float shinyness;
+    float3 padding;
+};
+    
 struct PSout
 {
     float4 position : SV_Target0;
-    float4 colour : SV_Target1;
+    float4 ambient : SV_Target1;
     float4 normal : SV_Target2;
+    float4 diffuse : SV_Target3;
+    float4 specular : SV_Target4;
 };
 
 
@@ -25,7 +33,9 @@ PSout main(PixelShaderInput input) : SV_TARGET
     PSout output;
     output.position = input.newPos;
     output.normal = float4(input.normal, 0.0);
-    output.colour = float4(ambient.Sample(sampl, input.uv).xyz,1.0f);
+    output.ambient = float4(ambient.Sample(sampl, input.uv).xyz,1.0f);
+    output.diffuse = float4(diffuse.Sample(sampl, input.uv).xyz, 1.0f);
+    output.specular = float4(specular.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
     ///return input.normal;
     return output;
 }

@@ -18,6 +18,7 @@
 #include "Camera.h"
 #include "TextureLoader.h"
 #include "memoryLeakChecker.h"
+#include "DeferredRenderer.h"
 
 #include "imGUI\imconfig.h"
 #include "imGUI\imgui.h"
@@ -29,20 +30,19 @@
 #include "imGUI\imgui_impl_win32.h"
 
 
-
 using namespace DirectX;
 
-struct CamData
-{
-	XMFLOAT3 cameraPosition;
-	float padding;
-};
 
+
+
+
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing);
+bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
 bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11ShaderResourceView* &srv, ID3D11RenderTargetView*& rtv, int width, int height);
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool test);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool test, float clearColour[], ImGuiValues imGuiStuff, ID3D11Buffer* imGuiBuffer);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -60,11 +60,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float xyzRot[3] = { 0.f,0.f,0.f };
 	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
 	float xyzScale[3] = { 1.f,1.f,1.f };
-	float testValues[3] = { 0.0f,5.0f,0.0f };
+	float testValues[3] = { 0.0f,10.0f,0.0f };
 	bool x = true;
 	bool rotation = false;
 	bool normal = false;
 	bool test = true;
+	float bgColour[4] = { 0.0, 0.0, 0.0, 0.0 };
 
 	//Window size
 	const UINT WIDTH = 32*32;
@@ -81,12 +82,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	start = std::chrono::system_clock::now();
 
 	CBuffer cb2;
-	LightBuffer lb;
 	Material mat;
 	std::vector<SceneObject> objects;
 	Camera cam;
 	CamData camData;
-	ID3D11Buffer* camBuf;
+	
+	ImGuiValues imGuiStuff;
 
 	if (!SetupWindow(hInstance, WIDTH, HEIGHT, nCmdShhow, window))
 	{
@@ -112,15 +113,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	//Deferred rendering
 	ID3D11UnorderedAccessView* uaView;
-	ID3D11RenderTargetView	* gBufferRtvs[3];
-	ID3D11Texture2D			* gBuffers[3];
-	ID3D11ShaderResourceView* gBufferSrvs[3];
+	ID3D11RenderTargetView	* gBufferRtvs[5];
+	ID3D11Texture2D			* gBuffers[5];
+	ID3D11ShaderResourceView* gBufferSrvs[5];
 	ID3D11Texture2D			* dsTexture;
 	ID3D11ShaderResourceView* missingTexture;
 	
 
-	ID3D11Buffer			* lightBuffer[2];
 	ID3D11Buffer			* values;
+
+	//Other
+	ID3D11Buffer* camBuf;
+	ID3D11Buffer* imGuiBuffer;
 	
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, uaView))
@@ -135,7 +139,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-	if (!lb.setLightBuffer(device, lightBuffer[0]))
+	/*if (!lb.setLightBuffer(device, lightBuffer[0]))
 	{
 		std::cerr << "Failed to setup light buffer!" << std::endl;
 		return -1;
@@ -145,9 +149,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	{
 		std::cerr << "Failed to setup material info!" << std::endl;
 		return -1;
-	}
+	}*/
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		if (!createTextures(device, gBuffers[i], gBufferSrvs[i], gBufferRtvs[i], WIDTH, HEIGHT))
 		{
@@ -155,14 +159,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		}
 	}
 	
-	newerReadModels(device, missingTexture, material, newObj);
+	
 
 	cam.SetPosition(0, 0, -3);
 	createCamBuffer(device, camBuf, camData);
 	cam.CreateCBuffer(immediateContext, device);
 
+	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
+
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
+
+	newerReadModels(device, missingTexture, material, newObj);
 
 	MSG msg = {};
 	
@@ -170,21 +178,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	objects[0].setImmediateContext(immediateContext);
 	objects[0].createConstBuf(device);
 	objects[0].setVertices(&newObj[2].mesh);
+	objects[0].setMatBuffer(device);
 	objects[0].setIndices(&newObj[2].indices);
 	objects[0].createIndexBuffer(device);
 
 
-	objects.push_back(SceneObject(newObj[1]));
+	/*objects.push_back(SceneObject(newObj[1]));
 	objects[1].setImmediateContext(immediateContext);
 	objects[1].createConstBuf(device);
 	objects[1].setVertices(&newObj[1].mesh);
+	objects[1].setMatBuffer(device);
 	objects[1].setIndices(&newObj[1].indices);
 	objects[1].createIndexBuffer(device);
-	objects[1].setWorldPos(testValues);
+	objects[1].setWorldPos(testValues);*/
 	testValues[0] = 0.25f;
 	testValues[1] = 0.25f;
 	testValues[2] = 0.25f;
-	objects[1].setScale(testValues);
+	//objects[1].setScale(testValues);
 
 	for (auto& o : objects)
 	{
@@ -214,11 +224,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			}*/
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, lightBuffer, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test);
+				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer);
 
-			handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
-			lb.setNormal(immediateContext, lightBuffer[0], normal);
-			if (rotation) 
+			//handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
+			newImGui(bgColour, imGuiStuff, test);
+			//lb.setNormal(immediateContext, lightBuffer[0], normal);
+		/*	if (rotation) 
 			{ 
 				xyzRot[0] += xyzRotSpeed[0] * 0.01 * 144/fps;
 				if (xyzRot[0] >= XM_2PI) xyzRot[0] = 0;
@@ -229,7 +240,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			}
 			objects[0].setScale(xyzScale);
 			objects[0].setRot(xyzRot);
-			objects[0].setWorldPos(xyzPos);
+			objects[0].setWorldPos(xyzPos);*/
 
 			
 
@@ -243,21 +254,47 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
+	//Release system
 	device->Release();
 	immediateContext->Release();
 	swapChain->Release();
 	rtv->Release();
-	dsTexture->Release();
 	dsView->Release();
+
+	//Pipeline components
+	inputLayout->Release();
+	samplerState->Release();
+
+	//Release shaders
 	vShader->Release();
 	pShader->Release();
-	inputLayout->Release();
-	lightBuffer[0]->Release();
-	lightBuffer[1]->Release();
-	samplerState->Release();
+	csShader->Release();
+
+	//Buffers
 	camBuf->Release();
+	imGuiBuffer->Release();
 	cam.noMoreMemoryLeaks();
+
+	dsTexture->Release();
+	
+	//Deferred rendering
+	for (int i = 0; i < 5; i++)
+	{
+		gBufferRtvs[i]->Release();
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		gBufferSrvs[i]->Release();
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		gBuffers[i]->Release();
+	}
+	uaView->Release();
+	
 	missingTexture->Release();
+
+	
 
 	//Releases all textures
 	for (int i = 0; i < objects.size(); i++)
@@ -290,6 +327,34 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
 
 	HRESULT hr = device->CreateBuffer(&desc, &data, &camBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff)
+{
+	imGuiStuff.imposition = false;
+	imGuiStuff.imnormal = false;
+	imGuiStuff.imcolour = false;
+	imGuiStuff.impadd = false;
+
+	D3D11_BUFFER_DESC desc;
+	desc.ByteWidth = sizeof(ImGuiValues);
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+	desc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = &imGuiStuff;
+	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+
+	HRESULT hr = device->CreateBuffer(&desc, &data, &imGuiBuffer);
 	if (FAILED(hr))
 	{
 		return false;
@@ -355,21 +420,22 @@ void Render
 (
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
-	ID3D11SamplerState* samplerState, ID3D11Buffer** lightBuffer, Camera camera, CamData camData,
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, bool test
+	ID3D11SamplerState* samplerState, Camera camera, CamData camData,
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, 
+	bool test, float clearColour[], ImGuiValues imGuiStuff, ID3D11Buffer* imGuiBuffer
 )
 {
 	//
 	//float clearColour[4] = { 0, 0, 0, 0 };
-	float clearColour[4] = { camera.GetPositionFloat3().x/100, camera.GetPositionFloat3().y / 100, camera.GetPositionFloat3().z / 100, 0 };
+	//float clearColour[4] = { camera.GetPositionFloat3().x/100, camera.GetPositionFloat3().y / 100, camera.GetPositionFloat3().z / 100, 0 };
 	//immediateContext->ClearRenderTargetView(rtv, clearColour);
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
 	}
-	immediateContext->OMSetRenderTargets(3, rtvs, dsView);
+	immediateContext->OMSetRenderTargets(5, rtvs, dsView);
 
 	//Layout and other stuff
 	immediateContext->IASetInputLayout(inputLayout);
@@ -386,9 +452,13 @@ void Render
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
 
+	D3D11_MAPPED_SUBRESOURCE values = {};
+	immediateContext->Map(imGuiBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &values);
+	memcpy(values.pData, &imGuiStuff, sizeof(ImGuiValues));
+	immediateContext->Unmap(imGuiBuffer, 0);
+
 	//Pixel Shader
 	immediateContext->PSSetShader(pShader, nullptr, 0);
-	immediateContext->PSSetConstantBuffers(0, 2, lightBuffer);
 	//immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
 	camera.sendView(immediateContext);
@@ -401,8 +471,9 @@ void Render
 	ID3D11RenderTargetView* nullRtv = nullptr;
 	immediateContext->OMSetRenderTargets(1, &nullRtv, dsView);
 	immediateContext->CSSetShader(csShader, nullptr, 0);
-	immediateContext->CSSetShaderResources(0, 3, srvs);
+	immediateContext->CSSetShaderResources(0, 5, srvs);
 	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
+	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
 
 	immediateContext->Dispatch(32, 32, 1);
@@ -416,6 +487,36 @@ void Render
 	{
 		objects[i].draw(test);
 	}*/
+}
+
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing)
+{
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	{
+		bool temps[3] = { imGuiStuff.imposition,imGuiStuff.imnormal,imGuiStuff.imcolour };
+		bool begun = ImGui::Begin("Testing");
+		if (begun)
+		{
+			ImGui::ColorEdit3("BG colour", bgClr);
+			ImGui::Text("");
+			ImGui::Text("Draw calls");
+			ImGui::Checkbox("No indexing", &noIndexing);
+			ImGui::Text("");
+			ImGui::Text("Deferred Rendering");
+			ImGui::Checkbox("Position", &temps[0]);
+			ImGui::Checkbox("Normal", &temps[1]);
+			ImGui::Checkbox("Colour", &temps[2]);
+		}
+		ImGui::End();
+		imGuiStuff.imposition = temps[0];
+		imGuiStuff.imnormal = temps[1];
+		imGuiStuff.imcolour = temps[2];
+	}
+	ImGui::EndFrame();
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 bool createTextures(ID3D11Device* device, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& srv, ID3D11RenderTargetView*& rtv, int width, int height)
