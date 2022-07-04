@@ -1,2 +1,3 @@
 newmtl Material
-map_Kd SUS.jpg
+Ns 100.00
+map_Ka SUS.jpg

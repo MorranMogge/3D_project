@@ -56,15 +56,16 @@ void main( uint3 DTid : SV_DispatchThreadID )
         reflection = normalize(reflection);
 
         float3 ambientClr = 0.25 * inAmbient[DTid.xy].xyz;
-        float3 diffuseClr = 1 * inDiffuse[DTid.xy].xyz * max(dot(normal.xyz, vectorToLight), 0.0f);
+        float3 diffuseClr = 0.25 * inDiffuse[DTid.xy].xyz * max(dot(normal.xyz, vectorToLight), 0.0f);
         float3 specularClr = (1 * inSpecular[DTid.xy].xyz * pow(max(dot(reflection, vectorToCam), 0.0f), 75));
 
 	
         float3 finalColour = (ambientClr + diffuseClr);
-	//finalColour += specularClr;
+	    //finalColour += specularClr;
 
     //float3 number = (input.normal + float3(1.0f, 1.0f, 1.0f)) / 2;
     
         backBuffer[DTid.xy] = float4(finalColour, 1.0f);
+        //backBuffer[DTid.xy] = inNormal[DTid.xy];
     }
 }

@@ -90,6 +90,16 @@ bool SceneObject::setImmediateContext(ID3D11DeviceContext* immediateContext)
 	return this->immediateContext!=nullptr;
 }
 
+void SceneObject::initiateObject(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<SimpleVertex>* inVertices, std::vector<DWORD> *indices)
+{
+	this->setImmediateContext(immediateContext);
+	this->createConstBuf(device);
+	this->setVertices(inVertices);
+	this->setMatBuffer(device);
+	this->setIndices(indices);
+	this->createIndexBuffer(device);
+}
+
 void SceneObject::draw()
 {
 	//Some objects differ in their pipeline so we need
@@ -279,6 +289,10 @@ void SceneObject::releaseCom()
 	constantBuffer->Release();
 	vertexBuffer->Release();
 	indexBuffer->Release();
+	for (int i = 0; i < shinyness.size(); i++)
+	{
+		matBuffer[i]->Release();
+	}
 }
 
 int SceneObject::getVerticeAmount() const

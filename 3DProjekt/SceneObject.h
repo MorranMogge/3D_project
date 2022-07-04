@@ -77,6 +77,7 @@ public:
 	SceneObject();
 	~SceneObject();
 	bool setImmediateContext(ID3D11DeviceContext* immediateContext);
+	void initiateObject(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<SimpleVertex>* inVertices, std::vector<DWORD>* indices);
 	void draw();
 	void draw(bool testDraw);
 	void setVertices(objThing obj);

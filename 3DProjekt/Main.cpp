@@ -42,7 +42,7 @@ bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11Shade
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool test, float clearColour[], ImGuiValues imGuiStuff, ID3D11Buffer* imGuiBuffer);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -61,6 +61,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
 	float xyzScale[3] = { 1.f,1.f,1.f };
 	float testValues[3] = { 0.0f,10.0f,0.0f };
+	float testValues2[3] = { 10.0f,5.0f,10.0f };
 	bool x = true;
 	bool rotation = false;
 	bool normal = false;
@@ -81,8 +82,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	std::chrono::time_point<std::chrono::system_clock> start;
 	start = std::chrono::system_clock::now();
 
-	CBuffer cb2;
-	Material mat;
 	std::vector<SceneObject> objects;
 	Camera cam;
 	CamData camData;
@@ -139,18 +138,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		return -1;
 	}
 
-	/*if (!lb.setLightBuffer(device, lightBuffer[0]))
-	{
-		std::cerr << "Failed to setup light buffer!" << std::endl;
-		return -1;
-	}
-
-	if (!mat.setMaterial(device, lightBuffer[1]))
-	{
-		std::cerr << "Failed to setup material info!" << std::endl;
-		return -1;
-	}*/
-
 	for (int i = 0; i < 5; i++)
 	{
 		if (!createTextures(device, gBuffers[i], gBufferSrvs[i], gBufferRtvs[i], WIDTH, HEIGHT))
@@ -173,28 +160,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	newerReadModels(device, missingTexture, material, newObj);
 
 	MSG msg = {};
+
+	for (int i = 0; i < 4; i++)
+	{
+		objects.push_back(SceneObject(newObj[i]));
+		objects[i].initiateObject(immediateContext, device, &newObj[i].mesh, &newObj[i].indices);
+	}
+
+
 	
-	objects.push_back(SceneObject(newObj[2]));
-	objects[0].setImmediateContext(immediateContext);
-	objects[0].createConstBuf(device);
-	objects[0].setVertices(&newObj[2].mesh);
-	objects[0].setMatBuffer(device);
-	objects[0].setIndices(&newObj[2].indices);
-	objects[0].createIndexBuffer(device);
-
-
-	/*objects.push_back(SceneObject(newObj[1]));
-	objects[1].setImmediateContext(immediateContext);
-	objects[1].createConstBuf(device);
-	objects[1].setVertices(&newObj[1].mesh);
-	objects[1].setMatBuffer(device);
-	objects[1].setIndices(&newObj[1].indices);
-	objects[1].createIndexBuffer(device);
-	objects[1].setWorldPos(testValues);*/
+	objects[1].setWorldPos(testValues);
+	objects[0].setWorldPos(testValues2);
+	testValues[1] = -1;
+	objects[3].setWorldPos(testValues);
 	testValues[0] = 0.25f;
 	testValues[1] = 0.25f;
 	testValues[2] = 0.25f;
-	//objects[1].setScale(testValues);
+
+	objects[1].setScale(testValues);
 
 	for (auto& o : objects)
 	{
@@ -217,19 +200,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		if (((std::chrono::duration<float>)(std::chrono::system_clock::now() - start)).count() > 1.0f / fps)
 		{
 			cam.moveCamera(immediateContext, cam, 1.f / fps);
-			verticeCounter = 0;
-			/*for (int i = 0; i < 3; i++)
-			{
-				immediateContext->ClearRenderTargetView(gBufferRtvs[i], clearColour);
-			}*/
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
 				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer);
 
 			//handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
-			newImGui(bgColour, imGuiStuff, test);
-			//lb.setNormal(immediateContext, lightBuffer[0], normal);
-		/*	if (rotation) 
+			
+			/*if (rotation) 
 			{ 
 				xyzRot[0] += xyzRotSpeed[0] * 0.01 * 144/fps;
 				if (xyzRot[0] >= XM_2PI) xyzRot[0] = 0;
@@ -422,13 +399,9 @@ void Render
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* samplerState, Camera camera, CamData camData,
 	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, 
-	bool test, float clearColour[], ImGuiValues imGuiStuff, ID3D11Buffer* imGuiBuffer
+	bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer
 )
 {
-	//
-	//float clearColour[4] = { 0, 0, 0, 0 };
-	//float clearColour[4] = { camera.GetPositionFloat3().x/100, camera.GetPositionFloat3().y / 100, camera.GetPositionFloat3().z / 100, 0 };
-	//immediateContext->ClearRenderTargetView(rtv, clearColour);
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 
 	for (int i = 0; i < 5; i++)
@@ -441,7 +414,6 @@ void Render
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->RSSetViewports(1, &viewport);
-	//immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 
 	//Vertex Shader
 	immediateContext->VSSetShader(vShader, nullptr, 0);
@@ -459,7 +431,6 @@ void Render
 
 	//Pixel Shader
 	immediateContext->PSSetShader(pShader, nullptr, 0);
-	//immediateContext->PSSetConstantBuffers(2, 1, &camBuffer);
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
 	camera.sendView(immediateContext);
 
@@ -478,15 +449,11 @@ void Render
 
 	immediateContext->Dispatch(32, 32, 1);
 
+	immediateContext->CSSetShaderResources(0, 0, nullptr);
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
-
-	/*int dinmamma = 4;
-	immediateContext->PSSetShader(pShader, nullptr, 0);
-
-	for (int i = 0; i < objects.size(); i++)
-	{
-		objects[i].draw(test);
-	}*/
+	immediateContext->VSSetShader(nullptr, nullptr, 0);
+	immediateContext->PSSetShader(nullptr, nullptr, 0);
+	newImGui(clearColour, imGuiStuff, test);
 }
 
 void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing)

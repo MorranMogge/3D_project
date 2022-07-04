@@ -352,7 +352,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 							std::getline(newNewReadCharacters, wantedString, ' ');
 							if (loadLines == "") { going = false;  break; }
 							else if (wantedString == "Ns") { std::getline(newNewReadCharacters, wantedString);  objPtr->specularComp.push_back(std::stof(wantedString)); }
-							else if (wantedString == "map_Kd")
+							else if (wantedString == "map_Ka")
 							{
 								std::getline(newNewReadCharacters, wantedString);
 								for (int i = 0; i < mat.textureNames.size(); i++)
@@ -371,7 +371,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 								}
 
 							}
-							else if (wantedString == "map_Ks")
+							else if (wantedString == "map_Kd")
 							{
 								std::getline(newNewReadCharacters, wantedString);
 								for (int i = 0; i < mat.textureNames.size(); i++)
@@ -388,7 +388,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 									mat.textureSrvs.push_back(objPtr->textureSrvs[1 + objPtr->indexes.size() * 3]);
 								}
 							}
-							else if (wantedString == "map_Ka")
+							else if (wantedString == "map_Ks")
 							{
 								std::getline(newNewReadCharacters, wantedString);
 								for (int i = 0; i < mat.textureNames.size(); i++)

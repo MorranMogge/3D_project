@@ -1,4 +1,4 @@
-cubeMaterial_1
+cubeMaterial_3
 sphere2
 Soapbox_Car
-Mario
+ground

@@ -1,6 +1,6 @@
-Texture2D ambient : register(t0);
-Texture2D diffuse : register(t1);
-Texture2D specular : register(t2);
+Texture2D ambientMap : register(t0);
+Texture2D diffuseMap : register(t1);
+Texture2D specularMap : register(t2);
 
 SamplerState sampl;
 
@@ -24,7 +24,7 @@ struct PixelShaderInput
 {
     float4 position : SV_POSITION;
     float4 newPos : NEWPOSITION;
-    float3 normal : NORMAL;
+    float4 normal : NORMAL;
     float2 uv : UV;
 };
 
@@ -32,10 +32,10 @@ PSout main(PixelShaderInput input) : SV_TARGET
 {
     PSout output;
     output.position = input.newPos;
-    output.normal = float4(input.normal, 0.0);
-    output.ambient = float4(ambient.Sample(sampl, input.uv).xyz,1.0f);
-    output.diffuse = float4(diffuse.Sample(sampl, input.uv).xyz, 1.0f);
-    output.specular = float4(specular.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
+    output.normal = input.normal;
+    output.ambient = float4(ambientMap.Sample(sampl, input.uv).xyz, 1.0f);
+    output.diffuse = float4(diffuseMap.Sample(sampl, input.uv).xyz, 1.0f);
+    output.specular = float4(specularMap.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
     ///return input.normal;
     return output;
 }

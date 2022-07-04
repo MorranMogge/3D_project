@@ -1,8 +1,8 @@
 ﻿  Main.cpp
-D:\School\Real3Dproject\3DProjekt\Main.cpp(112,23): warning C4101: 'geometryPass': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(123,19): warning C4101: 'values': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(498,31): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(498,53): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(498,73): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(545,19): warning C4101: 'tempTexture': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\Main.cpp(111,23): warning C4101: 'geometryPass': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\Main.cpp(122,19): warning C4101: 'values': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\Main.cpp(468,31): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(468,53): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(468,73): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(515,19): warning C4101: 'tempTexture': unreferenced local variable
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe
