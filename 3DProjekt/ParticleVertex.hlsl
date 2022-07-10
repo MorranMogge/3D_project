@@ -14,11 +14,6 @@ cbuffer wrld : register(b0)
     float4x4 worldMatrix;
 };
 
-cbuffer Matrices : register(b1)
-{
-    matrix viewProj;
-}
-
 GSin main(VSin input)
 {
     GSin output;

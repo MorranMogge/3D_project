@@ -203,6 +203,7 @@ bool ParticleHandler::setUpVertexBuffer(ID3D11Device* device)
 ParticleHandler::ParticleHandler()
 {
 	timer.time = 0;
+	timer.particlesPerThread = 10;
 	for (int i = 0; i < AMOUNT_OF_PARTICLES; i++) //Creates the "particles"
 	{
 		particles.push_back({ (float)cos(i + 1) / (float)AMOUNT_OF_PARTICLES, 5.0f, (float)sin(i + 1) / (float)AMOUNT_OF_PARTICLES });
@@ -223,12 +224,6 @@ bool ParticleHandler::InitiateHandler(ID3D11DeviceContext* immediateContext, ID3
 	if (!this->setUpUAV(device))			return false;
 	this->updateWorldMatrix(0);
 	return true; //If everything was setup correctly
-}
-
-void ParticleHandler::sendCameraViewAndProj(Camera& camera)
-{
-	//camera.sendProjection(immediateContext, true);
-	camera.sendView(immediateContext);
 }
 
 ParticleHandler::~ParticleHandler()
@@ -259,7 +254,6 @@ void ParticleHandler::drawParticles()
 	immediateContext->GSSetShader(pGeometry, nullptr, 0);
 	immediateContext->PSSetShader(pPixel, nullptr, 0);
 	
-	//cameraPtr->sendView(immediateContext);
 	cameraPtr->sendGeometryMatrix(immediateContext);
 	cameraPtr->sendVectorsGeometry(immediateContext);
 	immediateContext->VSSetConstantBuffers(0, 1, &constBuffer);	
@@ -292,6 +286,6 @@ void ParticleHandler::updateParticles()
 	immediateContext->CSSetConstantBuffers(0, 1, &timerBuffer);
 
 	//Dispatch
-	immediateContext->Dispatch(AMOUNT_OF_PARTICLES / 20, 1, 1);
+	immediateContext->Dispatch(AMOUNT_OF_PARTICLES / (ThreadsPerGroup*timer.particlesPerThread), 1, 1);
 }
 

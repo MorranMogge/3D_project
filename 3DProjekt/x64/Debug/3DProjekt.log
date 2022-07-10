@@ -1,3 +1,14 @@
 ﻿  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\ParticleShader.cso
-  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\ParticleVertex.cso
+  Main.cpp
+D:\School\Real3Dproject\3DProjekt\Main.cpp(115,23): warning C4101: 'geometryPass': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\Main.cpp(126,19): warning C4101: 'values': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\Main.cpp(479,31): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(479,53): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(479,73): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(526,19): warning C4101: 'tempTexture': unreferenced local variable
+  ParticleHandler.cpp
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(14,56): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(186,75): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(289,49): warning C4244: 'argument': conversion from 'float' to 'UINT', possible loss of data
+  Generating Code...
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe

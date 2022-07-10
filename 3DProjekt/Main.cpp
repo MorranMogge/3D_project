@@ -445,24 +445,26 @@ void Render
 	{
 		objects[i].draw(test);
 	}
+	immediateContext->VSSetShader(nullptr, nullptr, 0);
+	immediateContext->PSSetShader(nullptr, nullptr, 0);
+
 
 	ID3D11RenderTargetView* nullRtv = nullptr;
 	immediateContext->OMSetRenderTargets(1, &nullRtv, dsView);
 	immediateContext->CSSetShader(csShader, nullptr, 0);
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
 	immediateContext->CSSetShaderResources(0, 5, srvs);
 	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
-	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
+	
 
 	immediateContext->Dispatch(48, 32, 1);
 
-	//immediateContext->CSSetShaderResources(0, 0, nullptr);
+	immediateContext->CSSetShaderResources(0, 0, nullptr);
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
-	//immediateContext->VSSetShader(vShader, nullptr, 0);
-	//immediateContext->VSSetShader(nullptr, nullptr, 0);
-	//immediateContext->CSSetShader(nullptr, nullptr, 0);
-	//immediateContext->PSSetShader(nullptr, nullptr, 0);
-	//particles.sendCameraViewAndProj(camera);
+	immediateContext->CSSetShaderResources(0, 0, nullptr);
+	immediateContext->CSSetShader(nullptr, nullptr, 0);
+
 	particles.drawParticles();
 	particles.updateParticles();
 	newImGui(clearColour, imGuiStuff, test);

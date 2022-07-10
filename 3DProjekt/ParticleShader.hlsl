@@ -3,15 +3,23 @@ RWBuffer<float> particlePositions : register(u0);
 cbuffer particleAnimation : register(b0)
 {
     float time;
-    float3 padding;
+    float pariclesPerThread;
+    float2 padding;
 };
 
-[numthreads(20, 1, 1)]
+#define ThreadsPerGroup 10
+
+[numthreads(ThreadsPerGroup, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-    particlePositions[DTid.x * 3] = cos(2 * 3.141592 * time + DTid.x);
-    particlePositions[DTid.x * 3 + 1] = sqrt(time + DTid.x);
-    particlePositions[DTid.x * 3 + 2] = sin(2 * 3.141592 * time + DTid.x);
+    uint startingParticle = DTid.x * pariclesPerThread;
+    for (int i = 0; i < (int) pariclesPerThread; i++)
+    {
+        particlePositions[(startingParticle + i) * 3]       = cos(2 * 3.141592 * time + startingParticle+i);
+        particlePositions[(startingParticle + i) * 3 + 1]   = sqrt(time + startingParticle + i);
+        particlePositions[(startingParticle + i) * 3 + 2]   = sin(2 * 3.141592 * time + startingParticle + i);
+    }
+        
     //particlePositions[DTid.x * 3 + 2] = log(2 * 3.141592 * time + DTid.x);
 
 }

@@ -7,11 +7,6 @@
 #include <iostream>
 #include "Camera.h"
 
-struct Particle
-{
-	DirectX::XMFLOAT4X4 worldPos;
-};
-
 struct camMtx
 {
 	DirectX::XMFLOAT4X4 worldView;
@@ -21,18 +16,18 @@ struct camMtx
 struct particleAnimation
 {
 	float time;
-	float padding[3];
+	float particlesPerThread;
+	float padding[2];
 };
 
 class ParticleHandler
 {
 private:
 	const int AMOUNT_OF_PARTICLES = 1000;
+	const int ThreadsPerGroup = 10;
 
 	UINT stride;
 	UINT offset;
-
-	//std::vector<Particle> particles;
 
 	//Given pointer to
 	ID3D11DeviceContext* immediateContext;
@@ -68,7 +63,6 @@ public:
 	ParticleHandler();
 	~ParticleHandler();
 	bool InitiateHandler(ID3D11DeviceContext* immediateContext, ID3D11Device* device, Camera* camera);
-	void sendCameraViewAndProj(Camera &camera);
 	void drawParticles();
 	void updateParticles();
 };
