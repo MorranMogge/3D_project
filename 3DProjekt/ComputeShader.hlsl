@@ -19,23 +19,10 @@ cbuffer imGui : register(b1)
     float impadd;
 }
 
-[numthreads(32, 18, 1)]
+[numthreads(32, 27, 1)]
 
 void main( uint3 DTid : SV_DispatchThreadID )
-{
-    //float grayScaleValue = backBuffer[DTid.xy].x + backBuffer[DTid.xy].y + backBuffer[DTid.xy].z;
-    //grayScaleValue /= 3;
-    //backBuffer[DTid.xy] = position[DTid.xy];
-    //backBuffer[DTid.xy] = float4(grayScaleValue.xxx, backBuffer[DTid.xy].w);
-    //backBuffer[DTid.xy] = float4(1.0f, 1.0f, 1.0f, 1.0f) - backBuffer[DTid.xy];
-    //if (imposition || imnormal || imcolour)
-    //{
-    //    if (imposition) backBuffer[DTid.xy] = inPosition[DTid.xy];
-    //    else if (imnormal) backBuffer[DTid.xy] = inNormal[DTid.xy];
-    //    else backBuffer[DTid.xy] = inColour[DTid.xy];
-
-    //}
-    
+{   
     if (imposition == 1) 
         backBuffer[DTid.xy] = inPosition[DTid.xy];
     else if (imnormal == 1)
@@ -55,17 +42,14 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float3 reflection = reflect(-vectorToLight, normal.xyz);
         reflection = normalize(reflection);
 
-        float3 ambientClr = 0.25 * inAmbient[DTid.xy].xyz;
-        float3 diffuseClr = 0.25 * inDiffuse[DTid.xy].xyz * max(dot(normal.xyz, vectorToLight), 0.0f);
-        float3 specularClr = (1 * inSpecular[DTid.xy].xyz * pow(max(dot(reflection, vectorToCam), 0.0f), 75));
+        float3 ambientClr = 0.25 * colour;
+        float3 diffuseClr = 0.75 * inDiffuse[DTid.xy].xyz * max(dot(normal.xyz, vectorToLight), 0.0f);
+        float3 specularClr = (0.95 * inSpecular[DTid.xy].xyz * pow(max(dot(reflection, vectorToCam), 0.0f), 25));
 
 	
         float3 finalColour = (ambientClr + diffuseClr);
 	    //finalColour += specularClr;
-
-    //float3 number = (input.normal + float3(1.0f, 1.0f, 1.0f)) / 2;
     
         backBuffer[DTid.xy] = float4(finalColour, 1.0f);
-        //backBuffer[DTid.xy] = inNormal[DTid.xy];
     }
 }

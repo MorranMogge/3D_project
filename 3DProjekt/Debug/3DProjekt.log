@@ -1,4 +1,4 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (3DProjekt-DESKTOP-IJ99B3L-2.vcxproj, 3DProjekt-DESKTOP-IJ99B3L.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-D:\School\Real3Dproject\3DProjekt\ComputeShader.hlsl(3,21-26): error X3666: cs_4_0 does not support typed UAVs
+D:\School\Real3Dproject\3DProjekt\ComputeShader.hlsl(6,21-30): error X3666: cs_4_0 does not support typed UAVs
   
   compilation failed; no code produced

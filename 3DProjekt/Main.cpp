@@ -19,6 +19,7 @@
 #include "TextureLoader.h"
 #include "memoryLeakChecker.h"
 #include "DeferredRenderer.h"
+#include "ParticleHandler.h"
 
 #include "imGUI\imconfig.h"
 #include "imGUI\imgui.h"
@@ -42,7 +43,7 @@ bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11Shade
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -69,8 +70,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float bgColour[4] = { 0.0, 0.0, 0.0, 0.0 };
 
 	//Window size
-	const UINT WIDTH = 32*32;
-	const UINT HEIGHT = 32*18;
+	//const UINT WIDTH = 32*32;
+	//const UINT HEIGHT = 32*18;
+
+	const UINT WIDTH = 48 * 32;
+	const UINT HEIGHT = 32 * 27;
 
 	int verticeCounter = 0;
 
@@ -125,6 +129,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ID3D11Buffer* camBuf;
 	ID3D11Buffer* imGuiBuffer;
 	
+	ParticleHandler particles;
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, uaView))
 	{
@@ -152,6 +157,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	createCamBuffer(device, camBuf, camData);
 	cam.CreateCBuffer(immediateContext, device);
 
+	particles.InitiateHandler(immediateContext, device, &cam);
 	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
 
 	ImGui_ImplWin32_Init(window);
@@ -176,6 +182,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	testValues[0] = 0.25f;
 	testValues[1] = 0.25f;
 	testValues[2] = 0.25f;
+	//objects[4].setWorldPos(0, 20, 0);
 
 	objects[1].setScale(testValues);
 
@@ -202,7 +209,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			cam.moveCamera(immediateContext, cam, 1.f / fps);
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer);
+				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer, particles);
 
 			//handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
 			
@@ -399,7 +406,7 @@ void Render
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
 	ID3D11SamplerState* samplerState, Camera camera, CamData camData,
 	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, 
-	bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer
+	bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles
 )
 {
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
@@ -447,12 +454,17 @@ void Render
 	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
 
-	immediateContext->Dispatch(32, 32, 1);
+	immediateContext->Dispatch(48, 32, 1);
 
-	immediateContext->CSSetShaderResources(0, 0, nullptr);
+	//immediateContext->CSSetShaderResources(0, 0, nullptr);
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
-	immediateContext->VSSetShader(nullptr, nullptr, 0);
-	immediateContext->PSSetShader(nullptr, nullptr, 0);
+	//immediateContext->VSSetShader(vShader, nullptr, 0);
+	//immediateContext->VSSetShader(nullptr, nullptr, 0);
+	//immediateContext->CSSetShader(nullptr, nullptr, 0);
+	//immediateContext->PSSetShader(nullptr, nullptr, 0);
+	//particles.sendCameraViewAndProj(camera);
+	particles.drawParticles();
+	particles.updateParticles();
 	newImGui(clearColour, imGuiStuff, test);
 }
 

@@ -12,6 +12,20 @@ struct WorldProjMatrix
 	XMFLOAT4X4 viewProj;
 };
 
+struct worldViewProj
+{
+	XMFLOAT4X4 worldView;
+	XMFLOAT4X4 proj;
+};
+
+struct GeometryVectors
+{
+	DirectX::XMFLOAT3 upVector;
+	float padding1;
+	DirectX::XMFLOAT3 forwardVector;
+	float padding2;
+};
+
 class Camera
 {
 public:
@@ -36,17 +50,23 @@ public:
 	//OLIVER LOVAR ATT �NDRA - Han failade // Klara
 	void ChangeProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
 	bool CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
-	void sendProjection(ID3D11DeviceContext* immediateContext);
-	void sendView(ID3D11DeviceContext* immediateContext, int index = 1);
+	void sendProjection(ID3D11DeviceContext* immediateContext, bool cs = false);
+	void sendGeometryMatrix(ID3D11DeviceContext* immediateContext);
+	void sendView(ID3D11DeviceContext* immediateContext, int index = 1, bool cs = false);
+	void sendVectorsGeometry(ID3D11DeviceContext* immediateContext);
 	bool getRunning();
 	void noMoreMemoryLeaks();
 
 private:
 	ID3D11Buffer* ConstBuf;
+	ID3D11Buffer* computeConstBuf;
+	ID3D11Buffer* vectorBuffer;
 	XMMATRIX VMBB;
 	XMMATRIX viewMatrix;
 	XMMATRIX projection;
 	WorldProjMatrix VP;
+	worldViewProj computeMatrix;
+	GeometryVectors vectors;
 
 	//New ones
 	XMMATRIX rotationMX;

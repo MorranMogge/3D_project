@@ -436,7 +436,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 
 
 					SimpleVertex tempVertice({ positions[index[0]].x, positions[index[0]].y, positions[index[0]].z }, { normals[index[2]].x, normals[index[2]].y, normals[index[2]].z }, { UV[index[1]].x,UV[index[1]].y });
-					/*for (int j = 0; j < objPtr->mesh.size(); j++)
+					for (int j = 0; j < objPtr->mesh.size(); j++)
 					{
 						if (objPtr->mesh[j] == tempVertice)
 						{
@@ -444,7 +444,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 							objPtr->indices.push_back(j);
 							break;
 						}
-					}*/
+					}
 					if (add)
 					{
 						objPtr->indices.push_back(objPtr->mesh.size());

@@ -95,6 +95,7 @@ public:
     DirectX::XMMATRIX getWorldMatrix() const;
 	ID3D11Buffer* getVertexBuffer();
 	void setWorldPos(float arr[]);
+	void setWorldPos(float x, float y, float z);
 	void setRot(float arr[]);
 	void setScale(float arr[]);
 

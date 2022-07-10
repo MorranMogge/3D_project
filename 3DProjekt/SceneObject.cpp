@@ -330,3 +330,10 @@ void SceneObject::setScale(float arr[])
 	scale.y = arr[1];
 	scale.z = arr[2];
 }
+
+void SceneObject::setWorldPos(float x, float y, float z)
+{
+	pos.x = x;
+	pos.y = y;
+	pos.z = x;
+}

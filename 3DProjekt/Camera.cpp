@@ -20,14 +20,14 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 
 	if (GetAsyncKeyState('W'))
 	{
-		forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
+		//forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
 		cameraPos += forwardVec * 10 * dt;
 		lookAtPos += forwardVec * 10 * dt;
 	}
 
 	else if (GetAsyncKeyState('S'))
 	{
-		forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
+		//forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
 		cameraPos -= forwardVec * 10 * dt;
 		lookAtPos -= forwardVec * 10 * dt;
 	}
@@ -65,14 +65,14 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 
 	if (GetAsyncKeyState('E'))
 	{
-		upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+		//upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
 		cameraPos += upVec * 2.5 * dt;
 		lookAtPos += upVec * 2.5 * dt;
 	}
 
 	if (GetAsyncKeyState('Q'))
 	{
-		upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+		//upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
 		cameraPos -= upVec * 2.5 * dt;
 		lookAtPos -= upVec * 2.5 * dt;
 	}
@@ -211,6 +211,34 @@ bool Camera::CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* 
 	{
 		return false;
 	}
+
+	D3D11_BUFFER_DESC otherBufferDesc = {};
+	otherBufferDesc.ByteWidth = sizeof(computeMatrix);
+	otherBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	otherBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	otherBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	otherBufferDesc.MiscFlags = 0;
+	otherBufferDesc.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&otherBufferDesc, 0, &computeConstBuf);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	D3D11_BUFFER_DESC thirdBufferDesc = {};
+	thirdBufferDesc.ByteWidth = sizeof(vectors);
+	thirdBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	thirdBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	thirdBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	thirdBufferDesc.MiscFlags = 0;
+	thirdBufferDesc.StructureByteStride = 0;
+
+	hr = device->CreateBuffer(&thirdBufferDesc, 0, &vectorBuffer);
+	if (FAILED(hr))
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -238,10 +266,11 @@ void Camera::AdjustRotation(float x, float y, ID3D11DeviceContext* immediateCont
 	rotationForward = XMMatrixRotationRollPitchYawFromVector(rotVectorFor);
 	rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
 	upVector = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
 	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
 }
 
-void Camera::sendProjection(ID3D11DeviceContext* immediateContext)
+void Camera::sendProjection(ID3D11DeviceContext* immediateContext, bool cs)
 {
 	XMStoreFloat4x4(&VP.viewProj, XMMatrixTranspose(projection));
 
@@ -249,10 +278,24 @@ void Camera::sendProjection(ID3D11DeviceContext* immediateContext)
 	immediateContext->Map(ConstBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
 	memcpy(subData.pData, &VP, sizeof(VP));
 	immediateContext->Unmap(ConstBuf, 0);
-	immediateContext->VSSetConstantBuffers(1, 1, &ConstBuf);
+	if (!cs) immediateContext->VSSetConstantBuffers(1, 1, &ConstBuf);
+	else immediateContext->CSSetConstantBuffers(1, 1, &ConstBuf);
 }
 
-void Camera::sendView(ID3D11DeviceContext* immediateContext, int index)
+void Camera::sendGeometryMatrix(ID3D11DeviceContext* immediateContext)
+{
+	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
+	XMStoreFloat4x4(&computeMatrix.worldView, XMMatrixTranspose(VMBB));
+	XMStoreFloat4x4(&computeMatrix.proj, XMMatrixTranspose(projection));
+
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	immediateContext->Map(computeConstBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	memcpy(subData.pData, &computeMatrix, sizeof(computeMatrix));
+	immediateContext->Unmap(computeConstBuf, 0);
+	immediateContext->GSSetConstantBuffers(0, 1, &computeConstBuf);
+}
+
+void Camera::sendView(ID3D11DeviceContext* immediateContext, int index, bool cs)
 {
 	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
@@ -265,10 +308,28 @@ void Camera::sendView(ID3D11DeviceContext* immediateContext, int index)
 	immediateContext->Map(ConstBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
 	memcpy(subData.pData, &VP, sizeof(VP));
 	immediateContext->Unmap(ConstBuf, 0);
-	immediateContext->VSSetConstantBuffers(index, 1, &ConstBuf);
+	if (!cs) immediateContext->VSSetConstantBuffers(index, 1, &ConstBuf);
+	else immediateContext->CSSetConstantBuffers(index, 1, &ConstBuf);
+}
+
+void Camera::sendVectorsGeometry(ID3D11DeviceContext* immediateContext)
+{
+	upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX);
+	DirectX::XMStoreFloat3(&vectors.forwardVector, forwardVec);
+	DirectX::XMStoreFloat3(&vectors.upVector, upVec);
+	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
+
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	immediateContext->Map(vectorBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	memcpy(subData.pData, &vectors, sizeof(vectors));
+	immediateContext->Unmap(vectorBuffer, 0);
+	immediateContext->GSSetConstantBuffers(1, 1, &vectorBuffer);
 }
 
 void Camera::noMoreMemoryLeaks()
 {
 	ConstBuf->Release();
+	computeConstBuf->Release();
+	vectorBuffer->Release();
 }
