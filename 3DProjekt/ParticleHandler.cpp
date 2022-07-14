@@ -22,8 +22,8 @@ bool ParticleHandler::setUpUAV(ID3D11Device* device)
 
 void ParticleHandler::updateWorldMatrix(int index)
 {
-	worldMatrix = DirectX::XMMatrixIdentity() * DirectX::XMMatrixTranslation(0,1,0);// *DirectX::XMMatrixTranslation(particles[index].x, particles[index].y, particles[index].z);
-
+	if (index == 0) worldMatrix = DirectX::XMMatrixIdentity() * DirectX::XMMatrixTranslation(0,1,0);// *DirectX::XMMatrixTranslation(particles[index].x, particles[index].y, particles[index].z);
+	else worldMatrix = DirectX::XMMatrixTranspose(worldMatrix); worldMatrix *= DirectX::XMMatrixTranslation(1.0f / 144.0f, 0, 0);
 	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 	DirectX::XMStoreFloat4x4(&wrlMtx, worldMatrix);
 
@@ -33,7 +33,6 @@ void ParticleHandler::updateWorldMatrix(int index)
 	memcpy(mapRes.pData, &wrlMtx, sizeof(wrlMtx));
 	immediateContext->Unmap(constBuffer, 0);
 }
-
 
 bool ParticleHandler::setUpShaders(ID3D11Device* device)
 {
@@ -139,7 +138,7 @@ bool ParticleHandler::setUpInputLayout(ID3D11Device* device)
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
-	HRESULT hr = device->CreateInputLayout(inputDesc, 1, vShaderByteCode.c_str(), vShaderByteCode.length(), &inputLayout);
+	HRESULT hr = device->CreateInputLayout(inputDesc, std::size(inputDesc), vShaderByteCode.c_str(), vShaderByteCode.length(), &inputLayout);
 
 	return !FAILED(hr);
 }
@@ -157,6 +156,8 @@ bool ParticleHandler::setUpConstBuffer(ID3D11Device* device)
 	HRESULT hr = device->CreateBuffer(&bufferDesc, 0, &constBuffer);
 
 	if (FAILED(hr)) return false;
+	this->updateWorldMatrix(0);
+
 
 	D3D11_BUFFER_DESC newBufferDesc = {};
 	newBufferDesc.ByteWidth = sizeof(timer);
@@ -201,6 +202,9 @@ bool ParticleHandler::setUpVertexBuffer(ID3D11Device* device)
 }
 
 ParticleHandler::ParticleHandler()
+	:cameraPtr(nullptr), immediateContext(nullptr), constBuffer(nullptr), inputLayout(nullptr), offset(0), stride(0), pVertex(nullptr),
+	pGeometry(nullptr), pPixel(nullptr), pCompute(nullptr), particleUAV(nullptr), timerBuffer(nullptr), vBuffer(nullptr), 
+	worldMatrix(DirectX::XMMatrixIdentity()), wrlMtx(XMFLOAT4X4()), vShaderByteCode("")
 {
 	timer.time = 0;
 	timer.particlesPerThread = 10;
@@ -208,22 +212,6 @@ ParticleHandler::ParticleHandler()
 	{
 		particles.push_back({ (float)cos(i + 1) / (float)AMOUNT_OF_PARTICLES, 5.0f, (float)sin(i + 1) / (float)AMOUNT_OF_PARTICLES });
 	}
-
-}
-
-
-
-bool ParticleHandler::InitiateHandler(ID3D11DeviceContext* immediateContext, ID3D11Device* device, Camera* camera)
-{
-	if ((this->immediateContext = immediateContext) == nullptr)	return false;
-	if ((this->cameraPtr = camera) == nullptr)					return false;
-	if (!this->setUpShaders(device))		return false;
-	if (!this->setUpInputLayout(device))	return false;
-	if (!this->setUpVertexBuffer(device))	return false;
-	if (!this->setUpConstBuffer(device))	return false;
-	if (!this->setUpUAV(device))			return false;
-	this->updateWorldMatrix(0);
-	return true; //If everything was setup correctly
 }
 
 ParticleHandler::~ParticleHandler()
@@ -243,12 +231,22 @@ ParticleHandler::~ParticleHandler()
 	pCompute->Release();
 }
 
-
+bool ParticleHandler::InitiateHandler(ID3D11DeviceContext* immediateContext, ID3D11Device* device, Camera* camera)
+{
+	this->immediateContext = immediateContext;
+	if ((this->immediateContext) == nullptr)		return false;
+	if ((this->cameraPtr = camera) == nullptr)		return false;
+	if (!this->setUpShaders(device))				return false;
+	if (!this->setUpInputLayout(device))			return false;
+	if (!this->setUpVertexBuffer(device))			return false;
+	if (!this->setUpConstBuffer(device))			return false;
+	if (!this->setUpUAV(device))					return false;
+	return true; //If everything was setup correctly
+}
 
 void ParticleHandler::drawParticles()
 {
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
-	immediateContext->IASetInputLayout(nullptr);
 	immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->VSSetShader(pVertex, nullptr, 0);
 	immediateContext->GSSetShader(pGeometry, nullptr, 0);
@@ -257,12 +255,9 @@ void ParticleHandler::drawParticles()
 	cameraPtr->sendGeometryMatrix(immediateContext);
 	cameraPtr->sendVectorsGeometry(immediateContext);
 	immediateContext->VSSetConstantBuffers(0, 1, &constBuffer);	
-	
 
 	immediateContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
 
-	cameraPtr->sendView(immediateContext);
-	//this->updateWorldMatrix(0);
 	immediateContext->Draw(AMOUNT_OF_PARTICLES,0);
 
 	//Set everything back to nullptr
@@ -277,8 +272,8 @@ void ParticleHandler::updateParticles()
 	immediateContext->CSSetShader(pCompute, nullptr, 0);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &particleUAV, nullptr);
 	
-	timer.time = (timer.time + 1.0f / 144.0f);
-	if (timer.time >= 1.0f)
+	timer.time += 1.0f / 144.0f;
+	if (timer.time >= 10.0f)
 	{
 		timer.time = 0;
 	}

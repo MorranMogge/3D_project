@@ -20,6 +20,7 @@
 #include "memoryLeakChecker.h"
 #include "DeferredRenderer.h"
 #include "ParticleHandler.h"
+#include "TesselatorClass.h"
 
 #include "imGUI\imconfig.h"
 #include "imGUI\imgui.h"
@@ -37,13 +38,13 @@ using namespace DirectX;
 
 
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing);
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData);
 bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
 bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11ShaderResourceView* &srv, ID3D11RenderTargetView*& rtv, int width, int height);
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -130,6 +131,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ID3D11Buffer* imGuiBuffer;
 	
 	ParticleHandler particles;
+	TesselatorClass tesselator;
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, uaView))
 	{
@@ -158,6 +160,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	cam.CreateCBuffer(immediateContext, device);
 
 	particles.InitiateHandler(immediateContext, device, &cam);
+	tesselator.setUpTesselator(immediateContext, device, &cam);
 	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
 
 	ImGui_ImplWin32_Init(window);
@@ -209,7 +212,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			cam.moveCamera(immediateContext, cam, 1.f / fps);
 			
 			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer, particles);
+				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator);
 
 			//handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
 			
@@ -296,7 +299,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData)
 {
 	camData.cameraPosition = XMFLOAT3(0.0f, 0.0f, -20.0f);
-	camData.padding = 0.0f;
+	camData.tesselationConst = 250.0f;
 
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = sizeof(CamData);
@@ -324,7 +327,7 @@ bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct 
 	imGuiStuff.imposition = false;
 	imGuiStuff.imnormal = false;
 	imGuiStuff.imcolour = false;
-	imGuiStuff.impadd = false;
+	imGuiStuff.imwireframe = false;
 
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = sizeof(ImGuiValues);
@@ -404,9 +407,9 @@ void Render
 (
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
-	ID3D11SamplerState* samplerState, Camera camera, CamData camData,
+	ID3D11SamplerState* samplerState, Camera camera, CamData& camData,
 	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, 
-	bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles
+	bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles, TesselatorClass& tesselator
 )
 {
 	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
@@ -419,8 +422,11 @@ void Render
 
 	//Layout and other stuff
 	immediateContext->IASetInputLayout(inputLayout);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 	immediateContext->RSSetViewports(1, &viewport);
+	tesselator.setWireFrame(imGuiStuff.imwireframe);
+	tesselator.setRasterizerState();
 
 	//Vertex Shader
 	immediateContext->VSSetShader(vShader, nullptr, 0);
@@ -430,6 +436,8 @@ void Render
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
+
+	immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
 
 	D3D11_MAPPED_SUBRESOURCE values = {};
 	immediateContext->Map(imGuiBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &values);
@@ -447,7 +455,8 @@ void Render
 	}
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
-
+	immediateContext->DSSetShader(nullptr, nullptr, 0);
+	immediateContext->HSSetShader(nullptr, nullptr, 0);
 
 	ID3D11RenderTargetView* nullRtv = nullptr;
 	immediateContext->OMSetRenderTargets(1, &nullRtv, dsView);
@@ -460,6 +469,11 @@ void Render
 
 	immediateContext->Dispatch(48, 32, 1);
 
+	for (int i = 0; i < 5; i++)
+	{
+		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
+	}
+
 	immediateContext->CSSetShaderResources(0, 0, nullptr);
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 	immediateContext->CSSetShaderResources(0, 0, nullptr);
@@ -467,16 +481,18 @@ void Render
 
 	particles.drawParticles();
 	particles.updateParticles();
-	newImGui(clearColour, imGuiStuff, test);
+	newImGui(clearColour, imGuiStuff, test, camData);
 }
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing)
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	{
 		bool temps[3] = { imGuiStuff.imposition,imGuiStuff.imnormal,imGuiStuff.imcolour };
+		bool wireframe = imGuiStuff.imwireframe;
+		float tesselationConst = camData.tesselationConst;
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
 		{
@@ -489,11 +505,18 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing)
 			ImGui::Checkbox("Position", &temps[0]);
 			ImGui::Checkbox("Normal", &temps[1]);
 			ImGui::Checkbox("Colour", &temps[2]);
+
+			ImGui::Text("");
+			ImGui::Text("Tesselation");
+			ImGui::Checkbox("Wireframe", &wireframe);
+			ImGui::SliderFloat("Min Distance", &tesselationConst, 0.1f, 500.f);
 		}
 		ImGui::End();
 		imGuiStuff.imposition = temps[0];
 		imGuiStuff.imnormal = temps[1];
 		imGuiStuff.imcolour = temps[2];
+		imGuiStuff.imwireframe = wireframe;
+		camData.tesselationConst = tesselationConst;
 	}
 	ImGui::EndFrame();
 	ImGui::Render();

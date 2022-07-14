@@ -34,15 +34,21 @@ private:
 	Camera* cameraPtr;
 
 	//Need to release
+
+	//Information senders
 	ID3D11InputLayout* inputLayout;
-	ID3D11Buffer* vBuffer;
 	ID3D11UnorderedAccessView* particleUAV;
+
+	//Buffers
+	ID3D11Buffer* vBuffer;
+	ID3D11Buffer* constBuffer;
+	ID3D11Buffer* timerBuffer;
+	
+	//Shaders
 	ID3D11VertexShader* pVertex;
 	ID3D11GeometryShader* pGeometry;
 	ID3D11PixelShader* pPixel;
 	ID3D11ComputeShader* pCompute;
-	ID3D11Buffer* constBuffer;
-	ID3D11Buffer* timerBuffer;
 
 	//Static
 	std::vector<DirectX::XMFLOAT3> particles;
@@ -52,7 +58,7 @@ private:
 	particleAnimation timer;
 	
 
-	void updateWorldMatrix(int index);
+	void updateWorldMatrix(int index = 0);
 	bool setUpShaders(ID3D11Device* device);
 	bool setUpUAV(ID3D11Device* device);
 	bool setUpVertexBuffer(ID3D11Device* device);

@@ -7,13 +7,13 @@ struct ImGuiValues
 	float imposition;
 	float imnormal;
 	float imcolour;
-	float impadd;
+	float imwireframe;
 };
 
 struct CamData
 {
 	DirectX::XMFLOAT3 cameraPosition;
-	float padding;
+	float tesselationConst;
 };
 
 //With this we decide the amount of gBuffers

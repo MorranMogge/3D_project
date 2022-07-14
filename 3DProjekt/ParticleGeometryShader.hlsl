@@ -31,16 +31,16 @@ void main(
 {
     PSin element;
     float4x4 viewProj = mul(view, proj);
-    const float SIZE = 0.05;
+    float SIZE = 0.05;
     float3 upVec = upVector;
     float3 particleRightVector = cross(forwardVector, upVector);
 
     float4 corners[4] =
     {
-        input[0].position - float4(particleRightVector * SIZE + upVec * SIZE, 0.0f),
-        input[0].position + float4(particleRightVector * SIZE - upVec * SIZE, 0.0f),
-        input[0].position - float4(particleRightVector * SIZE - upVec * SIZE, 0.0f),
-        input[0].position + float4(particleRightVector * SIZE + upVec * SIZE, 0.0f)
+        input[0].position - float4(particleRightVector * SIZE + upVec * SIZE, 0.0f), //Bottom Left
+        input[0].position + float4(particleRightVector * SIZE - upVec * SIZE, 0.0f), //Bottom Right
+        input[0].position - float4(particleRightVector * SIZE - upVec * SIZE, 0.0f), //Top Left
+        input[0].position + float4(particleRightVector * SIZE + upVec * SIZE, 0.0f)  //Top Right
 
     };
 	

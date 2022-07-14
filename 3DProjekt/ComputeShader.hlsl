@@ -16,7 +16,7 @@ cbuffer imGui : register(b1)
     float imposition;
     float imnormal;
     float imcolour;
-    float impadd;
+    float imwireframe;
 }
 
 [numthreads(32, 27, 1)]
@@ -29,6 +29,8 @@ void main( uint3 DTid : SV_DispatchThreadID )
         backBuffer[DTid.xy] = inNormal[DTid.xy];
     else if (imcolour == 1)
         backBuffer[DTid.xy] = inAmbient[DTid.xy];
+    //else if (imwireframe == 1)
+    //    backBuffer[DTid.xy] = float4(1.0, 0.0, 0.0, 1.0);
     else
     {
         float4 normal = inNormal[DTid.xy];

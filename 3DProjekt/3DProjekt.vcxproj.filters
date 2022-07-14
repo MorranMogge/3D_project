@@ -16,6 +16,15 @@
     <Filter Include="imGUI">
       <UniqueIdentifier>{4a41d4ee-7829-4b0c-a82a-d16be9fa8dbc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ParticleSystem">
+      <UniqueIdentifier>{7aa2acd0-be26-434b-8ce5-7b4e5a00f7c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ObjParser">
+      <UniqueIdentifier>{1b5958dd-c8c3-4921-80a0-e53ddc0ba2c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tesselation">
+      <UniqueIdentifier>{8c6946e0-36da-4e4f-a5ed-3b114731c8ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LightBuffer.cpp">
@@ -75,14 +84,17 @@
     <ClCompile Include="TextureLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DeferredRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParticleHandler.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjParser.cpp">
+      <Filter>ObjParser</Filter>
+    </ClCompile>
+    <ClCompile Include="TesselatorClass.cpp">
+      <Filter>Tesselation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,9 +152,6 @@
     <ClInclude Include="ConstantBuffer.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="ObjParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -159,7 +168,13 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ParticleHandler.h">
-      <Filter>Header Files</Filter>
+      <Filter>ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjParser.h">
+      <Filter>ObjParser</Filter>
+    </ClInclude>
+    <ClInclude Include="TesselatorClass.h">
+      <Filter>Tesselation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -178,17 +193,23 @@
     <FxCompile Include="tempPixel.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleShader.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="ParticleVertex.hlsl">
+      <Filter>ParticleSystem</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleGeometryShader.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="ParticleShader.hlsl">
+      <Filter>ParticleSystem</Filter>
     </FxCompile>
     <FxCompile Include="ParticlePixelShader.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>ParticleSystem</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleVertex.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="ParticleGeometryShader.hlsl">
+      <Filter>ParticleSystem</Filter>
+    </FxCompile>
+    <FxCompile Include="HullShader.hlsl">
+      <Filter>Tesselation</Filter>
+    </FxCompile>
+    <FxCompile Include="DomainShader.hlsl">
+      <Filter>Tesselation</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

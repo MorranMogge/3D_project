@@ -30,7 +30,7 @@ cbuffer materialInfo : register (b1)
 
 cbuffer cam : register(b2)
 {
-	float3 cameraPosition; // Not Working!
+	float3 cameraPosition;
 	float padding;
 };
 
