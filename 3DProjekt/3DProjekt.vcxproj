@@ -149,6 +149,7 @@
     <ClCompile Include="ConstantBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="CubemapClass.cpp" />
     <ClCompile Include="D3D11Helper.cpp" />
     <ClCompile Include="DeferredRenderer.cpp" />
     <ClCompile Include="imGUI\imgui.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="ConstantBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="CubemapClass.h" />
     <ClInclude Include="D3D11Helper.h" />
     <ClInclude Include="DeferredRenderer.h" />
     <ClInclude Include="imGUI\imconfig.h" />

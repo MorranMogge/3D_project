@@ -27,11 +27,11 @@ HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> 
     float dist;// = distToTriangle.x * distToTriangle.x + distToTriangle.y * distToTriangle.y + distToTriangle.z * distToTriangle.z;
     float sizefactor;
     float3 distToEdge;
-    float maxdistance = 50;
+    float maxdistance = tesselationConst*tesselationConst;
     float maxTesselation = 10.0f;
    
     
-    middlePoint = (inputPatch[0].newPos + inputPatch[0].newPos + inputPatch[0].newPos) / 3;
+    middlePoint = (inputPatch[0].newPos + inputPatch[1].newPos + inputPatch[2].newPos) / 3;
     distToEdge = inputPatch[0].newPos.xyz - middlePoint;
     sizefactor = (distToEdge.x * distToEdge.x + distToEdge.y * distToEdge.y + distToEdge.z * distToEdge.z);
     distToTriangle = cameraPosition - middlePoint;
@@ -39,10 +39,11 @@ HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> 
     //if (sizefactor > dist)
     //    dist = maxdistance;
     //dist /= tesselationConst;
-    if (dist >= tesselationConst)
+    //sizefactor /= dist;
+    if (dist >= maxdistance)
         tessFactor = 1.0f;
     else
-        tessFactor = (maxTesselation * (tesselationConst - dist) / tesselationConst);
+        tessFactor = (maxTesselation * (maxdistance - dist) / maxdistance);
     for (int i = 0; i < 3; ++i) //SET DYNAMICALLY
     {
         output.edgeTessFactor[i] = tessFactor;

@@ -1,4 +1,5 @@
 newmtl Material
 Ns 100.00
-map_Ka wheel.png
-map_Kd wheel.png
+map_Ka Ground.jpg
+map_Kd Ground.jpg
+map_Ks Ground.jpg

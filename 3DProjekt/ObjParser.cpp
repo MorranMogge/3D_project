@@ -339,8 +339,6 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 
 				while (std::getline(mtilFile, loadLines) && going)
 				{
-
-
 					std::stringstream newReadCharacters(loadLines);
 					std::getline(newReadCharacters, wantedString, ' ');
 					std::getline(newReadCharacters, wantedString);

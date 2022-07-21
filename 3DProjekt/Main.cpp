@@ -130,8 +130,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ID3D11Buffer* camBuf;
 	ID3D11Buffer* imGuiBuffer;
 	
+	//Helpers
 	ParticleHandler particles;
 	TesselatorClass tesselator;
+	DeferredRenderer deferred(WIDTH, HEIGHT);
 
 	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, uaView))
 	{
@@ -159,9 +161,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	createCamBuffer(device, camBuf, camData);
 	cam.CreateCBuffer(immediateContext, device);
 
+	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
 	particles.InitiateHandler(immediateContext, device, &cam);
 	tesselator.setUpTesselator(immediateContext, device, &cam);
-	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
+	deferred.initiateDeferredRenderer(immediateContext, device, swapChain, dsView, &cam, &imGuiStuff);
 
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
@@ -299,7 +302,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData)
 {
 	camData.cameraPosition = XMFLOAT3(0.0f, 0.0f, -20.0f);
-	camData.tesselationConst = 250.0f;
+	camData.tesselationConst = 20.0f;
 
 	D3D11_BUFFER_DESC desc;
 	desc.ByteWidth = sizeof(CamData);
@@ -418,6 +421,8 @@ void Render
 	{
 		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
 	}
+	immediateContext->ClearRenderTargetView(rtv, clearColour);
+
 	immediateContext->OMSetRenderTargets(5, rtvs, dsView);
 
 	//Layout and other stuff
@@ -458,8 +463,8 @@ void Render
 	immediateContext->DSSetShader(nullptr, nullptr, 0);
 	immediateContext->HSSetShader(nullptr, nullptr, 0);
 
-	ID3D11RenderTargetView* nullRtv = nullptr;
-	immediateContext->OMSetRenderTargets(1, &nullRtv, dsView);
+	ID3D11RenderTargetView* nullRtv[5]{ nullptr };// = nullptr;
+	immediateContext->OMSetRenderTargets(5, nullRtv, nullptr);
 	immediateContext->CSSetShader(csShader, nullptr, 0);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
 	immediateContext->CSSetShaderResources(0, 5, srvs);
@@ -469,18 +474,22 @@ void Render
 
 	immediateContext->Dispatch(48, 32, 1);
 
-	for (int i = 0; i < 5; i++)
+	/*for (int i = 0; i < 5; i++)
 	{
 		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
-	}
+	}*/
 
 	immediateContext->CSSetShaderResources(0, 0, nullptr);
-	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
+	
 	immediateContext->CSSetShaderResources(0, 0, nullptr);
 	immediateContext->CSSetShader(nullptr, nullptr, 0);
 
+	//Particle Draw call
+	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 	particles.drawParticles();
 	particles.updateParticles();
+
+	//ImGui
 	newImGui(clearColour, imGuiStuff, test, camData);
 }
 
@@ -509,7 +518,7 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 			ImGui::Text("");
 			ImGui::Text("Tesselation");
 			ImGui::Checkbox("Wireframe", &wireframe);
-			ImGui::SliderFloat("Min Distance", &tesselationConst, 0.1f, 500.f);
+			ImGui::SliderFloat("Min Distance", &tesselationConst, 0.1f, 50.f);
 		}
 		ImGui::End();
 		imGuiStuff.imposition = temps[0];

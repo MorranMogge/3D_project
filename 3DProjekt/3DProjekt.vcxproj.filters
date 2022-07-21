@@ -25,6 +25,9 @@
     <Filter Include="Tesselation">
       <UniqueIdentifier>{8c6946e0-36da-4e4f-a5ed-3b114731c8ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cubemap">
+      <UniqueIdentifier>{5a51a9db-5dc9-4824-9bf7-423bd2130fde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LightBuffer.cpp">
@@ -81,9 +84,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DeferredRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -95,6 +95,12 @@
     </ClCompile>
     <ClCompile Include="TesselatorClass.cpp">
       <Filter>Tesselation</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureLoader.cpp">
+      <Filter>ObjParser</Filter>
+    </ClCompile>
+    <ClCompile Include="CubemapClass.cpp">
+      <Filter>Cubemap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -155,9 +161,6 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="memoryLeakChecker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -175,6 +178,12 @@
     </ClInclude>
     <ClInclude Include="TesselatorClass.h">
       <Filter>Tesselation</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>ObjParser</Filter>
+    </ClInclude>
+    <ClInclude Include="CubemapClass.h">
+      <Filter>Cubemap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

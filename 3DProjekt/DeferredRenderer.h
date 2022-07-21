@@ -1,6 +1,8 @@
 #pragma once
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <iostream>
+#include "Camera.h"
 
 struct ImGuiValues
 {
@@ -17,7 +19,8 @@ struct CamData
 };
 
 //With this we decide the amount of gBuffers
-const int G_BUFFER_SIZE = 4;
+//#define G_BUFFER_SIZE 5;
+const int G_BUFFER_SIZE = 5;
 
 class DeferredRenderer
 {
@@ -25,21 +28,36 @@ private:
 	int width;
 	int height;
 
+	//Given pointer to
+	ID3D11DeviceContext* immediateContext;
+	ID3D11DepthStencilView* dsView;
+	ImGuiValues* imGuiStruct;
+	Camera* camPtr;
+
 	ID3D11ComputeShader* cShader;
+	ID3D11VertexShader* vShader;
+	ID3D11PixelShader* pShader;
+	ID3D11InputLayout* inputLayout;
 
 	ID3D11UnorderedAccessView* uaView;
-	ID3D11Buffer* buffers[G_BUFFER_SIZE];
-	ID3D11ShaderResourceView* srvs[G_BUFFER_SIZE];
-	ID3D11RenderTargetView* rtvs[G_BUFFER_SIZE];
+	//ID3D11Buffer* buffers[G_BUFFER_SIZE];
+	ID3D11Texture2D* texture[G_BUFFER_SIZE];
+	ID3D11ShaderResourceView* srv[G_BUFFER_SIZE];
+	ID3D11RenderTargetView* rtv[G_BUFFER_SIZE];
+
+	bool bindSrvAndRtv(ID3D11Device* device);
+	bool setUpShaders(ID3D11Device* device, std::string& vShaderByteCode);
+	bool setUpInputLayout(ID3D11Device* device, const std::string& vShaderByteCode);
+	bool setUpUav(ID3D11Device* device, IDXGISwapChain* swapChain);
 
 public:
 	DeferredRenderer(int width, int height);
 	~DeferredRenderer();
 
 	bool setComputeShader(ID3D11ComputeShader* cShader);
-	bool initiateDeferredRenderer();
-	bool setEverything(ID3D11UnorderedAccessView* uaView, ID3D11Buffer* buffers[], ID3D11ShaderResourceView* srvs[], ID3D11RenderTargetView* rtvs[]);
-
+	bool initiateDeferredRenderer(ID3D11DeviceContext* immediateContext, ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11DepthStencilView* dsView, Camera* camera, ImGuiValues* imGuiStruct);
+	void firstPass();
+	void secondPass();
 	void updateBuffers(CamData camData, ImGuiValues imGuiStuff);
 	void ComputeShaderPass();
 };

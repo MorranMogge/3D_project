@@ -193,7 +193,7 @@ bool Camera::CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* 
 
 	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
-	projection = DirectX::XMMatrixPerspectiveFovLH(0.8f, 1024.f / 576, 0.1f, 800.0f);
+	projection = DirectX::XMMatrixPerspectiveFovLH(1.0f, 1024.f / 576, 0.1f, 1000.0f);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 	XMStoreFloat4x4(&VP.viewProj, viewMatrix);

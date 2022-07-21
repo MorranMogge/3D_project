@@ -46,7 +46,7 @@ void main(
 	
     for (int i = 0; i < 4; i++)
     {
-        element.newPos = input[0].position;
+        element.newPos = corners[i];
         element.position = (mul(corners[i], viewProj));
         output.Append(element);
     }
