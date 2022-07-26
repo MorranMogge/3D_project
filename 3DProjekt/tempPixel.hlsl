@@ -23,7 +23,7 @@ struct PSout
 struct PixelShaderInput
 {
     float4 position : SV_POSITION;
-    float4 newPos : NEWPOSITION;
+    float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
 };
@@ -31,11 +31,10 @@ struct PixelShaderInput
 PSout main(PixelShaderInput input) : SV_TARGET
 {
     PSout output;
-    output.position = input.newPos;
+    output.position = input.worldPos;
     output.normal = input.normal;
     output.ambient = float4(ambientMap.Sample(sampl, input.uv).xyz, 1.0f);
     output.diffuse = float4(diffuseMap.Sample(sampl, input.uv).xyz, 1.0f);
     output.specular = float4(specularMap.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
-    ///return input.normal;
     return output;
 }

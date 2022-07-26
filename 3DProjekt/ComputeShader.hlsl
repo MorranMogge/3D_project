@@ -19,7 +19,7 @@ cbuffer imGui : register(b1)
     float imwireframe;
 }
 
-[numthreads(32, 27, 1)]
+[numthreads(32, 32, 1)]
 
 void main( uint3 DTid : SV_DispatchThreadID )
 {   

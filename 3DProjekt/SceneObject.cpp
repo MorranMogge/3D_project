@@ -109,14 +109,12 @@ void SceneObject::draw()
 	updateWorldMatrix();
 	updateConstantBuffer();
 
-
 	//Set correct positions
 	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 
 	//Set the correct vertices
 	immediateContext->IASetVertexBuffers(0,1, &vertexBuffer, &stride, &offset);
 
-	//Set the correct texture
 	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
 	//Start the pipeline
@@ -126,11 +124,7 @@ void SceneObject::draw()
 		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
 		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
 		immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
-		//immediateContext->DrawIndexed(20, indexes[i], 0);
 	}
-	//immediateContext->PSSetShaderResources(0, 1, &textureSrv[rand()%((indexes.size() - 1)*3)]);
-	//immediateContext->DrawIndexed(indexes[indexes.size() - 1] - indexes[indexes.size() - 2], indexes[indexes.size() - 2], 0);
-	//immediateContext->Draw(vertices->size(), 0);
 }
 
 void SceneObject::draw(bool testDraw)
@@ -153,13 +147,6 @@ void SceneObject::draw(bool testDraw)
 	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
 	//Start the pipeline
-	/*for (int i = 0; i < indexes.size(); i++)
-	{
-		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
-		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
-		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
-		immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
-	}*/
 
 	if (!testDraw)
 	{
@@ -168,14 +155,15 @@ void SceneObject::draw(bool testDraw)
 	}
 	else
 	{
-
-		for (int i = 0; i < indexes.size(); i++)
+		int counter = 0;
+		for (int i = 0; i < verticeCount.size(); i++)
 		{
 			//immediateContext->PSSetConstantBuffers(0, 1, &matBuffer[i]);
 			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
 			immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
 			immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
-			immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
+			immediateContext->DrawIndexed(verticeCount[i], counter, 0);
+			counter += verticeCount[i];
 		}
 	}
 }

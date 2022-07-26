@@ -2,3 +2,4 @@ cubeMaterial_3
 sphere2
 Soapbox_Car
 ground
+sphere

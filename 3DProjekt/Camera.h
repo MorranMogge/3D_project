@@ -18,6 +18,12 @@ struct worldViewProj
 	XMFLOAT4X4 proj;
 };
 
+struct CamData
+{
+	DirectX::XMFLOAT3 cameraPosition;
+	float tesselationConst;
+};
+
 struct GeometryVectors
 {
 	DirectX::XMFLOAT3 upVector;
@@ -30,6 +36,7 @@ class Camera
 {
 public:
 	Camera();
+	~Camera();
 
 	void moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, float dt);
 
@@ -39,7 +46,7 @@ public:
 	const XMFLOAT3& GetRotationFloat3() const;
 
 	void SetPosition(float x, float y, float z);
-	void SetRotation(float x, float y, float z);
+	void SetRotation(float x, float y, float z, ID3D11DeviceContext* immediateContext);
 	void AdjustRotation(float x, float y, ID3D11DeviceContext* immediateContext);
 
 	const XMVECTOR& GetForwardVector();
@@ -47,17 +54,17 @@ public:
 	const XMVECTOR& GetBackwardVector();
 	const XMVECTOR& GetLeftVector();
 
-	//OLIVER LOVAR ATT �NDRA - Han failade // Klara
 	void ChangeProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
 	bool CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
 	void sendProjection(ID3D11DeviceContext* immediateContext, bool cs = false);
 	void sendGeometryMatrix(ID3D11DeviceContext* immediateContext);
 	void sendView(ID3D11DeviceContext* immediateContext, int index = 1, bool cs = false);
 	void sendVectorsGeometry(ID3D11DeviceContext* immediateContext);
-	bool getRunning();
-	void noMoreMemoryLeaks();
+	void changeParticleSize(float size);
+	float getParticleSize();
 
 private:
+	bool temps[4]{ true, true, true, true };
 	ID3D11Buffer* ConstBuf;
 	ID3D11Buffer* computeConstBuf;
 	ID3D11Buffer* vectorBuffer;

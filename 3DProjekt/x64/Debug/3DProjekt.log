@@ -1,10 +1,2 @@
-﻿  DeferredRenderer.cpp
-  Main.cpp
-D:\School\Real3Dproject\3DProjekt\Main.cpp(116,23): warning C4101: 'geometryPass': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(127,19): warning C4101: 'values': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(502,31): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(502,53): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(502,73): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(558,19): warning C4101: 'tempTexture': unreferenced local variable
-  Generating Code...
+﻿  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\PixelShader.cso
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe

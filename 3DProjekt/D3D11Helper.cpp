@@ -100,7 +100,7 @@ void SetViewport(D3D11_VIEWPORT& viewport, UINT width, UINT height)
 	viewport.MaxDepth	= 1;
 }
 
-bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, IDXGISwapChain*& swapChain, ID3D11RenderTargetView*& rtv, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport, ID3D11UnorderedAccessView*& uaView)
+bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3D11DeviceContext*& immediateContext, IDXGISwapChain*& swapChain, ID3D11RenderTargetView*& rtv, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView, D3D11_VIEWPORT& viewport)
 {
 	if (!CreateInterfaces(width, height, window, device, immediateContext, swapChain))
 	{
@@ -120,11 +120,11 @@ bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3
 		return false;
 	}
 
-	if (!CreateUAV(device, swapChain, uaView))
+	/*if (!CreateUAV(device, swapChain, uaView))
 	{
 		std::cerr << "Error creating depth stencil view!" << std::endl;
 		return false;
-	}
+	}*/
 
 	SetViewport(viewport, width, height);
 

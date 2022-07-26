@@ -1,7 +1,7 @@
 struct DomainShaderOutput
 {
     float4 position : SV_POSITION;
-    float4 newPos : NEWPOSITION;
+    float4 worldPos: WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
 };
@@ -15,7 +15,7 @@ struct HS_CONSTANT_DATA_OUTPUT
 struct VertexShaderOutput
 {
     float4 position : SV_POSITION;
-    float4 newPos : NEWPOSITION;
+    float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
 };
@@ -29,7 +29,7 @@ DomainShaderOutput main(HS_CONSTANT_DATA_OUTPUT input, float3 uvw : SV_DomainLoc
     DomainShaderOutput output;
     
     output.position = patch[0].position * uvw.x + patch[1].position * uvw.y + patch[2].position * uvw.z;
-    output.newPos = patch[0].newPos * uvw.x + patch[1].newPos * uvw.y + patch[2].newPos * uvw.z;
+    output.worldPos = patch[0].worldPos * uvw.x + patch[1].worldPos * uvw.y + patch[2].worldPos * uvw.z;
     output.uv = patch[0].uv * uvw.x + patch[1].uv * uvw.y + patch[2].uv * uvw.z;
     output.normal = patch[0].normal * uvw.x + patch[1].normal * uvw.y + patch[2].normal * uvw.z;
     return output;

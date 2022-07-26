@@ -31,7 +31,7 @@ void main(
 {
     PSin element;
     float4x4 viewProj = mul(view, proj);
-    float SIZE = 0.05;
+    float SIZE = padding1;
     float3 upVec = upVector;
     float3 particleRightVector = cross(forwardVector, upVector);
 

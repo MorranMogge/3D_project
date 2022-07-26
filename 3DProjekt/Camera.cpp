@@ -3,6 +3,14 @@
 
 Camera::Camera()
 {
+	vectors.padding1 = 0.05f;
+}
+
+Camera::~Camera()
+{
+	ConstBuf->Release();
+	computeConstBuf->Release();
+	vectorBuffer->Release();
 }
 
 void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, float dt)
@@ -77,10 +85,43 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 		lookAtPos -= upVec * 2.5 * dt;
 	}
 
+
+	if (GetAsyncKeyState('1')) cam.SetRotation(0.0f, XM_PI/2, 0.0f, immediateContext);
+	if (GetAsyncKeyState('2')) cam.SetRotation(0.0f, -XM_PI / 2, 0.0f, immediateContext);
+	if (GetAsyncKeyState('3')) cam.SetRotation(-XM_PI / 2, 0.0f, 0.0f, immediateContext);
+	if (GetAsyncKeyState('4')) cam.SetRotation(XM_PI / 2, 0.0f, 0.0f, immediateContext);
+	if (GetAsyncKeyState('5')) cam.SetRotation(0.0f, 0.0f, 0.0f, immediateContext);
+	if (GetAsyncKeyState('6')) cam.SetRotation(0.0f, XM_PI / 2 * 2, 0.0, immediateContext);
+
+	/*if (GetAsyncKeyState('U') && temps[3])
+	{
+		this->SetRotation(-this->GetRotationFloat3().x, -this->GetRotationFloat3().y, -this->GetRotationFloat3().z, immediateContext);
+		temps[3] = false;
+	}
+
+	if (GetAsyncKeyState('R') && temps[0])
+	{
+		this->SetRotation(XM_PI/2, this->GetRotationFloat3().y, this->GetRotationFloat3().z, immediateContext);
+		temps[0] = false;
+	}
+
+	if (GetAsyncKeyState('T') && temps[1])
+	{
+		this->SetRotation(this->GetRotationFloat3().x, XM_PI/2, this->GetRotationFloat3().z, immediateContext);
+		temps[1] = false;
+	}
+
+	if (GetAsyncKeyState('Y') && temps[2])
+	{
+		this->SetRotation(this->GetRotationFloat3().x, this->GetRotationFloat3().y, XM_PI, immediateContext);
+		temps[2] = false;
+	}*/
+
 	if (GetAsyncKeyState(' '))
 	{
 		rotation.x = 0.0f;
 		rotation.y = 0.0f;
+		rotation.z = 0.0f;
 		rotVector = XMLoadFloat3(&rotation);
 
 		rotationFor.y = 0.0f;
@@ -95,6 +136,8 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 		rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
 		cameraPos = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 		lookAtPos = XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f);
+
+		temps[0] = temps[1] = temps[2] = temps[3] = true;
 	}
 
 	running = temp;
@@ -133,14 +176,39 @@ void Camera::SetPosition(float x, float y, float z)
 	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
 }
 
-void Camera::SetRotation(float x, float y, float z)
+void Camera::SetRotation(float pitch, float yaw, float roll, ID3D11DeviceContext* immediateContext)
 {
-	rotation.x = x;
-	rotation.y = y;
+	rotation.x = pitch;
+	rotation.y = yaw;
+	rotation.z = roll;
 	rotVector = XMLoadFloat3(&rotation);
 	rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
+	rightVec = XMVector3TransformCoord(DEFAULT_RIGHT, rotationMX);
+	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX);
 	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
 	upVector = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+
+	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
+	viewMatrix *= projection;
+	viewMatrix = XMMatrixTranspose(viewMatrix);
+
+	XMStoreFloat4x4(&VP.viewProj, viewMatrix);
+	D3D11_MAPPED_SUBRESOURCE subData = {};
+	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	immediateContext->Map(ConstBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
+	memcpy(subData.pData, &VP, sizeof(VP));
+	immediateContext->Unmap(ConstBuf, 0);
+	immediateContext->VSSetConstantBuffers(1, 1, &ConstBuf);
+
+	/*rotation.x = 0.0f;
+	rotation.y = 0.0f;
+	rotation.z = 0.0f;*/
+
+	/*rotationForward = XMMatrixRotationRollPitchYawFromVector(rotVectorFor);
+	rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
+	upVector = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
+	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;*/
 }
 
 const XMVECTOR& Camera::GetForwardVector()
@@ -193,7 +261,7 @@ bool Camera::CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* 
 
 	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
-	projection = DirectX::XMMatrixPerspectiveFovLH(1.0f, 1024.f / 576, 0.1f, 1000.0f);
+	projection = DirectX::XMMatrixPerspectiveFovLH(1.0f, 1024.f / 1024.f, 0.1f, 1000.0f);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 	XMStoreFloat4x4(&VP.viewProj, viewMatrix);
@@ -327,9 +395,12 @@ void Camera::sendVectorsGeometry(ID3D11DeviceContext* immediateContext)
 	immediateContext->GSSetConstantBuffers(1, 1, &vectorBuffer);
 }
 
-void Camera::noMoreMemoryLeaks()
+void Camera::changeParticleSize(float size)
 {
-	ConstBuf->Release();
-	computeConstBuf->Release();
-	vectorBuffer->Release();
+	vectors.padding1 = size;
+}
+
+float Camera::getParticleSize()
+{
+	return vectors.padding1;
 }

@@ -92,6 +92,8 @@ bool TesselatorClass::setUpRasterizerState(ID3D11Device* device)
 }
 
 TesselatorClass::TesselatorClass()
+	:cameraBuffer(nullptr), cameraPtr(nullptr), currentRasterizer(nullptr), domainShader(nullptr),
+	hullShader(nullptr), immediateContext(nullptr), rasterizerState(nullptr), wireFrameRasterizerState(nullptr)
 {
 }
 

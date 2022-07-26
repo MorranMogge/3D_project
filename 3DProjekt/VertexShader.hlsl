@@ -8,7 +8,7 @@ struct VertexShaderInput
 struct VertexShaderOutput
 {
 	float4 position : SV_POSITION;
-	float4 newPos : NEWPOSITION;
+    float4 worldPos : WORLDPOSITION;
 	float4 normal : NORMAL;
 	float2 uv : UV;
 };
@@ -21,7 +21,7 @@ cbuffer constantBuf : register (b0)
 
 cbuffer Matrices : register(b1)
 {
-	matrix viewProj;
+    float4x4 viewProj;
 }
 
 VertexShaderOutput main(VertexShaderInput input)
@@ -30,7 +30,7 @@ VertexShaderOutput main(VertexShaderInput input)
 	//Byta namn
 	float4x4 temp = mul(worldMatrix, viewProj);
 	//float4x4 test = mul(worldMatrix, projectionMatrix);
-	output.newPos = mul(float4(input.position, 1.0f), worldMatrix);
+    output.worldPos = mul(float4(input.position, 1.0f), worldMatrix);
 	//output.position = mul(float4(input.position, 1.0f), test);
 	output.position = mul(float4(input.position, 1.0f), temp);
 	//Fixa normal

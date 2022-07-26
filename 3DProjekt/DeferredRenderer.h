@@ -12,15 +12,11 @@ struct ImGuiValues
 	float imwireframe;
 };
 
-struct CamData
-{
-	DirectX::XMFLOAT3 cameraPosition;
-	float tesselationConst;
-};
+
 
 //With this we decide the amount of gBuffers
-//#define G_BUFFER_SIZE 5;
-const int G_BUFFER_SIZE = 5;
+#define G_BUFFER_SIZE 5
+//const int G_BUFFER_SIZE = 5;
 
 class DeferredRenderer
 {
@@ -58,6 +54,4 @@ public:
 	bool initiateDeferredRenderer(ID3D11DeviceContext* immediateContext, ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11DepthStencilView* dsView, Camera* camera, ImGuiValues* imGuiStruct);
 	void firstPass();
 	void secondPass();
-	void updateBuffers(CamData camData, ImGuiValues imGuiStuff);
-	void ComputeShaderPass();
 };

@@ -6,45 +6,18 @@
 #include <vector>
 #include <time.h>
 
-#include "WindowHelper.h"
-#include "D3D11Helper.h"
-#include "PipelineHelper.h"
-#include "ConstantBuffer.h"
-#include "LightBuffer.h"
-#include "Material.h"
-#include "SceneObject.h"
-#include "cBuffer.h"
-#include "ObjParser.h"
-#include "Camera.h"
-#include "TextureLoader.h"
-#include "memoryLeakChecker.h"
-#include "DeferredRenderer.h"
-#include "ParticleHandler.h"
-#include "TesselatorClass.h"
-
-#include "imGUI\imconfig.h"
-#include "imGUI\imgui.h"
-#include "imGUI\imgui_impl_dx11.h"
-#include "imGUI\imgui_internal.h"
-#include "imGUI\imstb_rectpack.h"
-#include "imGUI\imstb_textedit.h"
-#include "imGUI\imstb_truetype.h"
-#include "imGUI\imgui_impl_win32.h"
+#include "Project.h"
 
 
 using namespace DirectX;
 
-
-
-
-
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData);
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData, Camera& cam);
 bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
 bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11ShaderResourceView* &srv, ID3D11RenderTargetView*& rtv, int width, int height);
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout, ID3D11SamplerState* samplerState, Camera camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs , ID3D11ComputeShader* cShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView** srvs,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -54,8 +27,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
-	std::vector<newObjThing> newObj;
-	materialChecker material;
+	
 
 	//First we set some values
 	float xyzPos[3] = { 0.f,0.f,0.0f,};
@@ -63,7 +35,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
 	float xyzScale[3] = { 1.f,1.f,1.f };
 	float testValues[3] = { 0.0f,10.0f,0.0f };
-	float testValues2[3] = { 10.0f,5.0f,10.0f };
+	float testValues2[3] = { 10.0f,1.0f,5.0f };
 	bool x = true;
 	bool rotation = false;
 	bool normal = false;
@@ -71,11 +43,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float bgColour[4] = { 0.0, 0.0, 0.0, 0.0 };
 
 	//Window size
-	//const UINT WIDTH = 32*32;
-	//const UINT HEIGHT = 32*18;
+	const UINT WIDTH = 1024;
+	const UINT HEIGHT = 1024;
 
-	const UINT WIDTH = 48 * 32;
-	const UINT HEIGHT = 32 * 27;
+	//const UINT WIDTH = 48 * 32;
+	//const UINT HEIGHT = 32 * 27;
 
 	int verticeCounter = 0;
 
@@ -84,42 +56,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	HWND window;
 
-	std::chrono::time_point<std::chrono::system_clock> start;
-	start = std::chrono::system_clock::now();
-
-	std::vector<SceneObject> objects;
-	Camera cam;
-	CamData camData;
-	
-	ImGuiValues imGuiStuff;
-
 	if (!SetupWindow(hInstance, WIDTH, HEIGHT, nCmdShhow, window))
 	{
 		std::cerr << "Failed to setup window!" << std::endl;
 		return -1;
 	}
 
+	std::chrono::time_point<std::chrono::system_clock> start;
+	start = std::chrono::system_clock::now();
+
 	//Basic stuff
 	ID3D11Device			* device;
 	ID3D11DeviceContext		* immediateContext;
 	IDXGISwapChain			* swapChain;
+	ID3D11RenderTargetView	* rtv; 
 	ID3D11DepthStencilView	* dsView;
 	ID3D11InputLayout		* inputLayout;
-	ID3D11RenderTargetView	* rtv; //Switch to 3 later
 	ID3D11SamplerState		* samplerState;
 	D3D11_VIEWPORT			  viewport;
 
-	//Shaders
-	ID3D11VertexShader		* vShader;
-	ID3D11PixelShader		* pShader;
-	ID3D11ComputeShader		* csShader;
-	ID3D11PixelShader		* geometryPass; //Unsure if to keep
-
 	//Deferred rendering
-	ID3D11UnorderedAccessView* uaView;
-	ID3D11RenderTargetView	* gBufferRtvs[5];
-	ID3D11Texture2D			* gBuffers[5];
-	ID3D11ShaderResourceView* gBufferSrvs[5];
 	ID3D11Texture2D			* dsTexture;
 	ID3D11ShaderResourceView* missingTexture;
 	
@@ -134,42 +90,47 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ParticleHandler particles;
 	TesselatorClass tesselator;
 	DeferredRenderer deferred(WIDTH, HEIGHT);
+	CubemapClass cubemap;
 
-	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport, uaView))
+	//Classes
+	std::vector<newObjThing> newObj;
+	materialChecker material;
+	std::vector<SceneObject> objects;
+	Camera cam;
+	CamData camData;
+	ImGuiValues imGuiStuff;
+
+	if (!SetupD3D11(WIDTH, HEIGHT, window, device, immediateContext, swapChain, rtv, dsTexture, dsView, viewport))
 	{
 		std::cerr << "Failed to setup d3d11!" << std::endl;
 		return -1;
 	}
 
-	if (!SetupPipeline(device, vShader, pShader, csShader, inputLayout, samplerState))
+	if (!SetupPipeline(device, samplerState))
 	{
 		std::cerr << "Failed to setup pipeline!" << std::endl;
 		return -1;
 	}
-
-	for (int i = 0; i < 5; i++)
-	{
-		if (!createTextures(device, gBuffers[i], gBufferSrvs[i], gBufferRtvs[i], WIDTH, HEIGHT))
-		{
-			return 10;
-		}
-	}
-	
-	
 
 	cam.SetPosition(0, 0, -3);
 	createCamBuffer(device, camBuf, camData);
 	cam.CreateCBuffer(immediateContext, device);
 
 	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
+	
+	newerReadModels(device, missingTexture, material, newObj);
+	cubemap.createCube(newObj[4]);
+
+	//Initiates all the handlers
 	particles.InitiateHandler(immediateContext, device, &cam);
 	tesselator.setUpTesselator(immediateContext, device, &cam);
 	deferred.initiateDeferredRenderer(immediateContext, device, swapChain, dsView, &cam, &imGuiStuff);
+	cubemap.initiateCubemap(immediateContext, device, dsView);
 
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
 
-	newerReadModels(device, missingTexture, material, newObj);
+
 
 	MSG msg = {};
 
@@ -188,7 +149,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	testValues[0] = 0.25f;
 	testValues[1] = 0.25f;
 	testValues[2] = 0.25f;
-	//objects[4].setWorldPos(0, 20, 0);
 
 	objects[1].setScale(testValues);
 
@@ -214,8 +174,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		{
 			cam.moveCamera(immediateContext, cam, 1.f / fps);
 			
-			Render(immediateContext, rtv, dsView, viewport, vShader, pShader, inputLayout, 
-				samplerState, cam, camData, camBuf, objects, gBufferRtvs, csShader, uaView, gBufferSrvs, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator);
+			Render(immediateContext, rtv, dsView, viewport, 
+				samplerState, cam, camData, camBuf, objects, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator, deferred, cubemap);
 
 			//handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
 			
@@ -252,38 +212,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	dsView->Release();
 
 	//Pipeline components
-	inputLayout->Release();
 	samplerState->Release();
 
-	//Release shaders
-	vShader->Release();
-	pShader->Release();
-	csShader->Release();
 
 	//Buffers
 	camBuf->Release();
 	imGuiBuffer->Release();
-	cam.noMoreMemoryLeaks();
 
 	dsTexture->Release();
 	
 	//Deferred rendering
-	for (int i = 0; i < 5; i++)
-	{
-		gBufferRtvs[i]->Release();
-	}
-	for (int i = 0; i < 5; i++)
-	{
-		gBufferSrvs[i]->Release();
-	}
-	for (int i = 0; i < 5; i++)
-	{
-		gBuffers[i]->Release();
-	}
-	uaView->Release();
 	
 	missingTexture->Release();
-
+	  
 	
 
 	//Releases all textures
@@ -409,32 +350,17 @@ void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool
 void Render
 (
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView,
-	D3D11_VIEWPORT& viewport, ID3D11VertexShader* vShader, ID3D11PixelShader* pShader, ID3D11InputLayout* inputLayout,
-	ID3D11SamplerState* samplerState, Camera camera, CamData& camData,
-	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, ID3D11RenderTargetView* *rtvs, ID3D11ComputeShader* csShader, ID3D11UnorderedAccessView* uaView, ID3D11ShaderResourceView* * srvs, 
-	bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles, TesselatorClass& tesselator
+	D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData,
+	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool &test, float clearColour[], 
+	ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles, TesselatorClass& tesselator, 
+	DeferredRenderer& deferred, CubemapClass& cubemap
 )
 {
-	immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-
-	for (int i = 0; i < 5; i++)
-	{
-		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
-	}
-	immediateContext->ClearRenderTargetView(rtv, clearColour);
-
-	immediateContext->OMSetRenderTargets(5, rtvs, dsView);
-
-	//Layout and other stuff
-	immediateContext->IASetInputLayout(inputLayout);
-	//immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 	immediateContext->RSSetViewports(1, &viewport);
+
+	deferred.firstPass();
 	tesselator.setWireFrame(imGuiStuff.imwireframe);
 	tesselator.setRasterizerState();
-
-	//Vertex Shader
-	immediateContext->VSSetShader(vShader, nullptr, 0);
 
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
 	camData.cameraPosition = camera.GetPositionFloat3();
@@ -450,7 +376,7 @@ void Render
 	immediateContext->Unmap(imGuiBuffer, 0);
 
 	//Pixel Shader
-	immediateContext->PSSetShader(pShader, nullptr, 0);
+	//immediateContext->PSSetShader(pShader, nullptr, 0);
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
 	camera.sendView(immediateContext);
 
@@ -458,26 +384,13 @@ void Render
 	{
 		objects[i].draw(test);
 	}
-	immediateContext->VSSetShader(nullptr, nullptr, 0);
-	immediateContext->PSSetShader(nullptr, nullptr, 0);
-	immediateContext->DSSetShader(nullptr, nullptr, 0);
-	immediateContext->HSSetShader(nullptr, nullptr, 0);
 
-	ID3D11RenderTargetView* nullRtv[5]{ nullptr };// = nullptr;
-	immediateContext->OMSetRenderTargets(5, nullRtv, nullptr);
-	immediateContext->CSSetShader(csShader, nullptr, 0);
-	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
-	immediateContext->CSSetShaderResources(0, 5, srvs);
+	cubemap.draw(objects, particles, dsView);
+
 	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
 	
-
-	immediateContext->Dispatch(48, 32, 1);
-
-	/*for (int i = 0; i < 5; i++)
-	{
-		immediateContext->ClearRenderTargetView(rtvs[i], clearColour);
-	}*/
+	deferred.secondPass();
 
 	immediateContext->CSSetShaderResources(0, 0, nullptr);
 	
@@ -486,22 +399,26 @@ void Render
 
 	//Particle Draw call
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
+	camera.sendView(immediateContext);
+	immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
+	cubemap.drawCube();
 	particles.drawParticles();
 	particles.updateParticles();
 
 	//ImGui
-	newImGui(clearColour, imGuiStuff, test, camData);
+	newImGui(clearColour, imGuiStuff, test, camData, camera);
 }
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData)
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData, Camera& cam)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	{
-		bool temps[3] = { imGuiStuff.imposition,imGuiStuff.imnormal,imGuiStuff.imcolour };
+		bool temps[3] = { (int)imGuiStuff.imposition, (int)imGuiStuff.imnormal, (int)imGuiStuff.imcolour };
 		bool wireframe = imGuiStuff.imwireframe;
 		float tesselationConst = camData.tesselationConst;
+		float particleSize = cam.getParticleSize();
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
 		{
@@ -519,6 +436,10 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 			ImGui::Text("Tesselation");
 			ImGui::Checkbox("Wireframe", &wireframe);
 			ImGui::SliderFloat("Min Distance", &tesselationConst, 0.1f, 50.f);
+
+			ImGui::Text("");
+			ImGui::Text("Particles");
+			ImGui::SliderFloat("Particle size", &particleSize, 0.01f, 0.5f);
 		}
 		ImGui::End();
 		imGuiStuff.imposition = temps[0];
@@ -526,6 +447,7 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		imGuiStuff.imcolour = temps[2];
 		imGuiStuff.imwireframe = wireframe;
 		camData.tesselationConst = tesselationConst;
+		cam.changeParticleSize(particleSize);
 	}
 	ImGui::EndFrame();
 	ImGui::Render();

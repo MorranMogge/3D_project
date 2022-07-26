@@ -7,7 +7,7 @@ struct HS_CONSTANT_DATA_OUTPUT
 struct VertexShaderOutput
 {
     float4 position : SV_POSITION;
-    float4 newPos : NEWPOSITION;
+    float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
 };
@@ -31,8 +31,8 @@ HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> 
     float maxTesselation = 10.0f;
    
     
-    middlePoint = (inputPatch[0].newPos + inputPatch[1].newPos + inputPatch[2].newPos) / 3;
-    distToEdge = inputPatch[0].newPos.xyz - middlePoint;
+    middlePoint = (inputPatch[0].worldPos + inputPatch[1].worldPos + inputPatch[2].worldPos) / 3;
+    distToEdge = inputPatch[0].worldPos.xyz - middlePoint;
     sizefactor = (distToEdge.x * distToEdge.x + distToEdge.y * distToEdge.y + distToEdge.z * distToEdge.z);
     distToTriangle = cameraPosition - middlePoint;
     dist = distToTriangle.x * distToTriangle.x + distToTriangle.y * distToTriangle.y + distToTriangle.z * distToTriangle.z;

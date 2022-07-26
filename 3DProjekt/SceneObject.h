@@ -36,6 +36,10 @@ struct materialInfo
 	materialInfo(float shiny)
 	{
 		shinyness = shiny;
+		for (int i = 0; i < std::size(padding); i++)
+		{
+			padding[i] = 0.0f;
+		}
 	}
 };
 

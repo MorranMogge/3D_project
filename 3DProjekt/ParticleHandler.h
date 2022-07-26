@@ -69,6 +69,6 @@ public:
 	ParticleHandler();
 	~ParticleHandler();
 	bool InitiateHandler(ID3D11DeviceContext* immediateContext, ID3D11Device* device, Camera* camera);
-	void drawParticles();
+	void drawParticles(Camera* cam = nullptr);
 	void updateParticles();
 };

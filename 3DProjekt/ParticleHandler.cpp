@@ -244,7 +244,7 @@ bool ParticleHandler::InitiateHandler(ID3D11DeviceContext* immediateContext, ID3
 	return true; //If everything was setup correctly
 }
 
-void ParticleHandler::drawParticles()
+void ParticleHandler::drawParticles(Camera* cam)
 {
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 	immediateContext->IASetInputLayout(inputLayout);
@@ -252,18 +252,30 @@ void ParticleHandler::drawParticles()
 	immediateContext->GSSetShader(pGeometry, nullptr, 0);
 	immediateContext->PSSetShader(pPixel, nullptr, 0);
 	
-	cameraPtr->sendGeometryMatrix(immediateContext);
-	cameraPtr->sendVectorsGeometry(immediateContext);
+	if (cam == nullptr)
+	{
+		cameraPtr->sendGeometryMatrix(immediateContext);
+		cameraPtr->sendVectorsGeometry(immediateContext);
+	}
+	else
+	{
+		cam->sendGeometryMatrix(immediateContext);
+		cam->sendVectorsGeometry(immediateContext);
+	}
+	
 	immediateContext->VSSetConstantBuffers(0, 1, &constBuffer);	
 
 	immediateContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
 
-	immediateContext->Draw(AMOUNT_OF_PARTICLES,0);
+	immediateContext->Draw(AMOUNT_OF_PARTICLES, 0);
 
 	//Set everything back to nullptr
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
 	immediateContext->GSSetShader(nullptr, nullptr, 0);
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
+
+	ID3D11Buffer* nullVBuf = nullptr;
+	immediateContext->IASetVertexBuffers(0, 1, &nullVBuf, &stride, &offset);
 }
 
 void ParticleHandler::updateParticles()
@@ -282,5 +294,10 @@ void ParticleHandler::updateParticles()
 
 	//Dispatch
 	immediateContext->Dispatch(AMOUNT_OF_PARTICLES / (ThreadsPerGroup*timer.particlesPerThread), 1, 1);
+
+
+	immediateContext->CSSetShader(nullptr, nullptr, 0);
+	ID3D11UnorderedAccessView* nullUAV = nullptr;
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
 }
 

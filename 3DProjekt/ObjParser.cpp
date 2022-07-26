@@ -1,6 +1,51 @@
 #include "ObjParser.h"
 #include "TextureLoader.h"
 
+int getIndex(std::string picName)
+{
+	int returnValue = -1;
+	if (picName == "map_Ka") returnValue = 0;
+	else if (picName == "map_Kd") returnValue = 1;
+	else returnValue = 2;
+	return returnValue;
+}
+
+void addFaces(newObjThing* objPtr, std::stringstream& readCharacters, std::string& wantedString, 
+	std::vector<DirectX::XMFLOAT3> positions, std::vector<DirectX::XMFLOAT3> normals, std::vector<DirectX::XMFLOAT2> UV)
+{
+	int tmp = 3;
+	int index[3];
+	bool add = true;
+	for (int i = 0; i < tmp; i++)
+	{
+		add = true;
+		std::getline(readCharacters, wantedString, '/');
+		index[0] = std::stoi(wantedString) - 1;
+		std::getline(readCharacters, wantedString, '/');
+		index[1] = std::stoi(wantedString) - 1;
+		std::getline(readCharacters, wantedString, ' ');
+		index[2] = std::stoi(wantedString) - 1;
+
+
+		SimpleVertex tempVertice({ positions[index[0]].x, positions[index[0]].y, positions[index[0]].z }, { normals[index[2]].x, normals[index[2]].y, normals[index[2]].z }, { UV[index[1]].x,UV[index[1]].y });
+		/*for (int j = 0; j < objPtr->mesh.size(); j++)
+		{
+			if (objPtr->mesh[j] == tempVertice)
+			{
+				add = false;
+				objPtr->indices.push_back(j);
+				break;
+			}
+		}*/
+		if (add)
+		{
+			objPtr->indices.push_back(objPtr->mesh.size());
+			objPtr->mesh.push_back(tempVertice);
+
+		}
+	}
+}
+
 void readModels(std::vector<objThing> &objArr)
 {
 	std::ifstream objFile("objectFile.txt");
@@ -350,26 +395,27 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 							std::getline(newNewReadCharacters, wantedString, ' ');
 							if (loadLines == "") { going = false;  break; }
 							else if (wantedString == "Ns") { std::getline(newNewReadCharacters, wantedString);  objPtr->specularComp.push_back(std::stof(wantedString)); }
-							else if (wantedString == "map_Ka")
+							else if (wantedString == "map_Ka" || wantedString == "map_Kd" || wantedString == "map_Ks")
 							{
+								int tempIndex = getIndex(wantedString);
 								std::getline(newNewReadCharacters, wantedString);
 								for (int i = 0; i < mat.textureNames.size(); i++)
 								{
 									if (wantedString == mat.textureNames[i])
 									{
-										objPtr->textureSrvs[0 + objPtr->indexes.size() * 3] = mat.textureSrvs[i];
+										objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex] = mat.textureSrvs[i];
 									}
 								}
 
-								if (objPtr->textureSrvs[0 + objPtr->indexes.size() * 3] == nullptr)
+								if (objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex] == nullptr)
 								{
-									objPtr->textureSrvs[0 + objPtr->indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
+									objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex] = createSRVforPic(device, "Textures/" + wantedString);
 									mat.textureNames.push_back(wantedString);
-									mat.textureSrvs.push_back(objPtr->textureSrvs[0 + objPtr->indexes.size() * 3]);
+									mat.textureSrvs.push_back(objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex]);
 								}
 
 							}
-							else if (wantedString == "map_Kd")
+							/*else if (wantedString == "map_Kd")
 							{
 								std::getline(newNewReadCharacters, wantedString);
 								for (int i = 0; i < mat.textureNames.size(); i++)
@@ -402,7 +448,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 									mat.textureNames.push_back(wantedString);
 									mat.textureSrvs.push_back(objPtr->textureSrvs[2 + objPtr->indexes.size() * 3]);
 								}
-							}
+							}*/
 						}
 					}
 
@@ -420,7 +466,8 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 			}
 			else if (wantedString == "f")
 			{
-				int tmp = 3;
+				addFaces(objPtr, readCharacters, wantedString, positions, normals, UV);
+				/*int tmp = 3;
 				bool add = true;
 				for (int i = 0; i < tmp; i++)
 				{
@@ -449,7 +496,7 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 						objPtr->mesh.push_back(tempVertice);
 
 					}
-				}
+				}*/
 			}
 		}
 		if (objPtr->indexes.size() > 0)

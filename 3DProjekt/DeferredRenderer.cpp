@@ -216,14 +216,6 @@ void DeferredRenderer::firstPass()
 	immediateContext->PSSetShader(pShader, nullptr, 0);
 }
 
-void DeferredRenderer::updateBuffers(CamData camData, ImGuiValues imGuiStuff)
-{
-}
-
-void DeferredRenderer::ComputeShaderPass()
-{
-}
-
 void DeferredRenderer::secondPass()
 {
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
@@ -231,12 +223,20 @@ void DeferredRenderer::secondPass()
 	immediateContext->DSSetShader(nullptr, nullptr, 0); //-||-
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 
-	ID3D11RenderTargetView* nullRtv[5]{ nullptr };// = nullptr;
+
+
+	ID3D11RenderTargetView* nullRtv[G_BUFFER_SIZE]{ nullptr };// = nullptr;
 	immediateContext->OMSetRenderTargets(5, nullRtv, nullptr);
 	immediateContext->CSSetShader(cShader, nullptr, 0);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
-	immediateContext->CSSetShaderResources(0, 5, srv);
+	immediateContext->CSSetShaderResources(0, G_BUFFER_SIZE, srv);
 	//immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	//immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
-	immediateContext->Dispatch(48, 32, 1);
+	immediateContext->Dispatch(32, 32, 1);
+
+	//Set everything to null
+	ID3D11UnorderedAccessView* nullUAV = nullptr;
+	ID3D11ShaderResourceView* nullSrv[G_BUFFER_SIZE]{ nullptr };
+	immediateContext->CSSetUnorderedAccessViews(0, 1, &nullUAV, nullptr);
+	immediateContext->CSSetShaderResources(0, G_BUFFER_SIZE, nullSrv);
 }

@@ -147,10 +147,9 @@ bool CreateSamplerState(ID3D11Device* device, ID3D11SamplerState*& samplerState)
     return !FAILED(hr);
 }
 
-bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11PixelShader*& pShader, 
-    ID3D11ComputeShader*& cShader, ID3D11InputLayout*& inputLayout, ID3D11SamplerState*& samplerState)
+bool SetupPipeline(ID3D11Device* device, ID3D11SamplerState*& samplerState)
 {
-    std::string vShaderByteCode;
+   /* std::string vShaderByteCode;
     if (!LoadShaders(device, vShader, cShader, pShader, vShaderByteCode))
     {
         std::cerr << "Error loading shaders!" << std::endl;
@@ -161,7 +160,7 @@ bool SetupPipeline(ID3D11Device* device, ID3D11VertexShader*& vShader, ID3D11Pix
     {
         std::cerr << "Error creating input layout!" << std::endl;
         return false;
-    }
+    }*/
 
     /*if (!CreateVertexBuffer(device, vertexBuffer))
     {
