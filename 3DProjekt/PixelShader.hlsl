@@ -44,7 +44,6 @@ struct PixelShaderInput
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-    //return float4(1.0f, 1.0f, 1.0f, 1.0f);
 	float3 ambientColour = ambient.Sample(sampl, input.uv).xyz;
 	float3 diffuseColour = diffuse.Sample(sampl, input.uv).xyz;
 	float3 specularColour = specular.Sample(sampl, input.uv).xyz;

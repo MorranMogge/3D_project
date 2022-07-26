@@ -232,7 +232,7 @@ void DeferredRenderer::secondPass()
 	immediateContext->CSSetShaderResources(0, G_BUFFER_SIZE, srv);
 	//immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	//immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
-	immediateContext->Dispatch(32, 32, 1);
+	immediateContext->Dispatch(width/32, height/32, 1);
 
 	//Set everything to null
 	ID3D11UnorderedAccessView* nullUAV = nullptr;

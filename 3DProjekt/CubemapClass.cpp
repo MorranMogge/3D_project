@@ -13,7 +13,6 @@ void CubemapClass::setRot(int index)
     if (index == 3) cam.SetRotation(NINETYDEGREES, 0.0f, 0.0f, immediateContext);
     if (index == 4) cam.SetRotation(0.0f, 0.0f, 0.0f, immediateContext);
     if (index == 5) cam.SetRotation(0.0f, -NINETYDEGREES*2, 0.0f, immediateContext);
-
 }
 
 void CubemapClass::updateWrldMtx()
@@ -160,6 +159,8 @@ bool CubemapClass::setUpShaders(ID3D11Device* device, std::string& vShaderByteCo
 
 bool CubemapClass::setUpCamBuffer(ID3D11Device* device)
 {
+    cam.SetPosition(0 + 5 * cos(timer * DirectX::XM_2PI), 5, 0 + 5 * std::sin(timer * DirectX::XM_2PI));
+
     D3D11_BUFFER_DESC desc;
     desc.ByteWidth = sizeof(CamData);
     desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -267,7 +268,6 @@ CubemapClass::CubemapClass()
     {
         rtv[i] = nullptr;
     }
-    cam.SetPosition(5, 1, 5);
 }
 
 CubemapClass::~CubemapClass()
@@ -307,7 +307,7 @@ bool CubemapClass::initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11
     if (!this->setUpVertexBuffer(device))                   return false;
     if (!this->setUpConstBuf(device))                       return false;
     if (!this->setUpCamBuffer(device))                      return false;
-    cam.SetPosition(5, 1, 5);
+    
     cam.ChangeProjectionMatrix(XM_2PI/4, 1, 0.1, 100);
 	return true;
 }
@@ -324,7 +324,7 @@ void CubemapClass::createCube(newObjThing vertices)
 
 void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view)
 {
-    float clearColour[4]{ 0.0,0.0,1.0,0.0 };
+    float clearColour[4]{ 0.0,0.0,1.0,0.0 }; //Blue sky
 
     for (int i = 0; i < AMOUNTOFSIDESACUBEHAS; i++)
     {
@@ -340,9 +340,8 @@ void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, 
     immediateContext->PSSetShader(pShader, nullptr, 0);
 
     immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
-    //immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
 
-    //Draw the objects
+    //Draw objects from the cubes perspective
     for (int c = 0; c < AMOUNTOFSIDESACUBEHAS; c++)
     {
         immediateContext->ClearRenderTargetView(rtv[c], clearColour);
@@ -356,12 +355,11 @@ void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, 
     }
     
     immediateContext->VSSetShader(nullptr, nullptr, 0);
-    immediateContext->HSSetShader(nullptr, nullptr, 0);	//Since we use tesselation for LOD
-    immediateContext->DSSetShader(nullptr, nullptr, 0); //-||-
     immediateContext->PSSetShader(nullptr, nullptr, 0);
 
+   //Draw particles from the cubes perspective
    for (int c = 0; c < AMOUNTOFSIDESACUBEHAS; c++)
-    {
+   {
         immediateContext->OMSetRenderTargets(1, &rtv[c], dsView);
         this->setRot(c);
         cam.sendView(immediateContext);
@@ -380,15 +378,13 @@ void CubemapClass::drawCube()
     immediateContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
     immediateContext->PSSetShaderResources(0, 1, &srv);
     this->updateWrldMtx();
-    //cam.sendView(immediateContext);
 
     immediateContext->Draw(cube.size(), 0);
 
     immediateContext->VSSetShader(nullptr, nullptr, 0);
     immediateContext->PSSetShader(nullptr, nullptr, 0);
 
-    timer = timer + (float)increase * 0.2f *(1.f / 144.0f);
-    rot[1] += timer + (float)increase * (1.f / 144.0f);
+    /*timer = timer + 0.2f *(1.f / 144.0f);
     cam.SetPosition(0 + 5*cos(timer * XM_2PI), 5 ,0 + 5*std::sin(timer * XM_2PI));
-    if (timer >= 1.0f || timer <= 0.0f) timer = 0;
+    if (timer >= 1.0f || timer <= 0.0f) timer = 0;*/
 }

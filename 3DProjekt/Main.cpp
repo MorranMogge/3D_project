@@ -43,11 +43,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	float bgColour[4] = { 0.0, 0.0, 0.0, 0.0 };
 
 	//Window size
-	const UINT WIDTH = 1024;
-	const UINT HEIGHT = 1024;
+	//const UINT WIDTH = 1024;
+	//const UINT HEIGHT = 1024;
 
-	//const UINT WIDTH = 48 * 32;
-	//const UINT HEIGHT = 32 * 27;
+	const UINT WIDTH = 32 * 32;
+	const UINT HEIGHT = 32 * 32;
 
 	int verticeCounter = 0;
 
@@ -418,6 +418,7 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		bool temps[3] = { (int)imGuiStuff.imposition, (int)imGuiStuff.imnormal, (int)imGuiStuff.imcolour };
 		bool wireframe = imGuiStuff.imwireframe;
 		float tesselationConst = camData.tesselationConst;
+		bool reflectionType = (tesselationConst>=25.f);
 		float particleSize = cam.getParticleSize();
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
@@ -440,6 +441,10 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 			ImGui::Text("");
 			ImGui::Text("Particles");
 			ImGui::SliderFloat("Particle size", &particleSize, 0.01f, 0.5f);
+
+			ImGui::Text("");
+			ImGui::Text("Cubemap");
+			ImGui::Checkbox("Reflection", &reflectionType);
 		}
 		ImGui::End();
 		imGuiStuff.imposition = temps[0];
@@ -447,6 +452,9 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		imGuiStuff.imcolour = temps[2];
 		imGuiStuff.imwireframe = wireframe;
 		camData.tesselationConst = tesselationConst;
+		if (reflectionType && tesselationConst < 25) camData.tesselationConst = 25.f;
+		else if (!reflectionType && tesselationConst >= 25) camData.tesselationConst = 20.f;
+
 		cam.changeParticleSize(particleSize);
 	}
 	ImGui::EndFrame();

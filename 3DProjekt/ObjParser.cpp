@@ -46,6 +46,26 @@ void addFaces(newObjThing* objPtr, std::stringstream& readCharacters, std::strin
 	}
 }
 
+void addFloat3(std::vector<DirectX::XMFLOAT3>& component, std::stringstream& readCharacters, std::string& wantedString)
+{
+	component.push_back({ 0.0f,0.0f,0.0f });
+	std::getline(readCharacters, wantedString, ' ');
+	component[component.size() - 1].x = std::stof(wantedString);
+	std::getline(readCharacters, wantedString, ' ');
+	component[component.size() - 1].y = std::stof(wantedString);
+	std::getline(readCharacters, wantedString);
+	component[component.size() - 1].z = std::stof(wantedString);
+}
+
+void addFloat2(std::vector<DirectX::XMFLOAT2>& component, std::stringstream& readCharacters, std::string& wantedString)
+{
+	component.push_back({ 0.0f,0.0f });
+	std::getline(readCharacters, wantedString, ' ');
+	component[component.size() - 1].x = std::stof(wantedString);
+	std::getline(readCharacters, wantedString);
+	component[component.size() - 1].y = std::stof(wantedString);
+}
+
 void readModels(std::vector<objThing> &objArr)
 {
 	std::ifstream objFile("objectFile.txt");
@@ -326,51 +346,29 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 		std::ifstream file("Models/" + fileName + ".obj");
 		if (!file.is_open()) { std::cout << "Could not open obj!\n"; return; }
 		objArr.push_back(newObjThing());
-		newObjThing* objPtr = &objArr[objArr.size() - 1];
+		newObjThing* objPtr = &objArr[objArr.size() - 1];	//Optimisation
 		std::string loadLines;
 		std::string wantedString;
 		std::vector<DirectX::XMFLOAT3> positions;
 		std::vector<DirectX::XMFLOAT3> normals;
 		std::vector<DirectX::XMFLOAT2> UV;
 		std::string mtlFileName;
-		int index[3];
+
 		while (std::getline(file, loadLines))
 		{
 			std::stringstream readCharacters(loadLines);
 			std::getline(readCharacters, wantedString, ' ');
-			if (wantedString == "mtllib")
-			{
-				std::getline(readCharacters, wantedString);
-				mtlFileName = wantedString;
-			}
-			else if (wantedString == "v")
-			{
-				positions.push_back({ 0.0f,0.0f,0.0f });
-				std::getline(readCharacters, wantedString, ' ');
-				positions[positions.size() - 1].x = std::stof(wantedString);
-				std::getline(readCharacters, wantedString, ' ');
-				positions[positions.size() - 1].y = std::stof(wantedString);
-				std::getline(readCharacters, wantedString);
-				positions[positions.size() - 1].z = std::stof(wantedString);
-			}
-			else if (wantedString == "vt")
-			{
-				UV.push_back({ 0.0f,0.0f });
-				std::getline(readCharacters, wantedString, ' ');
-				UV[UV.size() - 1].x = std::stof(wantedString);
-				std::getline(readCharacters, wantedString);
-				UV[UV.size() - 1].y = std::stof(wantedString);
-			}
-			else if (wantedString == "vn")
-			{
-				normals.push_back({ 0.0f,0.0f,0.0f });
-				std::getline(readCharacters, wantedString, ' ');
-				normals[normals.size() - 1].x = std::stof(wantedString);
-				std::getline(readCharacters, wantedString, ' ');
-				normals[normals.size() - 1].y = std::stof(wantedString);
-				std::getline(readCharacters, wantedString);
-				normals[normals.size() - 1].z = std::stof(wantedString);
-			}
+
+			if (wantedString == "v")		addFloat3(positions, readCharacters, wantedString);
+
+			else if (wantedString == "vt")	addFloat2(UV, readCharacters, wantedString);
+
+			else if (wantedString == "vn")	addFloat3(normals, readCharacters, wantedString);
+
+			else if (wantedString == "f")	addFaces(objPtr, readCharacters, wantedString, positions, normals, UV);
+
+			else if (wantedString == "mtllib") { std::getline(readCharacters, wantedString); mtlFileName = wantedString; }
+
 			else if (wantedString == "usemtl")
 			{
 				std::getline(readCharacters, wantedString);
@@ -463,40 +461,6 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 				}
 				objPtr->indexes.push_back(objPtr->indices.size());
 				mtilFile.close();
-			}
-			else if (wantedString == "f")
-			{
-				addFaces(objPtr, readCharacters, wantedString, positions, normals, UV);
-				/*int tmp = 3;
-				bool add = true;
-				for (int i = 0; i < tmp; i++)
-				{
-					add = true;
-					std::getline(readCharacters, wantedString, '/');
-					index[0] = std::stoi(wantedString) - 1;
-					std::getline(readCharacters, wantedString, '/');
-					index[1] = std::stoi(wantedString) - 1;
-					std::getline(readCharacters, wantedString, ' ');
-					index[2] = std::stoi(wantedString) - 1;
-
-
-					SimpleVertex tempVertice({ positions[index[0]].x, positions[index[0]].y, positions[index[0]].z }, { normals[index[2]].x, normals[index[2]].y, normals[index[2]].z }, { UV[index[1]].x,UV[index[1]].y });
-					for (int j = 0; j < objPtr->mesh.size(); j++)
-					{
-						if (objPtr->mesh[j] == tempVertice)
-						{
-							add = false;
-							objPtr->indices.push_back(j);
-							break;
-						}
-					}
-					if (add)
-					{
-						objPtr->indices.push_back(objPtr->mesh.size());
-						objPtr->mesh.push_back(tempVertice);
-
-					}
-				}*/
 			}
 		}
 		if (objPtr->indexes.size() > 0)

@@ -72,9 +72,6 @@
     <ClCompile Include="imGUI\imgui_impl_win32.cpp">
       <Filter>imGUI</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Resource Files\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ParticleHandler.cpp">
       <Filter>ParticleSystem</Filter>
     </ClCompile>
@@ -145,9 +142,6 @@
     </ClInclude>
     <ClInclude Include="imGUI\imgui_impl_win32.h">
       <Filter>imGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="memoryLeakChecker.h">
       <Filter>Resource Files\Header Files</Filter>

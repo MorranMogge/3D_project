@@ -21,7 +21,10 @@ float4 main(VertexShaderOutput input) : SV_TARGET
     float3 temp = input.worldPos - camPos;
     temp = normalize(temp);
     input.normal = normalize(input.normal);
-    float3 loc = reflect(input.normal, temp);
+    float3 loc;
+    
+    if (padding < 25) loc = reflect(input.normal, temp);
+    else loc = reflect(temp, input.normal);
     loc = normalize(loc);
     
     float3 colour = tex.Sample(sampl, loc).xyz;
