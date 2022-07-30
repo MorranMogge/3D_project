@@ -19,6 +19,7 @@ struct VertexShaderOutput
 float4 main(VertexShaderOutput input) : SV_TARGET
 {
     float3 temp = input.worldPos - camPos;
+    
     temp = normalize(temp);
     input.normal = normalize(input.normal);
     float3 loc;

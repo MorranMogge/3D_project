@@ -7,6 +7,7 @@
 #include "ParticleHandler.h"
 #include "TesselatorClass.h"
 #include "CubemapClass.h"
+#include "FrustumCuller.h"
 #include "ObjParser.h"
 #include "TextureLoader.h"
 #include "PipelineHelper.h"

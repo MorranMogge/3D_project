@@ -148,6 +148,7 @@
     <ClCompile Include="CubemapClass.cpp" />
     <ClCompile Include="D3D11Helper.cpp" />
     <ClCompile Include="DeferredRenderer.cpp" />
+    <ClCompile Include="FrustumCuller.cpp" />
     <ClCompile Include="imGUI\imgui.cpp" />
     <ClCompile Include="imGUI\imgui_demo.cpp" />
     <ClCompile Include="imGUI\imgui_draw.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="CubemapClass.h" />
     <ClInclude Include="D3D11Helper.h" />
     <ClInclude Include="DeferredRenderer.h" />
+    <ClInclude Include="FrustumCuller.h" />
     <ClInclude Include="imGUI\imconfig.h" />
     <ClInclude Include="imGUI\imgui.h" />
     <ClInclude Include="imGUI\imgui_impl_dx11.h" />

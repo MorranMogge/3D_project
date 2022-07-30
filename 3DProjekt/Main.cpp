@@ -91,6 +91,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	TesselatorClass tesselator;
 	DeferredRenderer deferred(WIDTH, HEIGHT);
 	CubemapClass cubemap;
+	FrustumCuller culler;
 
 	//Classes
 	std::vector<newObjThing> newObj;
@@ -126,6 +127,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	tesselator.setUpTesselator(immediateContext, device, &cam);
 	deferred.initiateDeferredRenderer(immediateContext, device, swapChain, dsView, &cam, &imGuiStuff);
 	cubemap.initiateCubemap(immediateContext, device, dsView);
+	culler.initiateCuller(WIDTH, HEIGHT);
 
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
@@ -141,7 +143,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	}
 
 
-	
+	/*objects.push_back(SceneObject(newObj[5]));
+	objects[4].initiateObject(immediateContext, device, &newObj[5].mesh, &newObj[5].indices);*/
 	objects[1].setWorldPos(testValues);
 	objects[0].setWorldPos(testValues2);
 	testValues[1] = -1;
@@ -176,22 +179,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			
 			Render(immediateContext, rtv, dsView, viewport, 
 				samplerState, cam, camData, camBuf, objects, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator, deferred, cubemap);
-
-			//handleImGui(xyzPos, xyzRot,xyzScale, xyzRotSpeed, rotation, normal, test, fps);
-			
-			/*if (rotation) 
-			{ 
-				xyzRot[0] += xyzRotSpeed[0] * 0.01 * 144/fps;
-				if (xyzRot[0] >= XM_2PI) xyzRot[0] = 0;
-				xyzRot[1] += xyzRotSpeed[1] * 0.01 * 144 / fps;
-				if (xyzRot[1] >= XM_2PI) xyzRot[1] = 0;
-				xyzRot[2] += xyzRotSpeed[2] * 0.01 * 144 / fps;
-				if (xyzRot[2] >= XM_2PI) xyzRot[2] = 0;
-			}
-			objects[0].setScale(xyzScale);
-			objects[0].setRot(xyzRot);
-			objects[0].setWorldPos(xyzPos);*/
-
 			
 
 			swapChain->Present(0, 0);

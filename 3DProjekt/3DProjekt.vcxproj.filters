@@ -34,6 +34,12 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="FrustumCulling">
+      <UniqueIdentifier>{a5939b15-b3a0-4efe-afd1-922f19f27e38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Frustum Culling">
+      <UniqueIdentifier>{70709342-908d-4255-a524-d1f3f15f03ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LightBuffer.cpp">
@@ -98,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrustumCuller.cpp">
+      <Filter>Frustum Culling</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="SceneObject.h">
       <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="FrustumCuller.h">
+      <Filter>Frustum Culling</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

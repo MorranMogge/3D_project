@@ -41,7 +41,7 @@ SceneObject::SceneObject(newObjThing inObj)
 	for (int i = 0; i < inObj.indexes.size(); i++)
 	{
 		indexes.push_back(inObj.indexes[i]);
-		shinyness.push_back(materialInfo(inObj.specularComp[i]));
+		if (i < inObj.specularComp.size()) shinyness.push_back(materialInfo(inObj.specularComp[i]));
 	}
 	for (int i = 0; i < inObj.textureSrvs.size(); i++)
 	{

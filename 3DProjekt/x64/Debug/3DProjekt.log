@@ -1,8 +1,7 @@
-﻿  CubemapClass.cpp
-D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(214,64): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
-D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(241,144): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(311,53): warning C4305: 'argument': truncation from 'double' to 'float'
-D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(382,42): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
-  LightBuffer.cpp
-  Generating Code...
+﻿  FrustumCuller.cpp
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(33,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(47,45): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(47,32): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(42,6): warning C4101: 'tempWidth': unreferenced local variable
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(42,17): warning C4101: 'tempHeight': unreferenced local variable
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe

@@ -15,7 +15,6 @@ Camera::~Camera()
 
 void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, float dt)
 {
-	bool temp = false;
 	if (GetAsyncKeyState((VK_SHIFT)))
 	{
 		dt *= 2.f;
@@ -139,9 +138,6 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 
 		temps[0] = temps[1] = temps[2] = temps[3] = true;
 	}
-
-	running = temp;
-	/*Bouncing();*/
 }
 
 const XMMATRIX& Camera::GetViewMatrix() const

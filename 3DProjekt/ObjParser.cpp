@@ -66,6 +66,66 @@ void addFloat2(std::vector<DirectX::XMFLOAT2>& component, std::stringstream& rea
 	component[component.size() - 1].y = std::stof(wantedString);
 }
 
+//void readMtlFile(newObjThing* objPtr, std::stringstream& readCharacters, std::string& wantedString, std::string mtlFileName, ID3D11ShaderResourceView* missingTexture)
+//{
+//	std::getline(readCharacters, wantedString);
+//	std::string savedMtlName = wantedString;
+//	std::ifstream mtilFile("mtlFiles/" + mtlFileName);
+//	if (!mtilFile.is_open()) { std::cout << "Could not open mtl!\n"; continue; }
+//	for (int i = 0; i < 3; i++)
+//	{
+//		objPtr->textureSrvs.push_back(nullptr);
+//	}
+//
+//	while (std::getline(mtilFile, loadLines) && going)
+//	{
+//		std::stringstream newReadCharacters(loadLines);
+//		std::getline(newReadCharacters, wantedString, ' ');
+//		std::getline(newReadCharacters, wantedString);
+//		if (wantedString == savedMtlName)
+//		{
+//			while (std::getline(mtilFile, loadLines))
+//			{
+//				std::stringstream newNewReadCharacters(loadLines);
+//				std::getline(newNewReadCharacters, wantedString, ' ');
+//				if (loadLines == "") { going = false;  break; }
+//				else if (wantedString == "Ns") { std::getline(newNewReadCharacters, wantedString);  objPtr->specularComp.push_back(std::stof(wantedString)); }
+//				else if (wantedString == "map_Ka" || wantedString == "map_Kd" || wantedString == "map_Ks")
+//				{
+//					int tempIndex = getIndex(wantedString);
+//					std::getline(newNewReadCharacters, wantedString);
+//					for (int i = 0; i < mat.textureNames.size(); i++)
+//					{
+//						if (wantedString == mat.textureNames[i])
+//						{
+//							objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex] = mat.textureSrvs[i];
+//						}
+//					}
+//
+//					if (objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex] == nullptr)
+//					{
+//						objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex] = createSRVforPic(device, "Textures/" + wantedString);
+//						mat.textureNames.push_back(wantedString);
+//						mat.textureSrvs.push_back(objPtr->textureSrvs[objPtr->indexes.size() * 3 + tempIndex]);
+//					}
+//
+//				}
+//			}
+//		}
+//
+//	}
+//	going = true;
+//	for (int i = 0; i < 3; i++)
+//	{
+//		if (objPtr->textureSrvs[i + objPtr->indexes.size() * 3] == nullptr)
+//		{
+//			objPtr->textureSrvs[i + objPtr->indexes.size() * 3] = missingTexture;
+//		}
+//	}
+//	objPtr->indexes.push_back(objPtr->indices.size());
+//	mtilFile.close();
+//}
+
 void readModels(std::vector<objThing> &objArr)
 {
 	std::ifstream objFile("objectFile.txt");
@@ -413,40 +473,6 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 								}
 
 							}
-							/*else if (wantedString == "map_Kd")
-							{
-								std::getline(newNewReadCharacters, wantedString);
-								for (int i = 0; i < mat.textureNames.size(); i++)
-								{
-									if (wantedString == mat.textureNames[i])
-									{
-										objPtr->textureSrvs[1 + objPtr->indexes.size() * 3] = mat.textureSrvs[i];
-									}
-								}
-								if (objPtr->textureSrvs[1 + objPtr->indexes.size() * 3] == nullptr)
-								{
-									objPtr->textureSrvs[1 + objPtr->indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
-									mat.textureNames.push_back(wantedString);
-									mat.textureSrvs.push_back(objPtr->textureSrvs[1 + objPtr->indexes.size() * 3]);
-								}
-							}
-							else if (wantedString == "map_Ks")
-							{
-								std::getline(newNewReadCharacters, wantedString);
-								for (int i = 0; i < mat.textureNames.size(); i++)
-								{
-									if (wantedString == mat.textureNames[i])
-									{
-										objPtr->textureSrvs[2 + objPtr->indexes.size() * 3] = mat.textureSrvs[i];
-									}
-								}
-								if (objPtr->textureSrvs[2 + objPtr->indexes.size() * 3] == nullptr)
-								{
-									objPtr->textureSrvs[2 + objPtr->indexes.size() * 3] = createSRVforPic(device, "Textures/" + wantedString);
-									mat.textureNames.push_back(wantedString);
-									mat.textureSrvs.push_back(objPtr->textureSrvs[2 + objPtr->indexes.size() * 3]);
-								}
-							}*/
 						}
 					}
 
