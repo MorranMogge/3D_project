@@ -44,7 +44,7 @@ HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> 
         tessFactor = 1.0f;
     else
         tessFactor = (maxTesselation * (maxdistance - dist) / maxdistance);
-    for (int i = 0; i < 3; ++i) //SET DYNAMICALLY
+    for (int i = 0; i < 3; ++i)
     {
         output.edgeTessFactor[i] = tessFactor;
     }

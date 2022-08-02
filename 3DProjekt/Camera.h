@@ -1,5 +1,6 @@
 #pragma once
 #include <directxmath.h>
+#include <DirectXCollision.h>
 #include <iostream>
 #include <d3d11.h>
 #include <fstream>
@@ -61,7 +62,10 @@ public:
 	void sendView(ID3D11DeviceContext* immediateContext, int index = 1, bool cs = false);
 	void sendVectorsGeometry(ID3D11DeviceContext* immediateContext);
 	void changeParticleSize(float size);
+	void updateFrustum();
+	bool createFrustum();
 	float getParticleSize();
+	DirectX::BoundingFrustum getFrustumBB()const;
 
 private:
 	bool temps[4]{ true, true, true, true };
@@ -74,6 +78,7 @@ private:
 	WorldProjMatrix VP;
 	worldViewProj computeMatrix;
 	GeometryVectors vectors;
+	BoundingFrustum frustumBB;
 
 	//New ones
 	XMMATRIX rotationMX;

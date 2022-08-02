@@ -62,6 +62,9 @@ SceneObject::SceneObject(newObjThing inObj)
 		textureSrv.push_back(inObj.textureSrvs[i]);
 	}*/
 	worldMatrix = DirectX::XMMatrixIdentity();
+	DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&inObj.topLeft);
+	DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&inObj.bottomRight);
+	DirectX::BoundingBox::CreateFromPoints(bb, p1, p2);
 }
 
 SceneObject::SceneObject()
@@ -181,6 +184,15 @@ void SceneObject::setVertices(std::vector<SimpleVertex>* inVertices)
 void SceneObject::setIndices(std::vector<DWORD>* indices)
 {
 	this->indices = indices;
+}
+
+void SceneObject::setBoundingBox()
+{
+	worldMatrix = DirectX::XMMatrixIdentity();
+	worldMatrix *= DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
+	worldMatrix *= DirectX::XMMatrixRotationZ(rot.z) * DirectX::XMMatrixRotationX(rot.x) * DirectX::XMMatrixRotationY(rot.y);
+	worldMatrix *= DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	bb.Transform(bb, worldMatrix);
 }
 
 bool SceneObject::setVertexBuffer(ID3D11Device* device)
@@ -312,6 +324,13 @@ void SceneObject::setRot(float arr[])
 	rot.z = arr[2];
 }
 
+void SceneObject::setRot(DirectX::XMFLOAT3 newRot)
+{
+	rot.x = newRot.x;
+	rot.y = newRot.y;
+	rot.z = newRot.z;
+}
+
 void SceneObject::setScale(float arr[])
 {
 	scale.x = arr[0];
@@ -319,9 +338,21 @@ void SceneObject::setScale(float arr[])
 	scale.z = arr[2];
 }
 
+DirectX::BoundingBox SceneObject::getBB() const
+{
+	return this->bb;
+}
+
 void SceneObject::setWorldPos(float x, float y, float z)
 {
 	pos.x = x;
 	pos.y = y;
 	pos.z = x;
+}
+
+void SceneObject::setWorldPos(DirectX::XMFLOAT3 newPos)
+{
+	pos.x = newPos.x;
+	pos.y = newPos.y;
+	pos.z = newPos.z;
 }

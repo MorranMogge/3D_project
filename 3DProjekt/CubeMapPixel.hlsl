@@ -1,5 +1,4 @@
 TextureCube tex  : TEXTURE :  register(t0);
-//Texture2DArray tex : register(t0);
 SamplerState sampl  :   register(s0);
 
 cbuffer camera : register(b0)
@@ -24,7 +23,7 @@ float4 main(VertexShaderOutput input) : SV_TARGET
     input.normal = normalize(input.normal);
     float3 loc;
     
-    if (padding < 25) loc = reflect(input.normal, temp);
+    if (padding > 25) loc = reflect(input.normal, temp);
     else loc = reflect(temp, input.normal);
     loc = normalize(loc);
     

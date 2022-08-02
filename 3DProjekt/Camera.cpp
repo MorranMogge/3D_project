@@ -257,7 +257,7 @@ bool Camera::CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* 
 
 	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
-	projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI*(90.f/360.f), (32.f*32.f) / (32.f*32.f), 0.1f, 1000.0f);
+	projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI*(90.f/360.f), (32.f*32.f) / (32.f*32.f), 0.1f, 100.0f);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 	XMStoreFloat4x4(&VP.viewProj, viewMatrix);
@@ -396,7 +396,28 @@ void Camera::changeParticleSize(float size)
 	vectors.padding1 = size;
 }
 
+void Camera::updateFrustum()
+{
+	//frustumBB.Transform(frustumBB, 1, rotVector, cameraPos);
+	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
+	projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI * (90.f / 360.f), (32.f * 32.f) / (32.f * 32.f), 0.1f, 100.0f);
+	DirectX::BoundingFrustum::CreateFromMatrix(frustumBB, projection);
+	frustumBB.Transform(frustumBB, DirectX::XMMatrixInverse(nullptr, XMMatrixLookAtLH(cameraPos, lookAtPos, upVector)));
+}
+
+bool Camera::createFrustum()
+{
+	projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI * (90.f / 360.f), (32.f * 32.f) / (32.f * 32.f), 0.1f, 100.0f);
+	DirectX::BoundingFrustum::CreateFromMatrix(frustumBB, projection);
+	return true;
+}
+
 float Camera::getParticleSize()
 {
 	return vectors.padding1;
+}
+
+DirectX::BoundingFrustum Camera::getFrustumBB() const
+{
+	return frustumBB;
 }

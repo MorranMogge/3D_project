@@ -419,7 +419,16 @@ void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTex
 			std::stringstream readCharacters(loadLines);
 			std::getline(readCharacters, wantedString, ' ');
 
-			if (wantedString == "v")		addFloat3(positions, readCharacters, wantedString);
+			if (wantedString == "v") 
+			{ 
+				addFloat3(positions, readCharacters, wantedString);
+				if (positions.size() == 1) { objPtr->topLeft = objPtr->bottomRight = positions.back(); }
+				else
+				{
+					if (objPtr->topLeft.x >= positions.back().x && objPtr->topLeft.y >= positions.back().y && objPtr->topLeft.z >= positions.back().z) objPtr->topLeft = positions.back();
+					else if (objPtr->bottomRight.x <= positions.back().x && objPtr->bottomRight.y <= positions.back().y && objPtr->bottomRight.z <= positions.back().z) objPtr->bottomRight = positions.back();
+				}
+			}
 
 			else if (wantedString == "vt")	addFloat2(UV, readCharacters, wantedString);
 

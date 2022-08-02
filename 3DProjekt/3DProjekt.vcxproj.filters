@@ -108,6 +108,9 @@
     <ClCompile Include="FrustumCuller.cpp">
       <Filter>Frustum Culling</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowMappingClass.cpp">
+      <Filter>Resource Files\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Material.h">
@@ -187,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="FrustumCuller.h">
       <Filter>Frustum Culling</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMappingClass.h">
+      <Filter>Resource Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

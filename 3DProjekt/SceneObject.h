@@ -1,10 +1,10 @@
 #pragma once
-#include <DirectXMath.h>
 #include <d3d11.h>
 #include <vector>
 #include <array>
 #include "structs.h"
 #include "ObjParser.h"
+#include <DirectXCollision.h>
 
 //struct Vertex
 //{
@@ -49,6 +49,7 @@ private:
 	UINT stride;
 	UINT offset;
 
+	DirectX::BoundingBox bb;
 	std::vector<materialInfo> shinyness;
 	std::vector<ID3D11Buffer*> matBuffer;
 
@@ -87,6 +88,7 @@ public:
 	void setVertices(objThing obj);
 	void setVertices(std::vector<SimpleVertex>* inVertices);
 	void setIndices(std::vector<DWORD>* indices);
+	void setBoundingBox();
 
 	bool setVertexBuffer(ID3D11Device* device);
 	bool setMatBuffer(ID3D11Device* device);
@@ -101,6 +103,8 @@ public:
 	void setWorldPos(float arr[]);
 	void setWorldPos(float x, float y, float z);
 	void setRot(float arr[]);
+	void setRot(DirectX::XMFLOAT3 newRot);
 	void setScale(float arr[]);
-
+	void setWorldPos(DirectX::XMFLOAT3 newPos);
+	DirectX::BoundingBox getBB()const;
 };

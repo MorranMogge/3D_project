@@ -27,6 +27,8 @@ struct newObjThing
 	std::vector<SimpleVertex> mesh;
 	std::vector<DWORD> indices;
 	std::vector<int> verticeCount;
+	DirectX::XMFLOAT3 topLeft;
+	DirectX::XMFLOAT3 bottomRight;
 };
 
 void readModels(std::vector<objThing> &test);

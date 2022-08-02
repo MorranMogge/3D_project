@@ -163,6 +163,7 @@
     <ClCompile Include="ParticleHandler.cpp" />
     <ClCompile Include="PipelineHelper.cpp" />
     <ClCompile Include="SceneObject.cpp" />
+    <ClCompile Include="ShadowMappingClass.cpp" />
     <ClCompile Include="TesselatorClass.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="WindowHelper.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="PipelineHelper.h" />
     <ClInclude Include="Project.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="ShadowMappingClass.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="structs.h" />
     <ClInclude Include="TesselatorClass.h" />

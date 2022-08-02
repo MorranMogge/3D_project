@@ -8,11 +8,11 @@ void CubemapClass::setRot(int index)
     //4: +z     5:  -z
 
     if (index == 0) cam.SetRotation(0.0f, NINETYDEGREES, 0.0f, immediateContext);
-    if (index == 1) cam.SetRotation(0.0f, -NINETYDEGREES, 0.0f, immediateContext);
-    if (index == 2) cam.SetRotation(-NINETYDEGREES, 0.0f, 0.0f, immediateContext);
-    if (index == 3) cam.SetRotation(NINETYDEGREES, 0.0f, 0.0f, immediateContext);
-    if (index == 4) cam.SetRotation(0.0f, 0.0f, 0.0f, immediateContext);
-    if (index == 5) cam.SetRotation(0.0f, -NINETYDEGREES*2, 0.0f, immediateContext);
+    else if (index == 1) cam.SetRotation(0.0f, -NINETYDEGREES, 0.0f, immediateContext);
+    else if (index == 2) cam.SetRotation(-NINETYDEGREES, 0.0f, 0.0f, immediateContext);
+    else if (index == 3) cam.SetRotation(NINETYDEGREES, 0.0f, 0.0f, immediateContext);
+    else if (index == 4) cam.SetRotation(0.0f, 0.0f, 0.0f, immediateContext);
+    else if (index == 5) cam.SetRotation(0.0f, -NINETYDEGREES*2, 0.0f, immediateContext);
 }
 
 void CubemapClass::updateWrldMtx()
@@ -59,11 +59,11 @@ bool CubemapClass::setUpSRVAndRTV(ID3D11Device* device)
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.Format = desc.Format;
     //srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+    /*srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
     srvDesc.Texture2DArray.FirstArraySlice = 0;
     srvDesc.Texture2DArray.MostDetailedMip = 0;
     srvDesc.Texture2DArray.MipLevels = 1;
-    srvDesc.Texture2DArray.ArraySize = AMOUNTOFSIDESACUBEHAS;
+    srvDesc.Texture2DArray.ArraySize = AMOUNTOFSIDESACUBEHAS;*/
 
 
     hr = device->CreateShaderResourceView(testTex, NULL, &srv);
@@ -360,6 +360,7 @@ void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, 
    //Draw particles from the cubes perspective
    for (int c = 0; c < AMOUNTOFSIDESACUBEHAS; c++)
    {
+        immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
         immediateContext->OMSetRenderTargets(1, &rtv[c], dsView);
         this->setRot(c);
         cam.sendView(immediateContext);
