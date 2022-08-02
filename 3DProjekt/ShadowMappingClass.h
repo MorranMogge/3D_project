@@ -19,13 +19,14 @@ private:
 
 	ID3D11Buffer* camBuffer;
 
+	bool setUpShaders(ID3D11Device* device);
 	bool setUpDepthStencilAndSRV(ID3D11Device* device);
 
 public:
 	ShadowMappingClass();
 	~ShadowMappingClass();
 	bool initiateShadowMapping(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
-	void firstPass(std::vector<SceneObject*> objects);
+	void firstPass(std::vector<SceneObject> objects);
 	void secondPass();
 };
 

@@ -171,7 +171,7 @@ bool CubemapClass::setUpCamBuffer(ID3D11Device* device)
 
     D3D11_SUBRESOURCE_DATA data;
     data.pSysMem = (void*)&camData;
-    data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+    data.SysMemPitch = data.SysMemPitch = 0; 
 
     HRESULT hr = device->CreateBuffer(&desc, &data, &camBuffer);
     if (FAILED(hr))

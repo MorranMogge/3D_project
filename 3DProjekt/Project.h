@@ -13,6 +13,7 @@
 #include "PipelineHelper.h"
 #include "D3D11Helper.h"
 #include "WindowHelper.h"
+#include "ShadowMappingClass.h"
 
 //ImGui
 #include "imGUI\imconfig.h"

@@ -1,15 +1,2 @@
-﻿  FrustumCuller.cpp
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(122,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(133,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(133,28): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(134,45): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(134,32): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Main.cpp
-D:\School\Real3Dproject\3DProjekt\Main.cpp(78,19): warning C4101: 'values': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(69,23): warning C4101: 'inputLayout': unreferenced local variable
-D:\School\Real3Dproject\3DProjekt\Main.cpp(466,36): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(466,64): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(466,90): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(536,19): warning C4101: 'tempTexture': unreferenced local variable
-  Generating Code...
-  3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe
+﻿  compilation object save succeeded; see C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ShadowVertexShader.cso
+  3DProjekt.vcxproj -> C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\3DProjekt.exe

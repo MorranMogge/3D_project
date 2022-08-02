@@ -4,7 +4,7 @@
 #include <d3d11.h>
 #include <DirectXCollision.h>
 
-#define ITERATIONS 5
+#define ITERATIONS 4
 #define CHILDRENAMOUNT 4
 
 struct Node	//Root node fits whole scene
@@ -21,10 +21,7 @@ struct Node	//Root node fits whole scene
 	};
 };
 
-struct Leaf
-{
 
-};
 
 class FrustumCuller
 {

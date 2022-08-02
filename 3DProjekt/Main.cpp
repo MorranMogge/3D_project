@@ -17,7 +17,7 @@ bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11Shade
 bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView, ShadowMappingClass& shadowMap);
 std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<newObjThing> objData);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
@@ -87,6 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	DeferredRenderer deferred(WIDTH, HEIGHT);
 	CubemapClass cubemap;
 	FrustumCuller culler;
+	ShadowMappingClass shadowMap;
 
 	//Classes
 	std::vector<newObjThing> newObj;
@@ -126,6 +127,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	tesselator.setUpTesselator(immediateContext, device, &camera);
 	deferred.initiateDeferredRenderer(immediateContext, device, swapChain, dsView, &camera, &imGuiStuff);
 	cubemap.initiateCubemap(immediateContext, device, dsView);
+	bool shadow = shadowMap.initiateShadowMapping(immediateContext, device);
 	camera.createFrustum();
 
 	ImGui_ImplWin32_Init(window);
@@ -186,7 +188,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			camera.moveCamera(immediateContext, camera, 1.f / fps);
 			
 			Render(immediateContext, rtv, dsView, viewport, 
-				samplerState, camera, camData, camBuf, objects, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator, deferred, cubemap, culler, otherView);
+				samplerState, camera, camData, camBuf, objects, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator, deferred, cubemap, culler, otherView, shadowMap);
 			
 
 			swapChain->Present(0, 0);
@@ -348,7 +350,7 @@ void Render
 	D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData,
 	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool &test, float clearColour[], 
 	ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles, TesselatorClass& tesselator, 
-	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView
+	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView, ShadowMappingClass& shadowMap
 )
 {
 	immediateContext->RSSetViewports(1, &viewport);
@@ -371,7 +373,7 @@ void Render
 	immediateContext->Map(imGuiBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &values);
 	memcpy(values.pData, &imGuiStuff, sizeof(ImGuiValues));
 	immediateContext->Unmap(imGuiBuffer, 0);
-
+	
 	//Pixel Shader
 	//immediateContext->PSSetShader(pShader, nullptr, 0);
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
@@ -386,18 +388,19 @@ void Render
 	}
 
 	camera.updateFrustum();
-	std::vector<SceneObject*> newObjects = culler.cullObjects(camera.getFrustumBB());
+	//std::vector<SceneObject*> newObjects = culler.cullObjects(camera.getFrustumBB());
 
-	for (int i = 0; i < newObjects.size(); i++)
+	/*for (int i = 0; i < newObjects.size(); i++)
 	{
 		newObjects[i]->draw(test);
-	}
-	/*for (int i = 0; i < objects.size(); i++)
+	}*/
+	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i].draw(test);
-	}*/
+	}
 
 	cubemap.draw(objects, particles, dsView);
+	shadowMap.firstPass(objects);
 
 	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);

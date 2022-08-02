@@ -153,7 +153,7 @@ void SceneObject::draw(bool testDraw)
 
 	if (!testDraw)
 	{
-		immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
+		//immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
 		immediateContext->Draw(indices->size(), 0);
 	}
 	else

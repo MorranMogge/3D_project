@@ -1,0 +1,14 @@
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ComputeShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\CubeMapPixel.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\CubeMapVertex.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\DomainShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\GeometryPass.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\HullShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ParticleGeometryShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ParticlePixelShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ParticleShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ParticleVertex.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\PixelShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\tempPixel.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\VertexShader.cso
+C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ShadowVertexShader.cso

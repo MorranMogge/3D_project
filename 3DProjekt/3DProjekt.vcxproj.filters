@@ -235,5 +235,6 @@
     <FxCompile Include="CubeMapVertex.hlsl">
       <Filter>Cubemap</Filter>
     </FxCompile>
+    <FxCompile Include="ShadowVertexShader.hlsl" />
   </ItemGroup>
 </Project>
