@@ -29,14 +29,12 @@ void main( uint3 DTid : SV_DispatchThreadID )
         backBuffer[DTid.xy] = inNormal[DTid.xy];
     else if (imcolour == 1)
         backBuffer[DTid.xy] = inAmbient[DTid.xy];
-    //else if (imwireframe == 1)
-    //    backBuffer[DTid.xy] = float4(1.0, 0.0, 0.0, 1.0);
     else
     {
         float4 normal = inNormal[DTid.xy];
         float4 colour = inAmbient[DTid.xy];
         float4 position = inPosition[DTid.xy];
-        float3 lightPos = float3(0, 10, 0);
+        float3 lightPos = float3(0,50,0);
     
         normal = normalize(normal);
         float3 vectorToLight = normalize(lightPos - position.xyz);
@@ -46,7 +44,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 
         float3 ambientClr = 0.25 * colour;
         float3 diffuseClr = 0.75 * inDiffuse[DTid.xy].xyz * max(dot(normal.xyz, vectorToLight), 0.0f);
-        float3 specularClr = (0.95 * inSpecular[DTid.xy].xyz * pow(max(dot(reflection, vectorToCam), 0.0f), 25));
+        float3 specularClr = (1 * inSpecular[DTid.xy].xyz * pow(max(dot(reflection, vectorToCam), 0.0f), 25));
 
 	
         float3 finalColour = (ambientClr + diffuseClr);

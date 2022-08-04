@@ -56,16 +56,6 @@ bool CubemapClass::setUpSRVAndRTV(ID3D11Device* device)
     HRESULT hr = device->CreateTexture2D(&desc, NULL, &testTex);
     if (FAILED(hr)) { std::cout << "Failed to create cube map texture2D\n"; return false; }
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    srvDesc.Format = desc.Format;
-    //srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-    /*srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-    srvDesc.Texture2DArray.FirstArraySlice = 0;
-    srvDesc.Texture2DArray.MostDetailedMip = 0;
-    srvDesc.Texture2DArray.MipLevels = 1;
-    srvDesc.Texture2DArray.ArraySize = AMOUNTOFSIDESACUBEHAS;*/
-
-
     hr = device->CreateShaderResourceView(testTex, NULL, &srv);
     if (FAILED(hr)) { std::cout << "Failed to create cube map srv\n"; return false; }
 
@@ -260,7 +250,7 @@ bool CubemapClass::setUpConstBuf(ID3D11Device* device)
 }
 
 CubemapClass::CubemapClass()
-    :camBuffer(nullptr), immediateContext(nullptr), pShader(nullptr), srv(nullptr), dsView(nullptr), timer(0.0f), increase(1)
+    :camBuffer(nullptr), immediateContext(nullptr), pShader(nullptr), srv(nullptr), dsView(nullptr), timer(0.0f)
 {
     camData.cameraPosition = DirectX::XMFLOAT3(5, 5, 5);
     camData.tesselationConst = 0;
@@ -324,21 +314,16 @@ void CubemapClass::createCube(newObjThing vertices)
 
 void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view)
 {
-    float clearColour[4]{ 0.0,0.0,1.0,0.0 }; //Blue sky
+    immediateContext->HSSetShader(nullptr, nullptr, 0);	//Since we use tesselation for LOD in deferred
+    immediateContext->DSSetShader(nullptr, nullptr, 0); //and do not want it here
 
-    for (int i = 0; i < AMOUNTOFSIDESACUBEHAS; i++)
-    {
-        immediateContext->ClearRenderTargetView(rtv[i], clearColour);
-    }
-
-    immediateContext->HSSetShader(nullptr, nullptr, 0);	//Since we use tesselation for LOD
-    immediateContext->DSSetShader(nullptr, nullptr, 0); //-||-
+    float clearColour[4]{ 0.0,0.0,0.0,0.0 }; //Blue sky
 
     immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    this->updateCamBuffer(); //Update Cam
-    immediateContext->PSSetShader(pShader, nullptr, 0);
+    //this->updateCamBuffer(); //Update Cam
 
+    immediateContext->PSSetShader(pShader, nullptr, 0);
     immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
 
     //Draw objects from the cubes perspective

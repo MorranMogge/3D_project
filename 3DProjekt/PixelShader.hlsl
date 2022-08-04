@@ -1,32 +1,10 @@
 Texture2D ambient : register(t0);
 Texture2D diffuse : register(t1);
 Texture2D specular : register(t2);
+Texture2D depthTexture : register(t3);
 
-SamplerState sampl;
-
-//cbuffer lightBuffer : register (b0)
-//{
-//	//Light properties
-//	float3 ambientLight;
-//	float padd1;
-//	float3 diffuseLight;
-//	float padd2;
-//	float3 specularLight;
-//	float padd3;
-//	float3 lightPos;
-//	float padd4;
-//	float3 cameraPos;
-//	float padd5;
-//}
-
-//cbuffer materialInfo : register (b1)
-//{
-//	//Material properties
-//	float ambientMatCoefficient;
-//	float diffuseMatCoefficient;
-//	float specularMatCoefficient;
-//	float shininess;
-//}
+SamplerState sampl : register(s0);
+SamplerState shadowSampler : register(s1);
 
 cbuffer cam : register(b0)
 {
@@ -40,10 +18,28 @@ struct PixelShaderInput
     float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
+    float4 lightPos : LIGHTPOS;
 };
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
+	
+    input.lightPos.xy /= input.lightPos.w;
+
+    float2 smTexcoord = float2(0.5f * input.lightPos.x + 0.5f, -0.5f * input.lightPos.y + 0.5f);
+    float depth = input.lightPos.z / input.lightPos.w;
+    float SHADOW_EPSILON = 0.000125f;
+    float dx = 1.f / 1024.0f;
+    float dy = 1.f / 1024.0f;
+    float d0 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(0.0f, 0.0f)).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
+    float d1 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(dx, 0.0f)).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
+    float d2 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(0.0f, dy)).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
+    float d3 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(dx, dy)).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
+    
+    float shadowco = (d0 + d1 + d2 + d3) / 4;
+    if (shadowco <= 0.3) 
+        shadowco = 0.3f;
+	
 	float3 ambientColour = ambient.Sample(sampl, input.uv).xyz;
 	float3 diffuseColour = diffuse.Sample(sampl, input.uv).xyz;
 	float3 specularColour = specular.Sample(sampl, input.uv).xyz;
@@ -63,5 +59,5 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	float3 finalColour = (ambientClr + diffuseClr);
 	//finalColour += specularClr;
 
-	return float4(finalColour,1.0f);
+    return float4(shadowco * finalColour, 1.0f);
 }

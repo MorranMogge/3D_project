@@ -11,12 +11,12 @@ struct VertexShaderOutput
     float4 worldPos : WORLDPOSITION;
 	float4 normal : NORMAL;
 	float2 uv : UV;
+    float4 lightPos : LIGHTPOS;
 };
 
 cbuffer constantBuf : register (b0)
 {
 	float4x4 worldMatrix;
-	//float4x4 projectionMatrix;
 };
 
 cbuffer Matrices : register(b1)
@@ -24,17 +24,21 @@ cbuffer Matrices : register(b1)
     float4x4 viewProj;
 }
 
+cbuffer lightMtx : register(b2)
+{
+    float4x4 lightViewProj;
+}
+
+
 VertexShaderOutput main(VertexShaderInput input)
 {
 	VertexShaderOutput output;
-	//Byta namn
 	float4x4 temp = mul(worldMatrix, viewProj);
-	//float4x4 test = mul(worldMatrix, projectionMatrix);
+	
     output.worldPos = mul(float4(input.position, 1.0f), worldMatrix);
-	//output.position = mul(float4(input.position, 1.0f), test);
 	output.position = mul(float4(input.position, 1.0f), temp);
-	//Fixa normal
 	output.normal = mul(float4(input.normal, 0.0f), worldMatrix);
+    output.lightPos = mul(output.worldPos, lightViewProj);
 	output.uv = input.uv;
 	return output;
 }

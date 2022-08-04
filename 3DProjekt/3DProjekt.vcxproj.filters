@@ -196,9 +196,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="GeometryPass.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="ParticleVertex.hlsl">
       <Filter>ParticleSystem</Filter>
     </FxCompile>
@@ -220,7 +217,7 @@
     <FxCompile Include="ComputeShader.hlsl">
       <Filter>DeferredRendering</Filter>
     </FxCompile>
-    <FxCompile Include="tempPixel.hlsl">
+    <FxCompile Include="GeometryPass.hlsl">
       <Filter>DeferredRendering</Filter>
     </FxCompile>
     <FxCompile Include="VertexShader.hlsl">

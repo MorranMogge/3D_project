@@ -1,6 +1,6 @@
 #include "ShadowMappingClass.h"
 
-bool ShadowMappingClass::setUpShaders(ID3D11Device* device)
+bool ShadowMappingClass::setUpShaders(ID3D11Device* device, std::string& vShaderByteCode)
 {
    
     std::string shaderData;
@@ -24,8 +24,10 @@ bool ShadowMappingClass::setUpShaders(ID3D11Device* device)
         return false;
     }
 
+    vShaderByteCode = shaderData;
     shaderData.clear();
     reader.close();
+
     return true;
 }
 
@@ -64,8 +66,40 @@ bool ShadowMappingClass::setUpDepthStencilAndSRV(ID3D11Device* device)
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = 1;
     hr = device->CreateShaderResourceView(tempTexture, &srvDesc, &srv);
+    tempTexture->Release();
 
 	return true;
+}
+
+bool ShadowMappingClass::setUpInputLayout(ID3D11Device* device, const std::string& vShaderByteCode)
+{
+    D3D11_INPUT_ELEMENT_DESC inputDesc[1] =
+    {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+    };
+
+    HRESULT hr = device->CreateInputLayout(inputDesc, std::size(inputDesc), vShaderByteCode.c_str(), vShaderByteCode.length(), &inputLayout);
+
+    return !FAILED(hr);
+}
+
+bool ShadowMappingClass::setUpSamplerState(ID3D11Device* device)
+{
+    D3D11_SAMPLER_DESC samplerDesc = { };
+    samplerDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.BorderColor[0] = 0.0f;
+    samplerDesc.BorderColor[1] = 0.0f;
+    samplerDesc.BorderColor[2] = 0.0f;
+    samplerDesc.BorderColor[3] = 0.0f;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    HRESULT hr = device->CreateSamplerState(&samplerDesc, &shadowSampler);
+    return !FAILED(hr);
 }
 
 ShadowMappingClass::ShadowMappingClass()
@@ -76,14 +110,21 @@ ShadowMappingClass::~ShadowMappingClass()
 {
 	dsView->Release();
 	srv->Release();
+    shadowSampler->Release();
+    shadowVertex->Release();
+    inputLayout->Release();
+    //camBuffer->Release();
 }
 
 bool ShadowMappingClass::initiateShadowMapping(ID3D11DeviceContext* immediateContext, ID3D11Device* device)
 {
+    std::string vShaderByteCode;
 	this->immediateContext = immediateContext;
-	if (this->immediateContext == nullptr)	    return false;
-	if (!this->setUpDepthStencilAndSRV(device))	return false;
-    if (!this->setUpShaders(device))            return false;
+	if (this->immediateContext == nullptr)	                return false;
+	if (!this->setUpDepthStencilAndSRV(device))	            return false;
+    if (!this->setUpShaders(device, vShaderByteCode))       return false;
+    if (!this->setUpInputLayout(device, vShaderByteCode))   return false;
+    if (!this->setUpSamplerState(device))                   return false;
 	for (int i = 0; i < LIGHTAMOUNT; i++) { if (!cameras[i].CreateCBuffer(immediateContext, device)) return false; }
     cameras[0].SetPosition(0, 50, 0);
     cameras[0].SetRotation(XM_PI / 2, 0, 0, immediateContext);
@@ -93,16 +134,48 @@ bool ShadowMappingClass::initiateShadowMapping(ID3D11DeviceContext* immediateCon
 void ShadowMappingClass::firstPass(std::vector<SceneObject> objects)
 {
     immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+    immediateContext->IASetInputLayout(inputLayout);
 	immediateContext->OMSetRenderTargets(0, nullptr, dsView);
-    cameras[0].sendView(immediateContext);
-	//immediateContext->PSSetSamplers(0, 1, &shadowSampler);
 	immediateContext->VSSetShader(shadowVertex, nullptr, 0);
-    immediateContext->PSSetShader(nullptr, nullptr, 0);
+    cameras[0].sendView(immediateContext);
     
     for (int i = 0; i < objects.size(); i++)
     {
         objects[i].draw(false);
     }
 
-	//Texture2D depthTexture
+    immediateContext->VSSetShader(nullptr, nullptr, 0);
+}
+
+void ShadowMappingClass::firstPass(std::vector<SceneObject*> objects)
+{
+    immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+    immediateContext->IASetInputLayout(inputLayout);
+    immediateContext->OMSetRenderTargets(0, nullptr, dsView);
+    immediateContext->VSSetShader(shadowVertex, nullptr, 0);
+    cameras[0].sendView(immediateContext);
+
+    for (int i = 0; i < objects.size(); i++)
+    {
+        objects[i]->draw(false);
+    }
+
+    immediateContext->VSSetShader(nullptr, nullptr, 0);
+}
+
+void ShadowMappingClass::secondPass(int index)
+{
+    cameras[0].sendView(immediateContext, index);
+    immediateContext->PSSetSamplers(1, 1, &shadowSampler);
+    immediateContext->PSSetShaderResources(3, 1, &srv);
+}
+
+void ShadowMappingClass::clearSecondPass()
+{
+    ID3D11ShaderResourceView* nullSrv = nullptr;
+    ID3D11SamplerState* nullSampler[2]{ nullptr };
+    immediateContext->PSSetSamplers(0, 2, nullSampler);
+    immediateContext->PSSetShaderResources(3, 1, &nullSrv);
 }

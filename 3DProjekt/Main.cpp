@@ -9,6 +9,8 @@
 #include "Project.h"
 
 
+
+
 using namespace DirectX;
 
 void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData, Camera& cam);
@@ -28,13 +30,36 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 
+	DirectX::XMFLOAT3 cubePositions[20] =
+	{
+		DirectX::XMFLOAT3(2*5.0f,5.0f,2*5.0f),
+		DirectX::XMFLOAT3(2*10.0f,5.0f,2*10.0f),
+		DirectX::XMFLOAT3(2*15.0f,5.0f,2*15.0f),
+		DirectX::XMFLOAT3(2*20.0f,5.0f,2*20.0f),
+		DirectX::XMFLOAT3(2* 22.5f,5.0f,2* 22.5f),
+		DirectX::XMFLOAT3(2*-5.0f,5.0f,2*-5.0f),
+		DirectX::XMFLOAT3(2*-10.0f,5.0f,-2*10.0f),
+		DirectX::XMFLOAT3(2*-15.0f,5.0f,-2*15.0f),
+		DirectX::XMFLOAT3(2*-20.0f,5.0f,-2*20.0f),
+		DirectX::XMFLOAT3(2*-22.5f,5.0f,-2* 22.5f),
+		DirectX::XMFLOAT3(2*5.0f,5.0f,-2 * 5.0f),
+		DirectX::XMFLOAT3(2*10.0f,5.0f,-2*10.0f),
+		DirectX::XMFLOAT3(2*15.0f,5.0f,-2*15.0f),
+		DirectX::XMFLOAT3(2*20.0f,5.0f,-2*20.0f),
+		DirectX::XMFLOAT3(2* 22.5f,5.0f,-2*25.0f),
+		DirectX::XMFLOAT3(2*-5.0f,5.0f,2 * 5.0f),
+		DirectX::XMFLOAT3(2*-10.0f,5.0f,2*10.0f),
+		DirectX::XMFLOAT3(2*-15.0f,5.0f,2*15.0f),
+		DirectX::XMFLOAT3(2*-20.0f,5.0f,2*20.0f),
+		DirectX::XMFLOAT3(2*-22.5f,5.0f,2*22.5f)
+	};
 
 	//First we set some values
 	float xyzPos[3] = { 0.f,0.f,0.0f,};
 	float xyzRot[3] = { 0.f,0.f,0.f };
 	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
 	float xyzScale[3] = { 1.f,1.f,1.f };
-	float testValues[3] = { 0.0f,10.0f,0.0f };
+	float testValues[3] = { -8.5f,10.0f,-8.5f };
 	float testValues2[3] = { 10.0f,1.0f,5.0f };
 	bool x = true;
 	bool rotation = false;
@@ -60,7 +85,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	std::chrono::time_point<std::chrono::system_clock> start;
 	start = std::chrono::system_clock::now();
 
-	//Basic stuff
 	ID3D11Device			* device;
 	ID3D11DeviceContext		* immediateContext;
 	IDXGISwapChain			* swapChain;
@@ -141,26 +165,35 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	{
 		objects.push_back(SceneObject(newObj[i]));
 		objects[i].initiateObject(immediateContext, device, &newObj[i].mesh, &newObj[i].indices);
-		//objects[i].setBoundingBox();
 	}
 
 
-	/*objects.push_back(SceneObject(newObj[5]));
-	objects[4].initiateObject(immediateContext, device, &newObj[5].mesh, &newObj[5].indices);*/
-	testValues[0] = -10;
 	objects[1].setWorldPos(testValues);
 	objects[0].setWorldPos(testValues2);
 	testValues[1] = -1;
-	//objects[3].setWorldPos(testValues);
 
-	testValues[0] = 0.25f;
-	testValues[1] = 0.25f;
-	testValues[2] = 0.25f;
+	testValues[0] = 1.0f;
+	testValues[1] = 1.0f;
+	testValues[2] = 1.0f;
 
 	objects[1].setScale(testValues);
 	//objects = setUpScene(immediateContext, device, objects, newObj);
 	objects.push_back(SceneObject(newObj[0]));
 	objects[4].initiateObject(immediateContext, device, &newObj[0].mesh, &newObj[0].indices);
+
+	testValues[0] = 2.0f;
+	testValues[1] = 1.0f;
+	testValues[2] = 2.0f;
+	//objects[4].setScale(testValues);
+
+	int amount = objects.size();
+	int counter = 0;
+	for (int i = objects.size(); i < 20 + amount; i++)
+	{
+		objects.push_back(SceneObject(newObj[0]));
+		objects[i].initiateObject(immediateContext, device, &newObj[0].mesh, &newObj[0].indices);
+		objects[i].setWorldPos(cubePositions[counter++]);
+	}
 
 	for (auto& o : objects)
 	{
@@ -171,7 +204,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		}
 	}
 
-	culler.initiateCuller(&objects, 256, 256);
+	int quadTreeSize = 64;
+	culler.initiateCuller(&objects, quadTreeSize, quadTreeSize);
 
 	while (msg.message != WM_QUIT)
 	{
@@ -180,7 +214,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-
+		
 
 		//This allows us to update depending on time since last frame (in this case 144 times per second)
 		if (((std::chrono::duration<float>)(std::chrono::system_clock::now() - start)).count() > 1.0f / fps)
@@ -353,54 +387,57 @@ void Render
 	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView, ShadowMappingClass& shadowMap
 )
 {
-	immediateContext->RSSetViewports(1, &viewport);
-	objects[4].setWorldPos(camera.GetPositionFloat3());
-	objects[4].setRot(camera.GetRotationFloat3());
-
-	deferred.firstPass();
-	tesselator.setWireFrame(imGuiStuff.imwireframe);
-	tesselator.setRasterizerState();
-
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
 	camData.cameraPosition = camera.GetPositionFloat3();
 	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
 	memcpy(subCam.pData, &camData, sizeof(CamData));
 	immediateContext->Unmap(camBuffer, 0);
 
-	immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
-
 	D3D11_MAPPED_SUBRESOURCE values = {};
 	immediateContext->Map(imGuiBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &values);
 	memcpy(values.pData, &imGuiStuff, sizeof(ImGuiValues));
 	immediateContext->Unmap(imGuiBuffer, 0);
-	
-	//Pixel Shader
-	//immediateContext->PSSetShader(pShader, nullptr, 0);
-	immediateContext->PSSetSamplers(0, 1, &samplerState);
-
-	if (GetAsyncKeyState((VK_SHIFT)))
-	{
-		otherView.sendView(immediateContext);
-	}
-	else
-	{
-		camera.sendView(immediateContext);
-	}
-
+	immediateContext->ClearRenderTargetView(rtv, clearColour);
 	camera.updateFrustum();
-	//std::vector<SceneObject*> newObjects = culler.cullObjects(camera.getFrustumBB());
-
-	/*for (int i = 0; i < newObjects.size(); i++)
+	std::vector<SceneObject*> culledObjects = culler.cullObjects(camera.getFrustumBB());
+	for (int i = 0; i < culledObjects.size(); i++) //This ensures we always see the camera
 	{
-		newObjects[i]->draw(test);
-	}*/
-	for (int i = 0; i < objects.size(); i++)
+		if (&objects[4] == culledObjects[i]) break;
+		culledObjects.push_back(&objects[4]);
+	}
+	
+	objects[4].setWorldPos(camera.GetPositionFloat3());
+	objects[4].setRot(camera.GetRotationFloat3());
+
+	immediateContext->PSSetSamplers(0, 1, &samplerState);
+	immediateContext->RSSetViewports(1, &viewport);
+
+	shadowMap.firstPass(culledObjects);
+	deferred.firstPass();
+	immediateContext->PSSetSamplers(0, 1, &samplerState);
+	shadowMap.secondPass();
+
+	tesselator.setWireFrame(imGuiStuff.imwireframe);
+	tesselator.setRasterizerState();
+	immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
+
+
+	if (GetAsyncKeyState((VK_LCONTROL))) otherView.sendView(immediateContext);
+	else camera.sendView(immediateContext);
+
+	for (int i = 0; i < culledObjects.size(); i++)
+	{
+		culledObjects[i]->draw(test);
+	}
+	/*for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i].draw(test);
-	}
+	}*/
 
 	cubemap.draw(objects, particles, dsView);
-	shadowMap.firstPass(objects);
+	shadowMap.clearSecondPass();
+
+	immediateContext->PSSetSamplers(0, 1, &samplerState);
 
 	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
@@ -414,17 +451,13 @@ void Render
 
 	//Particle Draw call
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
-	if (GetAsyncKeyState((VK_SHIFT)))
-	{
-		otherView.sendView(immediateContext);
-	}
-	else
-	{
-		camera.sendView(immediateContext);
-	}
+
+	if (GetAsyncKeyState((VK_LCONTROL))) otherView.sendView(immediateContext);
+	else camera.sendView(immediateContext);
+
 	immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
 	cubemap.drawCube();
-	if (GetAsyncKeyState((VK_SHIFT))) 	particles.drawParticles(&otherView);
+	if (GetAsyncKeyState((VK_LCONTROL))) 	particles.drawParticles(&otherView);
 	else particles.drawParticles();
 
 	particles.updateParticles();
@@ -474,6 +507,11 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
 		{
+			ImGui::Text("Information");
+			ImGui::Text("Camera position: X: %8.8f Y: %8.8f Z: %8.8f", cam.GetPositionFloat3().x, cam.GetPositionFloat3().y, cam.GetPositionFloat3().z);
+			ImGui::Text("FPS: %8.8f");
+			ImGui::Text("");
+
 			ImGui::ColorEdit3("BG colour", bgClr);
 			ImGui::Text("");
 			ImGui::Text("Draw calls");

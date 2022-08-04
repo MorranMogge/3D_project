@@ -1,2 +1,5 @@
 newmtl Material
 Ns 100.00
+map_Ka White.png
+map_Kd White.png
+map_Ks White.png

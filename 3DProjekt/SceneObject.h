@@ -66,19 +66,19 @@ private:
 	DirectX::XMFLOAT4X4 wrlMtx;
 
 	//Vertices and texture
-	std::vector<int> indexes;
+	std::vector<int*> indexes;
 	std::vector<SimpleVertex>* vertices;
 	ID3D11Buffer* vertexBuffer;
 	std::vector<ID3D11ShaderResourceView*> textureSrv;
 	ID3D11Buffer* indexBuffer;
 	std::vector<DWORD> *indices;
-	std::vector<int> verticeCount;
+	std::vector<int*> verticeCount;
 
 	void updateConstantBuffer();
 	void updateWorldMatrix();
 public:
 	SceneObject(std::vector<SimpleVertex>* inVertices);
-	SceneObject(newObjThing inObj);
+	SceneObject(newObjThing &inObj);
 	SceneObject();
 	~SceneObject();
 	bool setImmediateContext(ID3D11DeviceContext* immediateContext);

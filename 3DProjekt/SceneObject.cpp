@@ -30,17 +30,14 @@ SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
 	this->vertices = inVertices;
 	
 	worldMatrix = DirectX::XMMatrixIdentity();
-	//worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
-	//worldMatrix *= DirectX::XMMatrixRotationY(0);
-	//worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 }
 
-SceneObject::SceneObject(newObjThing inObj)
+SceneObject::SceneObject(newObjThing &inObj)
 	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({ 1,1,1 })
 {
 	for (int i = 0; i < inObj.indexes.size(); i++)
 	{
-		indexes.push_back(inObj.indexes[i]);
+		indexes.push_back(&inObj.indexes[i]);
 		if (i < inObj.specularComp.size()) shinyness.push_back(materialInfo(inObj.specularComp[i]));
 	}
 	for (int i = 0; i < inObj.textureSrvs.size(); i++)
@@ -49,7 +46,7 @@ SceneObject::SceneObject(newObjThing inObj)
 	}
 	for (int i = 0; i < inObj.verticeCount.size(); i++)
 	{
-		this->verticeCount.push_back(inObj.verticeCount[i]);
+		this->verticeCount.push_back(&inObj.verticeCount[i]);
 	}
 
 	/*for (int i = 0; i < inObj.mesh.size(); i++)
@@ -126,7 +123,7 @@ void SceneObject::draw()
 		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
 		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
 		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
-		immediateContext->DrawIndexed(verticeCount[i], indexes[i], 0);
+		immediateContext->DrawIndexed(*verticeCount[i], *indexes[i], 0);
 	}
 }
 
@@ -153,7 +150,7 @@ void SceneObject::draw(bool testDraw)
 
 	if (!testDraw)
 	{
-		//immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
+		immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
 		immediateContext->Draw(indices->size(), 0);
 	}
 	else
@@ -165,8 +162,8 @@ void SceneObject::draw(bool testDraw)
 			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
 			immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
 			immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
-			immediateContext->DrawIndexed(verticeCount[i], counter, 0);
-			counter += verticeCount[i];
+			immediateContext->DrawIndexed(*verticeCount[i], counter, 0);
+			counter += *verticeCount[i];
 		}
 	}
 }
@@ -192,7 +189,7 @@ void SceneObject::setBoundingBox()
 	worldMatrix *= DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 	worldMatrix *= DirectX::XMMatrixRotationZ(rot.z) * DirectX::XMMatrixRotationX(rot.x) * DirectX::XMMatrixRotationY(rot.y);
 	worldMatrix *= DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
-	bb.Transform(bb, worldMatrix);
+	this->bb.Transform(this->bb, worldMatrix);
 }
 
 bool SceneObject::setVertexBuffer(ID3D11Device* device)

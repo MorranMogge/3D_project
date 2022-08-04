@@ -20,10 +20,6 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 		dt *= 2.f;
 	}
 
-	if (GetAsyncKeyState((VK_LCONTROL)))
-	{
-		dt *= 0.5f;
-	}
 
 	if (GetAsyncKeyState('W'))
 	{
@@ -92,29 +88,6 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 	if (GetAsyncKeyState('5')) cam.SetRotation(0.0f, 0.0f, 0.0f, immediateContext);
 	if (GetAsyncKeyState('6')) cam.SetRotation(0.0f, XM_PI / 2 * 2, 0.0, immediateContext);
 
-	/*if (GetAsyncKeyState('U') && temps[3])
-	{
-		this->SetRotation(-this->GetRotationFloat3().x, -this->GetRotationFloat3().y, -this->GetRotationFloat3().z, immediateContext);
-		temps[3] = false;
-	}
-
-	if (GetAsyncKeyState('R') && temps[0])
-	{
-		this->SetRotation(XM_PI/2, this->GetRotationFloat3().y, this->GetRotationFloat3().z, immediateContext);
-		temps[0] = false;
-	}
-
-	if (GetAsyncKeyState('T') && temps[1])
-	{
-		this->SetRotation(this->GetRotationFloat3().x, XM_PI/2, this->GetRotationFloat3().z, immediateContext);
-		temps[1] = false;
-	}
-
-	if (GetAsyncKeyState('Y') && temps[2])
-	{
-		this->SetRotation(this->GetRotationFloat3().x, this->GetRotationFloat3().y, XM_PI, immediateContext);
-		temps[2] = false;
-	}*/
 
 	if (GetAsyncKeyState(' '))
 	{
@@ -133,8 +106,8 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 
 		rotationForward = XMMatrixRotationRollPitchYawFromVector(rotVectorFor);
 		rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
-		cameraPos = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-		lookAtPos = XMVectorSet(0.0f, 0.0f, 5.0f, 0.0f);
+		cameraPos = XMVectorSet(0.0f, 5.0f, 0.0f, 0.0f);
+		lookAtPos = XMVectorSet(0.0f, 5.0f, 5.0f, 0.0f);
 
 		temps[0] = temps[1] = temps[2] = temps[3] = true;
 	}
@@ -195,16 +168,6 @@ void Camera::SetRotation(float pitch, float yaw, float roll, ID3D11DeviceContext
 	memcpy(subData.pData, &VP, sizeof(VP));
 	immediateContext->Unmap(ConstBuf, 0);
 	immediateContext->VSSetConstantBuffers(1, 1, &ConstBuf);
-
-	/*rotation.x = 0.0f;
-	rotation.y = 0.0f;
-	rotation.z = 0.0f;*/
-
-	/*rotationForward = XMMatrixRotationRollPitchYawFromVector(rotVectorFor);
-	rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
-	upVector = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
-	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
-	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;*/
 }
 
 const XMVECTOR& Camera::GetForwardVector()

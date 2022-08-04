@@ -4,7 +4,7 @@
 #include <d3d11.h>
 #include <DirectXCollision.h>
 
-#define ITERATIONS 4
+#define DEPTH 4
 #define CHILDRENAMOUNT 4
 
 struct Node	//Root node fits whole scene
@@ -31,7 +31,10 @@ private:
 	void recursiveNodeFunction(Node* &parent, DirectX::XMFLOAT3 topLeft, DirectX::XMFLOAT3 bottomRight, int i);
 	void revursiveIntersect(Node* node, DirectX::BoundingFrustum frustum, std::vector<SceneObject*>& objects);
 	void addObjectBB(Node* node, std::vector<SceneObject>* objects);
+	void newRecursiveIntersect(Node* node, DirectX::BoundingFrustum frustum, std::vector<SceneObject*>& objects);
 	bool objectExists(std::vector<SceneObject*> objects, SceneObject* obj);
+	void recurve(Node* node, DirectX::BoundingFrustum frustum, std::vector<SceneObject*>& objects);
+	
 
 public:
 	FrustumCuller();

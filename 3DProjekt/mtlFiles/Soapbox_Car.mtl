@@ -17,7 +17,7 @@ newmtl default
 Ns 100.0000
 map_Ka metalSpec.png
 map_Kd metalSpec.png
-map_Ks Car.png
+map_Ks White.png
 
 newmtl old_default
 	Ns 100.0000

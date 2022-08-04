@@ -1,3 +1,5 @@
 newmtl Material
 Ns 100.00
-map_Ka SUS.jpg
+map_Ka Blue.png
+map_Kd Blue.png
+map_Ks White.png

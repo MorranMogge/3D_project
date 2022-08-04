@@ -20,7 +20,6 @@ class CubemapClass
 {
 private:
 	float timer;
-	int increase;
 	float rot[3]{ 0.0f, 0.0f, 0.0f };
 
 	UINT stride;

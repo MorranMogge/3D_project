@@ -80,7 +80,7 @@ bool DeferredRenderer::setUpShaders(ID3D11Device* device, std::string& vShaderBy
 	reader.close();
 
 
-	reader.open("../x64/Debug/tempPixel.cso", std::ios::binary | std::ios::ate);
+	reader.open("../x64/Debug/GeometryPass.cso", std::ios::binary | std::ios::ate);
 	if (!reader.is_open())
 	{
 		std::cout << "Could not open pixel shader file!" << std::endl;
@@ -207,9 +207,7 @@ void DeferredRenderer::firstPass()
 	}
 	immediateContext->OMSetRenderTargets(G_BUFFER_SIZE, rtv, dsView);
 
-	//Layout and other stuff
 	immediateContext->IASetInputLayout(inputLayout);
-	//immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
 	immediateContext->VSSetShader(vShader, nullptr, 0);

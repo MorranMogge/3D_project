@@ -10,6 +10,7 @@ struct VertexShaderOutput
     float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
+    float4 lightPos : LIGHTPOS;
 };
 
 cbuffer cameraPos : register(b0)
