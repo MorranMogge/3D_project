@@ -4,7 +4,10 @@ struct DomainShaderOutput
     float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
-    float4 lightPos : LIGHTPOS;
+    float4 lightPos1 : LIGHTPOS1;
+    float4 lightPos2 : LIGHTPOS2;
+    float4 lightPos3 : LIGHTPOS3;
+    float4 lightPos4 : LIGHTPOS4;
 };
 
 struct HS_CONSTANT_DATA_OUTPUT
@@ -19,7 +22,10 @@ struct VertexShaderOutput
     float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
-    float4 lightPos : LIGHTPOS;
+    float4 lightPos1 : LIGHTPOS1;
+    float4 lightPos2 : LIGHTPOS2;
+    float4 lightPos3 : LIGHTPOS3;
+    float4 lightPos4 : LIGHTPOS4;
 };
 
 #define NUM_CONTROL_POINTS 3
@@ -34,6 +40,9 @@ DomainShaderOutput main(HS_CONSTANT_DATA_OUTPUT input, float3 uvw : SV_DomainLoc
     output.worldPos = patch[0].worldPos * uvw.x + patch[1].worldPos * uvw.y + patch[2].worldPos * uvw.z;
     output.uv = patch[0].uv * uvw.x + patch[1].uv * uvw.y + patch[2].uv * uvw.z;
     output.normal = patch[0].normal * uvw.x + patch[1].normal * uvw.y + patch[2].normal * uvw.z;
-    output.lightPos = patch[0].lightPos * uvw.x + patch[1].lightPos * uvw.y + patch[2].lightPos * uvw.z;
+    output.lightPos1 = patch[0].lightPos1 * uvw.x + patch[1].lightPos1 * uvw.y + patch[2].lightPos1 * uvw.z;
+    output.lightPos2 = patch[0].lightPos2 * uvw.x + patch[1].lightPos2 * uvw.y + patch[2].lightPos2 * uvw.z;
+    output.lightPos3 = patch[0].lightPos3 * uvw.x + patch[1].lightPos3 * uvw.y + patch[2].lightPos3 * uvw.z;
+    output.lightPos4 = patch[0].lightPos4 * uvw.x + patch[1].lightPos4 * uvw.y + patch[2].lightPos4 * uvw.z;
     return output;
 }

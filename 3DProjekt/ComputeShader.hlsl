@@ -34,7 +34,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float4 normal = inNormal[DTid.xy];
         float4 colour = inAmbient[DTid.xy];
         float4 position = inPosition[DTid.xy];
-        float3 lightPos = float3(0,50,0);
+        float3 lightPos = float3(0,50,-25);
     
         normal = normalize(normal);
         float3 vectorToLight = normalize(lightPos - position.xyz);

@@ -18,16 +18,19 @@ struct PixelShaderInput
     float4 worldPos : WORLDPOSITION;
     float4 normal : NORMAL;
     float2 uv : UV;
-    float4 lightPos : LIGHTPOS;
+    float4 lightPos1 : LIGHTPOS1;
+    float4 lightPos2 : LIGHTPOS2;
+    float4 lightPos3 : LIGHTPOS3;
+    float4 lightPos4 : LIGHTPOS4;
 };
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
 	
-    input.lightPos.xy /= input.lightPos.w;
+    input.lightPos1.xy /= input.lightPos1.w;
 
-    float2 smTexcoord = float2(0.5f * input.lightPos.x + 0.5f, -0.5f * input.lightPos.y + 0.5f);
-    float depth = input.lightPos.z / input.lightPos.w;
+    float2 smTexcoord = float2(0.5f * input.lightPos1.x + 0.5f, -0.5f * input.lightPos1.y + 0.5f);
+    float depth = input.lightPos1.z / input.lightPos1.w;
     float SHADOW_EPSILON = 0.000125f;
     float dx = 1.f / 1024.0f;
     float dy = 1.f / 1024.0f;

@@ -38,7 +38,7 @@ bool ShadowMappingClass::setUpDepthStencilAndSRV(ID3D11Device* device)
     textureDesc.Width = SHADOWMAPRESOLUTION;
     textureDesc.Height = SHADOWMAPRESOLUTION;
     textureDesc.MipLevels = 1;
-    textureDesc.ArraySize = 1;
+    textureDesc.ArraySize = LIGHTAMOUNT;
     textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
     textureDesc.SampleDesc.Count = 1;
     textureDesc.SampleDesc.Quality = 0;
@@ -52,19 +52,24 @@ bool ShadowMappingClass::setUpDepthStencilAndSRV(ID3D11Device* device)
 
     D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
     depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
     depthStencilViewDesc.Texture2D.MipSlice = 0;
     depthStencilViewDesc.Flags = 0;
+    depthStencilViewDesc.Texture2DArray.ArraySize = 1;
 
-    hr = device->CreateDepthStencilView(tempTexture, &depthStencilViewDesc, &dsView);
-
-    if (FAILED(hr)) return false;
+    for (int i = 0; i < LIGHTAMOUNT; i++)
+    {
+        depthStencilViewDesc.Texture2DArray.FirstArraySlice = (UINT)i;
+        hr = device->CreateDepthStencilView(tempTexture, &depthStencilViewDesc, &dsView[i]);
+        if (FAILED(hr)) return false;
+    }
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2DArray.ArraySize = LIGHTAMOUNT;
     hr = device->CreateShaderResourceView(tempTexture, &srvDesc, &srv);
     tempTexture->Release();
 
@@ -73,6 +78,7 @@ bool ShadowMappingClass::setUpDepthStencilAndSRV(ID3D11Device* device)
 
 bool ShadowMappingClass::setUpInputLayout(ID3D11Device* device, const std::string& vShaderByteCode)
 {
+    //We only need position since the first pass only saves depth
     D3D11_INPUT_ELEMENT_DESC inputDesc[1] =
     {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
@@ -102,13 +108,34 @@ bool ShadowMappingClass::setUpSamplerState(ID3D11Device* device)
     return !FAILED(hr);
 }
 
+void ShadowMappingClass::setLightPosAndRot()
+{
+    cameras[0].SetPosition(0, 50, 0);
+    cameras[0].SetRotation(XM_PI / 2, 0, 0, immediateContext);
+    if (LIGHTAMOUNT < 2) return;
+    cameras[1].SetPosition(0, 25, -50);
+    cameras[1].SetRotation(XM_PI / 4, 0, 0, immediateContext);
+    if (LIGHTAMOUNT < 3) return;
+    cameras[2].SetPosition(0, 50, 0);
+    cameras[2].SetRotation(XM_PI / 4, XM_PI / 4, 0, immediateContext);
+    if (LIGHTAMOUNT < 4) return;
+    cameras[3].SetPosition(0, 50, 0);
+    cameras[3].SetRotation(XM_PI / 4, -XM_PI / 4, 0, immediateContext);
+}
+
 ShadowMappingClass::ShadowMappingClass()
 {
+    spotLight.position = DirectX::XMFLOAT3(10.f, 25.f, 10.f);
+    spotLight.direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+    spotLight.colour = DirectX::XMFLOAT3(0.5f, 0.0f, 0.5f);
+    spotLight.cone = 10.f;
+    spotLight.reach = 10.f;
+    spotLight.attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 }
 
 ShadowMappingClass::~ShadowMappingClass()
 {
-	dsView->Release();
+    for (int i = 0; i < LIGHTAMOUNT; i++) dsView[i]->Release();
 	srv->Release();
     shadowSampler->Release();
     shadowVertex->Release();
@@ -126,23 +153,27 @@ bool ShadowMappingClass::initiateShadowMapping(ID3D11DeviceContext* immediateCon
     if (!this->setUpInputLayout(device, vShaderByteCode))   return false;
     if (!this->setUpSamplerState(device))                   return false;
 	for (int i = 0; i < LIGHTAMOUNT; i++) { if (!cameras[i].CreateCBuffer(immediateContext, device)) return false; }
-    cameras[0].SetPosition(0, 50, 0);
-    cameras[0].SetRotation(XM_PI / 2, 0, 0, immediateContext);
-	return true;
+    this->setLightPosAndRot();
+    return true;
 }
 
 void ShadowMappingClass::firstPass(std::vector<SceneObject> objects)
 {
     immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
     immediateContext->IASetInputLayout(inputLayout);
-	immediateContext->OMSetRenderTargets(0, nullptr, dsView);
-	immediateContext->VSSetShader(shadowVertex, nullptr, 0);
+    immediateContext->VSSetShader(shadowVertex, nullptr, 0);
     cameras[0].sendView(immediateContext);
-    
-    for (int i = 0; i < objects.size(); i++)
+
+    for (int s = 0; s < LIGHTAMOUNT; s++)
     {
-        objects[i].draw(false);
+        immediateContext->ClearDepthStencilView(dsView[s], D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+        immediateContext->OMSetRenderTargets(0, nullptr, dsView[s]);
+        cameras[s].sendView(immediateContext);
+        for (int i = 0; i < objects.size(); i++)
+        {
+            objects[i].draw(false);
+        }
+
     }
 
     immediateContext->VSSetShader(nullptr, nullptr, 0);
@@ -151,23 +182,31 @@ void ShadowMappingClass::firstPass(std::vector<SceneObject> objects)
 void ShadowMappingClass::firstPass(std::vector<SceneObject*> objects)
 {
     immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    immediateContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
     immediateContext->IASetInputLayout(inputLayout);
-    immediateContext->OMSetRenderTargets(0, nullptr, dsView);
     immediateContext->VSSetShader(shadowVertex, nullptr, 0);
-    cameras[0].sendView(immediateContext);
 
-    for (int i = 0; i < objects.size(); i++)
+    for (int s = 0; s < LIGHTAMOUNT; s++)
     {
-        objects[i]->draw(false);
-    }
+        immediateContext->ClearDepthStencilView(dsView[s], D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+        immediateContext->OMSetRenderTargets(0, nullptr, dsView[s]);
+        cameras[s].sendView(immediateContext);
+        for (int i = 0; i < objects.size(); i++)
+        {
+            objects[i]->draw(true);
+        }
 
+    }
+   
     immediateContext->VSSetShader(nullptr, nullptr, 0);
 }
 
 void ShadowMappingClass::secondPass(int index)
 {
-    cameras[0].sendView(immediateContext, index);
+    for (int i = 0; i < LIGHTAMOUNT; i++)
+    {
+        cameras[i].sendView(immediateContext, index+i);
+    } 
+
     immediateContext->PSSetSamplers(1, 1, &shadowSampler);
     immediateContext->PSSetShaderResources(3, 1, &srv);
 }

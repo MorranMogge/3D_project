@@ -13,13 +13,10 @@
 
 using namespace DirectX;
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData, Camera& cam);
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData, Camera& cam, bool currentCamera[]);
 bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
-bool createTextures(ID3D11Device* device, ID3D11Texture2D* &texture, ID3D11ShaderResourceView* &srv, ID3D11RenderTargetView*& rtv, int width, int height);
-bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
-void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool &test, float &fps);
-void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView, ShadowMappingClass& shadowMap);
+void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], ShadowMappingClass& shadowMap, bool currentCamera[]);
 std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<newObjThing> objData);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
@@ -66,6 +63,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	bool normal = false;
 	bool test = true;
 	float bgColour[4] = { 0.0, 0.0, 0.0, 0.0 };
+	bool currentCamera[4]{ false };
 
 	//Window size
 	const UINT WIDTH = 32 * 32;
@@ -118,7 +116,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	materialChecker material;
 	std::vector<SceneObject> objects;
 	Camera camera;
-	Camera otherView;
+	Camera otherView[4];
 	CamData camData;
 	ImGuiValues imGuiStuff;
 
@@ -137,9 +135,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	camera.SetPosition(0, 0, -3);
 	createCamBuffer(device, camBuf, camData);
 	camera.CreateCBuffer(immediateContext, device);
-	otherView.CreateCBuffer(immediateContext, device);
-	otherView.SetPosition(0, 50, 0);
-	otherView.SetRotation(XM_PI / 2, 0.0f, 0.0f, immediateContext);
+	for (int i = 0; i < 4; i++) otherView[i].CreateCBuffer(immediateContext, device);
+	/*otherView.SetPosition(0, 50, 0);
+	otherView.SetRotation(XM_PI / 2, 0.0f, 0.0f, immediateContext);*/
+	otherView[0].SetPosition(0, 50, 0);
+	otherView[0].SetRotation(XM_PI / 2, 0, 0, immediateContext);
+	otherView[1].SetPosition(0, 25, -50);
+	otherView[1].SetRotation(XM_PI / 4, 0, 0, immediateContext);
+	otherView[2].SetPosition(0, 50, 0);
+	otherView[2].SetRotation(XM_PI / 4, XM_PI / 4, 0, immediateContext);
+	otherView[3].SetPosition(0, 50, 0);
+	otherView[3].SetRotation(XM_PI / 4, -XM_PI / 4, 0, immediateContext);
 
 	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
 	
@@ -195,6 +201,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		objects[i].setWorldPos(cubePositions[counter++]);
 	}
 
+	for (int i = 0; i < 1; i++)
+	{
+		objects.push_back(SceneObject(newObj[0]));
+		objects[objects.size()-1].initiateObject(immediateContext, device, &newObj[0].mesh, &newObj[0].indices);
+		if (i == 0) 
+		{ 
+			objects[objects.size() - 1].setWorldPos(DirectX::XMFLOAT3(0, 25, -50)); 
+			objects[objects.size() - 1].setRot(DirectX::XMFLOAT3(XM_PI/4, 0, 0));
+		}
+	}
+
 	for (auto& o : objects)
 	{
 		o.setBoundingBox();
@@ -222,7 +239,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 			camera.moveCamera(immediateContext, camera, 1.f / fps);
 			
 			Render(immediateContext, rtv, dsView, viewport, 
-				samplerState, camera, camData, camBuf, objects, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator, deferred, cubemap, culler, otherView, shadowMap);
+				samplerState, camera, camData, camBuf, objects, test, bgColour, imGuiStuff, imGuiBuffer, particles, tesselator, deferred, cubemap, culler, otherView, shadowMap, currentCamera);
 			
 
 			swapChain->Present(0, 0);
@@ -252,7 +269,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	dsTexture->Release();
 	
-	//Deferred rendering
 	
 	missingTexture->Release();
 	  
@@ -325,66 +341,14 @@ bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct 
 	return true;
 }
 
-void handleImGui(float xyz[], float rot[], float scale[], float rotSpeed[], bool &rotation, bool &normal, bool& test, float &fps)
-{
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-	{
-		bool begun = ImGui::Begin("Testing");
-		if (begun)
-		{
-			ImGui::SliderFloat("X pos", &xyz[0], -15.0f, 15.0f);
-			ImGui::SliderFloat("Y pos", &xyz[1], -15.0f, 15.0f);
-			ImGui::SliderFloat("Z pos", &xyz[2], -15.0f, 15.0f);
-			ImGui::SliderFloat("X rot", &rot[0], -XM_2PI, XM_2PI);
-			ImGui::SliderFloat("Y rot", &rot[1], -XM_2PI, XM_2PI);
-			ImGui::SliderFloat("Z rot", &rot[2], -XM_2PI, XM_2PI);
-			ImGui::SliderFloat("X scale", &scale[0], -5.0f, 5.0f);
-			ImGui::SliderFloat("Y scale", &scale[1], -5.0f, 5.0f);
-			ImGui::SliderFloat("Z scale", &scale[2], -5.0f, 5.0f);
-			ImGui::SliderFloat("X rotSpeed", &rotSpeed[0], -15.0f, 15.0f);
-			ImGui::SliderFloat("Y rotSpeed", &rotSpeed[1], -15.0f, 15.0f);
-			ImGui::SliderFloat("Z rotSpeed", &rotSpeed[2], -15.0f, 15.0f);
-			ImGui::Checkbox("Rotation", &rotation);
-			ImGui::Checkbox("Normal", &normal);
-			ImGui::Checkbox("Indexed", &test);
-			ImGui::SliderFloat("FPS CAP", &fps, 1.f, 144.0f);
-		}
-		ImGui::End();
-	}
-	/*ImGui::NewFrame();
-	{
-		static bool active = true;
-		ImGui::Begin("My First Tool", &active, ImGuiWindowFlags_MenuBar);
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("Open..")) { active = true; }
-				if (ImGui::MenuItem("Close")) { active = false; }
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
-		}
-		ImGui::End();
-	}
-		
-	*/
-	
-
-	ImGui::EndFrame();
-	ImGui::Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-}
-
 void Render
 (
 	ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView,
 	D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData,
 	ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects, bool &test, float clearColour[], 
 	ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles, TesselatorClass& tesselator, 
-	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera& otherView, ShadowMappingClass& shadowMap
+	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], ShadowMappingClass& shadowMap, 
+	bool currentCamera[]
 )
 {
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
@@ -422,7 +386,10 @@ void Render
 	immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
 
 
-	if (GetAsyncKeyState((VK_LCONTROL))) otherView.sendView(immediateContext);
+	if (currentCamera[0]) otherView[0].sendView(immediateContext);
+	else if (currentCamera[1]) otherView[1].sendView(immediateContext);
+	else if (currentCamera[2]) otherView[2].sendView(immediateContext);
+	else if (currentCamera[3]) otherView[3].sendView(immediateContext);
 	else camera.sendView(immediateContext);
 
 	for (int i = 0; i < culledObjects.size(); i++)
@@ -452,18 +419,24 @@ void Render
 	//Particle Draw call
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
 
-	if (GetAsyncKeyState((VK_LCONTROL))) otherView.sendView(immediateContext);
+	if (currentCamera[0]) otherView[0].sendView(immediateContext);
+	else if (currentCamera[1]) otherView[1].sendView(immediateContext);
+	else if (currentCamera[2]) otherView[2].sendView(immediateContext);
+	else if (currentCamera[3]) otherView[3].sendView(immediateContext);
 	else camera.sendView(immediateContext);
 
 	immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
 	cubemap.drawCube();
-	if (GetAsyncKeyState((VK_LCONTROL))) 	particles.drawParticles(&otherView);
+	if (currentCamera[0]) particles.drawParticles(&otherView[0]);
+	else if (currentCamera[1]) particles.drawParticles(&otherView[1]);
+	else if (currentCamera[2]) particles.drawParticles(&otherView[2]);
+	else if (currentCamera[3]) particles.drawParticles(&otherView[3]);
 	else particles.drawParticles();
 
 	particles.updateParticles();
 
 	//ImGui
-	newImGui(clearColour, imGuiStuff, test, camData, camera);
+	newImGui(clearColour, imGuiStuff, test, camData, camera, currentCamera);
 }
 
 std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<newObjThing> objData)
@@ -493,7 +466,7 @@ std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D1
 	return obj;
 }
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData, Camera& cam)
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData, Camera& cam, bool currentCamera[])
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -504,12 +477,19 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		float tesselationConst = camData.tesselationConst;
 		bool reflectionType = (tesselationConst>=25.f);
 		float particleSize = cam.getParticleSize();
+		std::string currCam = "Main camera";
+		
+		if (currentCamera[0] || currentCamera[1] || currentCamera[2] || currentCamera[3]) currCam = "Light camera";
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
 		{
 			ImGui::Text("Information");
-			ImGui::Text("Camera position: X: %8.8f Y: %8.8f Z: %8.8f", cam.GetPositionFloat3().x, cam.GetPositionFloat3().y, cam.GetPositionFloat3().z);
-			ImGui::Text("FPS: %8.8f");
+			ImGui::Text("Camera position: X: %d Y: %d Z: %d", (int)cam.GetPositionFloat3().x, (int)cam.GetPositionFloat3().y, (int)cam.GetPositionFloat3().z);
+			ImGui::Checkbox("Light 1: ", &currentCamera[0]);
+			ImGui::Checkbox("Light 2: ", &currentCamera[1]);
+			ImGui::Checkbox("Light 3: ", &currentCamera[2]);
+			ImGui::Checkbox("Light 4: ", &currentCamera[3]);
+			ImGui::Text("Current Camera: %s", currCam.c_str());
 			ImGui::Text("");
 
 			ImGui::ColorEdit3("BG colour", bgClr);
@@ -549,44 +529,4 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-}
-
-bool createTextures(ID3D11Device* device, ID3D11Texture2D*& texture, ID3D11ShaderResourceView*& srv, ID3D11RenderTargetView*& rtv, int width, int height)
-{
-
-	D3D11_TEXTURE2D_DESC textureDesc;
-	ZeroMemory(&textureDesc, sizeof(D3D11_TEXTURE2D_DESC));
-	textureDesc.Width = (UINT)width;
-	textureDesc.Height = (UINT)height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.MiscFlags = 0;
-	textureDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-	textureDesc.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA subResource;
-	ZeroMemory(&subResource, sizeof(D3D11_SUBRESOURCE_DATA));
-
-	subResource.pSysMem = {};
-	subResource.SysMemPitch = 0;
-
-	ID3D11Texture2D* tempTexture;
-	HRESULT hr = device->CreateTexture2D(&textureDesc, NULL, &texture);
-
-	if (FAILED(hr)) return false;
-	hr = device->CreateRenderTargetView(texture, NULL, &rtv);
-	if (FAILED(hr)) return false;
-	hr = device->CreateShaderResourceView(texture, nullptr, &srv);
-	return !FAILED(hr);
-}
-
-bool CreateRenderTargetViews(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11Texture2D* buffer, ID3D11RenderTargetView*& rtv)
-{
-	HRESULT hr = device->CreateRenderTargetView(buffer, nullptr, &rtv);
-	buffer->Release();
-	return !FAILED(hr);
 }

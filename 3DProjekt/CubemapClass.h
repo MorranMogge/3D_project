@@ -10,10 +10,16 @@
 #define CUBEMAPRESOLUTION 1024
 #define AMOUNTOFSIDESACUBEHAS 6
 
-struct cubeInfo
+struct Mesh
 {
-	DirectX::XMFLOAT3 pos;
-	DirectX::XMFLOAT3 normal;
+	float positions[3];
+	float normals[3];
+};
+struct CubeInfo
+{
+	std::vector<Mesh> mesh;
+	std::vector<DWORD>* indices;
+	std::vector<int>* verticeCount;
 };
 
 class CubemapClass
@@ -43,10 +49,11 @@ private:
 	ID3D11InputLayout* cubeInputLayout;
 	ID3D11Buffer* vBuffer;
 	ID3D11Buffer* constBuf;
+	ID3D11Buffer* indexBuffer;
 
 	DirectX::XMMATRIX worldMtx;
 	DirectX::XMFLOAT4X4 wrlMtx;
-	std::vector<cubeInfo> cube;
+	CubeInfo cube;
 
 	void setRot(int index);
 	void updateWrldMtx();
@@ -58,6 +65,7 @@ private:
 	bool setUpVertexBuffer(ID3D11Device* device);
 	bool setUpInputLayout(ID3D11Device* device, const std::string& vShaderByteCode);
 	bool setUpConstBuf(ID3D11Device* device);
+	bool setUpIndexBuffer(ID3D11Device* device);
 
 public:
 	CubemapClass();
@@ -65,7 +73,7 @@ public:
 
 	bool initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11Device* device, ID3D11DepthStencilView* dsView);
 
-	void createCube(newObjThing vertices);
+	void createCube(newObjThing& vertices);
 	void draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view);
 	void drawCube();
 

@@ -201,18 +201,18 @@ bool CubemapClass::setUpVertexBuffer(ID3D11Device* device)
 {
     //Setup description
     D3D11_BUFFER_DESC bufferDesc;
-    bufferDesc.ByteWidth = sizeof(cubeInfo) * this->cube.size();
+    bufferDesc.ByteWidth = sizeof(Mesh) * this->cube.mesh.size();
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
     bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bufferDesc.CPUAccessFlags = 0;
     bufferDesc.MiscFlags = 0;
     bufferDesc.StructureByteStride = 0;
 
-    stride = sizeof(cubeInfo);
+    stride = sizeof(Mesh);
     offset = 0;
 
     D3D11_SUBRESOURCE_DATA data;
-    data.pSysMem = cube.data();
+    data.pSysMem = cube.mesh.data();
     data.SysMemPitch = 0;
     data.SysMemSlicePitch = 0;
 
@@ -249,6 +249,25 @@ bool CubemapClass::setUpConstBuf(ID3D11Device* device)
     return !FAILED(hr);
 }
 
+bool CubemapClass::setUpIndexBuffer(ID3D11Device* device)
+{
+    
+    D3D11_BUFFER_DESC indexBufferDesc;
+    ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+    indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    indexBufferDesc.ByteWidth = sizeof(DWORD) * cube.indices->size();
+    indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    indexBufferDesc.CPUAccessFlags = 0;
+    indexBufferDesc.MiscFlags = 0;
+    indexBufferDesc.StructureByteStride = 0;
+
+    D3D11_SUBRESOURCE_DATA indexBufferData;
+    indexBufferData.pSysMem = cube.indices->data();
+    HRESULT hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
+    return !FAILED(hr);
+
+}
+
 CubemapClass::CubemapClass()
     :camBuffer(nullptr), immediateContext(nullptr), pShader(nullptr), srv(nullptr), dsView(nullptr), timer(0.0f)
 {
@@ -282,6 +301,7 @@ CubemapClass::~CubemapClass()
     cubeInputLayout->Release();
     vBuffer->Release();
     constBuf->Release();
+    indexBuffer->Release();
 }
 
 bool CubemapClass::initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11Device* device, ID3D11DepthStencilView* dsView)
@@ -297,18 +317,26 @@ bool CubemapClass::initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11
     if (!this->setUpVertexBuffer(device))                   return false;
     if (!this->setUpConstBuf(device))                       return false;
     if (!this->setUpCamBuffer(device))                      return false;
+    if (!this->setUpIndexBuffer(device))                    return false;
     
     cam.ChangeProjectionMatrix(XM_2PI/4, 1, 0.1, 100);
 	return true;
 }
 
-void CubemapClass::createCube(newObjThing vertices)
+void CubemapClass::createCube(newObjThing& vertices)
 {
+    
+    cube.indices = &vertices.indices;
+    cube.verticeCount = &vertices.verticeCount;
     for (int i = 0; i < vertices.mesh.size(); i++)
     {
-        cube.push_back(cubeInfo());
-        cube[i].pos = DirectX::XMFLOAT3(vertices.mesh[i].pos[0], vertices.mesh[i].pos[1], vertices.mesh[i].pos[2]);
-        cube[i].normal = DirectX::XMFLOAT3(vertices.mesh[i].n[0], vertices.mesh[i].n[1], vertices.mesh[i].n[2]);
+        cube.mesh.push_back(Mesh());
+        cube.mesh[i].positions[0] = vertices.mesh[i].pos[0];
+        cube.mesh[i].positions[1] = vertices.mesh[i].pos[1];
+        cube.mesh[i].positions[2] = vertices.mesh[i].pos[2];
+        cube.mesh[i].normals[0] = vertices.mesh[i].n[0];
+        cube.mesh[i].normals[1] = vertices.mesh[i].n[1];
+        cube.mesh[i].normals[2] = vertices.mesh[i].n[2];
     }
 }
 
@@ -363,9 +391,15 @@ void CubemapClass::drawCube()
     immediateContext->VSSetConstantBuffers(0, 1, &constBuf);
     immediateContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
     immediateContext->PSSetShaderResources(0, 1, &srv);
+    immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
     this->updateWrldMtx();
 
-    immediateContext->Draw(cube.size(), 0);
+    int counter = 0;
+    for (int i = 0; i < cube.verticeCount->size(); i++)
+    {
+        immediateContext->DrawIndexed(cube.verticeCount->at(i), counter, 0);
+        counter += cube.verticeCount->at(i);
+    }
 
     immediateContext->VSSetShader(nullptr, nullptr, 0);
     immediateContext->PSSetShader(nullptr, nullptr, 0);

@@ -6,11 +6,14 @@ struct HS_CONSTANT_DATA_OUTPUT
 
 struct VertexShaderOutput
 {
-    float4 position : SV_POSITION;
+    	float4 position : SV_POSITION;
     float4 worldPos : WORLDPOSITION;
-    float4 normal : NORMAL;
-    float2 uv : UV;
-    float4 lightPos : LIGHTPOS;
+	float4 normal : NORMAL;
+	float2 uv : UV;
+    float4 lightPos1 : LIGHTPOS1;
+    float4 lightPos2 : LIGHTPOS2;
+    float4 lightPos3 : LIGHTPOS3;
+    float4 lightPos4 : LIGHTPOS4;
 };
 
 cbuffer cameraPos : register(b0)
@@ -22,25 +25,17 @@ cbuffer cameraPos : register(b0)
 HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> inputPatch, uint patchID : SV_PrimitiveID)
 {
     HS_CONSTANT_DATA_OUTPUT output;
-    float tessFactor;
-    float3 middlePoint;// = (inputPatch[0].newPos + inputPatch[0].newPos + inputPatch[0].newPos) / 3;
-    float3 distToTriangle;// = cameraPosition - middlePoint;
-    float dist;// = distToTriangle.x * distToTriangle.x + distToTriangle.y * distToTriangle.y + distToTriangle.z * distToTriangle.z;
-    float sizefactor;
-    float3 distToEdge;
     float maxdistance = tesselationConst*tesselationConst;
     float maxTesselation = 10.0f;
-   
+    float3 middlePoint = (inputPatch[0].worldPos + inputPatch[1].worldPos + inputPatch[2].worldPos) / 3;
+    float3 distToTriangle = cameraPosition - middlePoint;
     
-    middlePoint = (inputPatch[0].worldPos + inputPatch[1].worldPos + inputPatch[2].worldPos) / 3;
-    distToEdge = inputPatch[0].worldPos.xyz - middlePoint;
-    sizefactor = (distToEdge.x * distToEdge.x + distToEdge.y * distToEdge.y + distToEdge.z * distToEdge.z);
-    distToTriangle = cameraPosition - middlePoint;
-    dist = distToTriangle.x * distToTriangle.x + distToTriangle.y * distToTriangle.y + distToTriangle.z * distToTriangle.z;
-    //if (sizefactor > dist)
-    //    dist = maxdistance;
-    //dist /= tesselationConst;
-    //sizefactor /= dist;
+    
+    float3 distToEdge = inputPatch[0].worldPos.xyz - middlePoint; //Remove??
+    float sizefactor = (distToEdge.x * distToEdge.x + distToEdge.y * distToEdge.y + distToEdge.z * distToEdge.z); //Remove??
+    float dist = distToTriangle.x * distToTriangle.x + distToTriangle.y * distToTriangle.y + distToTriangle.z * distToTriangle.z;
+
+    float tessFactor;
     if (dist >= maxdistance)
         tessFactor = 1.0f;
     else
