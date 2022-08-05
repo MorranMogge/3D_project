@@ -48,7 +48,7 @@ private:
 	bool setUpSamplerState(ID3D11Device* device);
 	bool setUpLightBuffers(ID3D11Device* device);
 	void setLightPosAndRot();
-
+	void updateBuffers();
 public:
 	ShadowMappingClass();
 	~ShadowMappingClass();
@@ -58,5 +58,8 @@ public:
 	void secondPass(int index = 2);
 	void preDispatch(int index = 2);
 	void clearSecondPass();
+	void setCameraPosAndRot(Camera cameras[]);
+	void setLightDirection(DirectX::XMFLOAT3 dir, int index);
+	DirectX::XMFLOAT3 getDir(int index)const;
 };
 

@@ -13,7 +13,7 @@
 
 using namespace DirectX;
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData, Camera& cam, bool currentCamera[]);
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool& noIndexing, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap);
 bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject> &objects,bool &test, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], ShadowMappingClass& shadowMap, bool currentCamera[]);
@@ -138,14 +138,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	for (int i = 0; i < 4; i++) otherView[i].CreateCBuffer(immediateContext, device);
 	/*otherView.SetPosition(0, 50, 0);
 	otherView.SetRotation(XM_PI / 2, 0.0f, 0.0f, immediateContext);*/
-	otherView[0].SetPosition(0, 50, 0);
+	/*otherView[0].SetPosition(0, 50, 0);
 	otherView[0].SetRotation(XM_PI / 2, 0, 0, immediateContext);
 	otherView[1].SetPosition(0, 25, -50);
 	otherView[1].SetRotation(XM_PI / 4, 0, 0, immediateContext);
 	otherView[2].SetPosition(0, 50, 0);
 	otherView[2].SetRotation(XM_PI / 4, XM_PI / 4, 0, immediateContext);
 	otherView[3].SetPosition(0, 50, 0);
-	otherView[3].SetRotation(XM_PI / 4, -XM_PI / 4, 0, immediateContext);
+	otherView[3].SetRotation(XM_PI / 4, -XM_PI / 4, 0, immediateContext);*/
 
 	createImGuiBuffer(device, imGuiBuffer, imGuiStuff);
 	
@@ -157,9 +157,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	tesselator.setUpTesselator(immediateContext, device, &camera);
 	deferred.initiateDeferredRenderer(immediateContext, device, swapChain, dsView, &camera, &imGuiStuff);
 	cubemap.initiateCubemap(immediateContext, device, dsView);
-	bool shadow = shadowMap.initiateShadowMapping(immediateContext, device);
+	shadowMap.initiateShadowMapping(immediateContext, device);
 	camera.createFrustum();
 
+	shadowMap.setCameraPosAndRot(otherView);
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(device, immediateContext);
 
@@ -375,8 +376,8 @@ void Render
 
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
 	immediateContext->RSSetViewports(1, &viewport);
-
 	shadowMap.firstPass(culledObjects);
+
 	deferred.firstPass();
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
 	shadowMap.secondPass();
@@ -386,11 +387,11 @@ void Render
 	immediateContext->HSSetConstantBuffers(0, 1, &camBuffer);
 
 
-	if (currentCamera[0]) otherView[0].sendView(immediateContext);
-	else if (currentCamera[1]) otherView[1].sendView(immediateContext);
-	else if (currentCamera[2]) otherView[2].sendView(immediateContext);
-	else if (currentCamera[3]) otherView[3].sendView(immediateContext);
-	else camera.sendView(immediateContext);
+	if (currentCamera[0]) otherView[0].sendView(immediateContext, 0, true);
+	else if (currentCamera[1]) otherView[1].sendView(immediateContext, 0, true);
+	else if (currentCamera[2]) otherView[2].sendView(immediateContext, 0, true);
+	else if (currentCamera[3]) otherView[3].sendView(immediateContext, 0, true);
+	else camera.sendView(immediateContext, 0, true);
 
 	for (int i = 0; i < culledObjects.size(); i++)
 	{
@@ -401,7 +402,7 @@ void Render
 		objects[i].draw(test);
 	}*/
 
-	cubemap.draw(objects, particles, dsView);
+	//cubemap.draw(objects, particles, dsView);
 	shadowMap.clearSecondPass();
 
 	immediateContext->PSSetSamplers(0, 1, &samplerState);
@@ -427,7 +428,7 @@ void Render
 	else camera.sendView(immediateContext);
 
 	immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
-	cubemap.drawCube();
+	//cubemap.drawCube();
 	if (currentCamera[0]) particles.drawParticles(&otherView[0]);
 	else if (currentCamera[1]) particles.drawParticles(&otherView[1]);
 	else if (currentCamera[2]) particles.drawParticles(&otherView[2]);
@@ -437,7 +438,7 @@ void Render
 	particles.updateParticles();
 
 	//ImGui
-	newImGui(clearColour, imGuiStuff, test, camData, camera, currentCamera);
+	newImGui(clearColour, imGuiStuff, test, camData, camera, currentCamera, shadowMap);
 }
 
 std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<newObjThing> objData)
@@ -467,7 +468,7 @@ std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D1
 	return obj;
 }
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData, Camera& cam, bool currentCamera[])
+void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -479,7 +480,11 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		bool reflectionType = (tesselationConst>=25.f);
 		float particleSize = cam.getParticleSize();
 		std::string currCam = "Main camera";
-		
+		float lightDir[3];
+		lightDir[0] = shadowMap.getDir(0).x;
+		lightDir[1] = shadowMap.getDir(0).y;
+		lightDir[2] = shadowMap.getDir(0).z;
+
 		if (GetAsyncKeyState('1')) currentCamera[0] = currentCamera[1] = currentCamera[2] = currentCamera[3] = false;
 		if (GetAsyncKeyState('2')) { currentCamera[0] = true; currentCamera[1] = currentCamera[2] = currentCamera[3] = false; }
 		if (GetAsyncKeyState('3')) { currentCamera[1] = true; currentCamera[0] = currentCamera[2] = currentCamera[3] = false; }
@@ -498,7 +503,8 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 			ImGui::Checkbox("Light 4: ", &currentCamera[3]);
 			ImGui::Text("Current Camera: %s", currCam.c_str());
 			ImGui::Text("");
-
+			ImGui::SliderFloat3("Light Direction", lightDir, -1, 1);
+			ImGui::Text("");
 			ImGui::ColorEdit3("BG colour", bgClr);
 			ImGui::Text("");
 			ImGui::Text("Draw calls");
@@ -523,6 +529,8 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 			ImGui::Checkbox("Reflection", &reflectionType);
 		}
 		ImGui::End();
+		DirectX::XMFLOAT3 dir(lightDir[0], lightDir[1], lightDir[2]);
+		shadowMap.setLightDirection(dir, 0);
 		imGuiStuff.imposition = temps[0];
 		imGuiStuff.imnormal = temps[1];
 		imGuiStuff.imcolour = temps[2];

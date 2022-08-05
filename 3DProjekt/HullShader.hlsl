@@ -6,7 +6,7 @@ struct HS_CONSTANT_DATA_OUTPUT
 
 struct VertexShaderOutput
 {
-    	float4 position : SV_POSITION;
+    float4 position : SV_POSITION;
     float4 worldPos : WORLDPOSITION;
 	float4 normal : NORMAL;
 	float2 uv : UV;

@@ -322,7 +322,7 @@ void Camera::sendGeometryMatrix(ID3D11DeviceContext* immediateContext)
 	immediateContext->GSSetConstantBuffers(0, 1, &computeConstBuf);
 }
 
-void Camera::sendView(ID3D11DeviceContext* immediateContext, int index, bool cs)
+void Camera::sendView(ID3D11DeviceContext* immediateContext, int index, bool ds)
 {
 	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
@@ -335,8 +335,8 @@ void Camera::sendView(ID3D11DeviceContext* immediateContext, int index, bool cs)
 	immediateContext->Map(ConstBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
 	memcpy(subData.pData, &VP, sizeof(VP));
 	immediateContext->Unmap(ConstBuf, 0);
-	if (!cs) immediateContext->VSSetConstantBuffers(index, 1, &ConstBuf);
-	else immediateContext->CSSetConstantBuffers(index, 1, &ConstBuf);
+	if (!ds) immediateContext->VSSetConstantBuffers(index, 1, &ConstBuf);
+	else immediateContext->DSSetConstantBuffers(index, 1, &ConstBuf);
 }
 
 void Camera::sendVectorsGeometry(ID3D11DeviceContext* immediateContext)

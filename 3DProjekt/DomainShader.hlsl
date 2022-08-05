@@ -1,3 +1,28 @@
+cbuffer Matrices : register(b0)
+{
+    float4x4 viewProj;
+}
+
+cbuffer lightMtx1 : register(b1)
+{
+    float4x4 lightViewProj1;
+}
+
+cbuffer lightMtx2 : register(b2)
+{
+    float4x4 lightViewProj2;
+}
+
+cbuffer lightMtx3 : register(b3)
+{
+    float4x4 lightViewProj3;
+}
+
+cbuffer lightMtx4 : register(b4)
+{
+    float4x4 lightViewProj4;
+}
+
 struct DomainShaderOutput
 {
     float4 position : SV_POSITION;
@@ -36,13 +61,15 @@ DomainShaderOutput main(HS_CONSTANT_DATA_OUTPUT input, float3 uvw : SV_DomainLoc
 {
     DomainShaderOutput output;
     //FIXA MED PROJECTION
-    output.position = patch[0].position * uvw.x + patch[1].position * uvw.y + patch[2].position * uvw.z;
     output.worldPos = patch[0].worldPos * uvw.x + patch[1].worldPos * uvw.y + patch[2].worldPos * uvw.z;
     output.uv = patch[0].uv * uvw.x + patch[1].uv * uvw.y + patch[2].uv * uvw.z;
     output.normal = patch[0].normal * uvw.x + patch[1].normal * uvw.y + patch[2].normal * uvw.z;
-    output.lightPos1 = patch[0].lightPos1 * uvw.x + patch[1].lightPos1 * uvw.y + patch[2].lightPos1 * uvw.z;
-    output.lightPos2 = patch[0].lightPos2 * uvw.x + patch[1].lightPos2 * uvw.y + patch[2].lightPos2 * uvw.z;
-    output.lightPos3 = patch[0].lightPos3 * uvw.x + patch[1].lightPos3 * uvw.y + patch[2].lightPos3 * uvw.z;
-    output.lightPos4 = patch[0].lightPos4 * uvw.x + patch[1].lightPos4 * uvw.y + patch[2].lightPos4 * uvw.z;
+    
+    output.position = mul(output.worldPos, viewProj);
+    output.lightPos1 = mul(output.worldPos, lightViewProj1);
+    output.lightPos2 = mul(output.worldPos, lightViewProj2);
+    output.lightPos3 = mul(output.worldPos, lightViewProj3);
+    output.lightPos4 = mul(output.worldPos, lightViewProj4);
+    
     return output;
 }

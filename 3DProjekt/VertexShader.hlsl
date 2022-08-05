@@ -22,43 +22,14 @@ cbuffer constantBuf : register (b0)
 	float4x4 worldMatrix;
 };
 
-cbuffer Matrices : register(b1)
-{
-    float4x4 viewProj;
-}
-
-cbuffer lightMtx : register(b2)
-{
-    float4x4 lightViewProj1;
-}
-
-cbuffer lightMtx : register(b3)
-{
-    float4x4 lightViewProj2;
-}
-
-cbuffer lightMtx : register(b4)
-{
-    float4x4 lightViewProj3;
-}
-
-cbuffer lightMtx : register(b5)
-{
-    float4x4 lightViewProj4;
-}
-
 VertexShaderOutput main(VertexShaderInput input)
 {
 	VertexShaderOutput output;
-	float4x4 temp = mul(worldMatrix, viewProj);
 	
     output.worldPos = mul(float4(input.position, 1.0f), worldMatrix);
-	output.position = mul(float4(input.position, 1.0f), temp);
-	output.normal = mul(float4(input.normal, 0.0f), worldMatrix);
-    output.lightPos1 = mul(output.worldPos, lightViewProj1);
-    output.lightPos2 = mul(output.worldPos, lightViewProj2);
-    output.lightPos3 = mul(output.worldPos, lightViewProj3);
-    output.lightPos4 = mul(output.worldPos, lightViewProj4);
+	output.position = output.worldPos;
+    output.normal = normalize(mul(float4(input.normal, 0.0f), worldMatrix));
+    output.lightPos1 = output.lightPos2 = output.lightPos3 = output.lightPos4 = float4(output.worldPos);
 	output.uv = input.uv;
 	return output;
 }

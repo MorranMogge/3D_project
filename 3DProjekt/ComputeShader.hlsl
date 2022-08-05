@@ -67,80 +67,90 @@ cbuffer spotLight3 : register(b5)
 
 void main( uint3 DTid : SV_DispatchThreadID )
 {   
-    if (imposition == 1) 
-        backBuffer[DTid.xy] = inPosition[DTid.xy];
-    else if (imnormal == 1)
-        backBuffer[DTid.xy] = inNormal[DTid.xy];
-    else if (imcolour == 1)
-        backBuffer[DTid.xy] = inDiffuse[DTid.xy];
+    int3 location = DTid;
+    if (imposition == 2) 
+        backBuffer[DTid.xy] = abs(inPosition.Load(location));
+    else if (imnormal == 2)
+        backBuffer[DTid.xy] = abs(inNormal.Load(location));
+    else if (imcolour == 2)
+        backBuffer[DTid.xy] = abs(inDiffuse.Load(location));
     else
     {
         //Fun calculations
-        float4 position = inPosition[DTid.xy];
-        float4 normal = inNormal[DTid.xy];
+        float4 position = inPosition.Load(location);
+        float4 normal = inNormal.Load(location);
 
         //For each of the spot lights
-        float3 vecToLight1 = spotPosition1 - position.xyz;
-        float3 vecToLight2 = spotPosition2 - position.xyz;
-        float3 vecToLight3 = spotPosition3 - position.xyz;
+        float3 vecToLight1 = normalize(spotPosition1 - position.xyz);
+        float3 vecToLight2 = normalize(spotPosition2 - position.xyz);
+        float3 vecToLight3 = normalize(spotPosition3 - position.xyz);
 
         float distanceToLight1 = length(vecToLight1);
         float distanceToLight2 = length(vecToLight2);
         float distanceToLight3 = length(vecToLight3);
+        float3 diffuse = inDiffuse.Load(location).xyz;
+        
+        float d0 = position.w;
+        float d1 = normal.w;
+        float d2 = inAmbient.Load(location).w;
+        float d3 = inDiffuse.Load(location).w;
 
         float3 spotLightFactor1 = float3(0, 0, 0);
         float3 spotLightFactor2 = float3(0, 0, 0);
         float3 spotLightFactor3 = float3(0, 0, 0);
 
-        float3 diffuse = inDiffuse[DTid.xy].xyz;
-
+        float lightAmount;
         //If the light should affect the pixel
-        if (distanceToLight1 <= reach1)
+        if (distanceToLight1 < reach1)
         {
             vecToLight1 /= distanceToLight1;
-            float lightAmount = dot(vecToLight1, normal.xyz);
+            lightAmount = dot(vecToLight1, normal.xyz);
             if (lightAmount > 0)
             {
                 spotLightFactor1 = diffuse * spotColour1;
-                spotLightFactor1 /= (spotAttenuation1 + (spotAttenuation1 * distanceToLight1) + (spotAttenuation1 * distanceToLight1 * distanceToLight1));
+                spotLightFactor1 /= (spotAttenuation1.x + (spotAttenuation1.y * distanceToLight1) + (spotAttenuation1.z * distanceToLight1 * distanceToLight1));
                 spotLightFactor1 *= pow(max(dot(-vecToLight1, spotDirection1), 0.0f), cone1);
             }
         }
 
-        if (distanceToLight2 <= reach2)
+        if (distanceToLight2 < reach2)
         {
             vecToLight2 /= distanceToLight2;
-            float lightAmount = dot(vecToLight2, normal.xyz);
+            lightAmount = dot(vecToLight2, normal.xyz);
             if (lightAmount > 0)
             {
                 spotLightFactor2 = diffuse * spotColour2;
-                spotLightFactor2 /= (spotAttenuation2 + (spotAttenuation2 * distanceToLight2) + (spotAttenuation2 * distanceToLight2 * distanceToLight2));
+                spotLightFactor2 /= (spotAttenuation2.x + (spotAttenuation2.y * distanceToLight2) + (spotAttenuation2.z * distanceToLight2 * distanceToLight2));
                 spotLightFactor2 *= pow(max(dot(-vecToLight2, spotDirection2), 0.0f), cone2);
             }
         }
 
-        if (distanceToLight3 <= reach3)
+        if (distanceToLight3 < reach3)
         {
             vecToLight3 /= distanceToLight3;
-            float lightAmount = dot(vecToLight3, normal.xyz);
+            lightAmount = dot(vecToLight3, normal.xyz);
             if (lightAmount > 0)
             {
                 spotLightFactor3 = diffuse * spotColour3;
-                spotLightFactor3 /= (spotAttenuation3 + (spotAttenuation3 * distanceToLight3) + (spotAttenuation3 * distanceToLight3 * distanceToLight3));
+                spotLightFactor3 /= (spotAttenuation3.x + (spotAttenuation3.y * distanceToLight3) + (spotAttenuation3.z * distanceToLight3 * distanceToLight3));
                 spotLightFactor3 *= pow(max(dot(-vecToLight3, spotDirection3), 0.0f), cone3);
             }
         }
 
-        float3 lightDirection = normalize(-direction);
-        diffuse *= max(dot(lightDirection, normal.xyz),0.0f)*colour;
+        float3 lightDirection = -normalize(direction);
+        diffuse *= max(dot(normal.xyz, lightDirection), 0.0f) * colour;
+        
         float3 ambient = 0.25 * inAmbient[DTid.xy].xyz;
-        float3 finalColour = saturate(ambient + diffuse + spotLightFactor1 + spotLightFactor2 + spotLightFactor3);
-        //backBuffer[DTid.xy] = float4(float3((reach1 - distanceToLight1)/reach1, 0.0, 0.0), 1.0f);
-        float shadowco = inPosition[DTid.xy].w + inNormal[DTid.xy].w + inAmbient[DTid.xy].w + inDiffuse[DTid.xy].w;
-        if (shadowco <= 0.3)
-            shadowco = 0.3f;
-        finalColour *= shadowco;
-        backBuffer[DTid.xy] = float4(finalColour, 1.0f);
+        float3 finalColour = saturate(ambient + diffuse * d0 + spotLightFactor1 * d1 + spotLightFactor2 * d2 + spotLightFactor3 * d3);
+        
+        if (imposition == 1) 
+            backBuffer[DTid.xy] = float4(spotLightFactor1 * d1, 1.0f);
+        else if (imnormal == 1)
+            backBuffer[DTid.xy] = float4(spotLightFactor2 * d2, 1.0f); //float4(float3(d3, d3, d3), 1.0f);
+        else if (imcolour == 1)
+            backBuffer[DTid.xy] = float4(spotLightFactor3 * d3, 1.0f);
+        else
+            backBuffer[DTid.xy] = float4(finalColour, 1.0f);
 
      //   float4 normal = inNormal[DTid.xy];
      //   float4 colour = inAmbient[DTid.xy];
