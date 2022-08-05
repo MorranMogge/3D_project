@@ -39,51 +39,6 @@ PSout main(PixelShaderInput input) : SV_TARGET
     PSout output;
     
     float shadowco = 0;
-    //float2 offset = float2(0, 0);
-    //for (int i = 0; i < 4; i++)
-    //{
-    //    float2 smTexcoord = float2(0.5f * input.lightPos1.x + 0.5f, -0.5f * input.lightPos1.y + 0.5f);
-    //    float depth = input.lightPos1.z / input.lightPos1.w;
-    //    offset = i;
-    //    //float2(1024 * i * (3 * i), 1024 * i * (3 * i));
-    //    if (i == 0)
-    //    {
-    //        input.lightPos1.xy /= input.lightPos1.w;
-    //        smTexcoord = float2(0.5f * input.lightPos1.x + 0.5f, -0.5f * input.lightPos1.y + 0.5f);
-    //        depth = input.lightPos1.z / input.lightPos1.w;
-    //    }
-    //    else if(i == 1)
-    //    {
-    //        input.lightPos2.xy /= input.lightPos2.w;
-    //        smTexcoord = float2(0.5f * input.lightPos2.x + 0.5f, -0.5f * input.lightPos2.y + 0.5f);
-    //        depth = input.lightPos2.z / input.lightPos2.w;
-    //    }
-    //    else if (i == 2)
-    //    {
-    //        input.lightPos3.xy /= input.lightPos3.w;
-    //        smTexcoord = float2(0.5f * input.lightPos3.x + 0.5f, -0.5f * input.lightPos3.y + 0.5f);
-    //        depth = input.lightPos3.z / input.lightPos3.w;
-    //    }
-    //    else
-    //    {
-    //        input.lightPos4.xy /= input.lightPos4.w;
-    //        smTexcoord = float2(0.5f * input.lightPos4.x + 0.5f, -0.5f * input.lightPos4.y + 0.5f);
-    //        depth = input.lightPos4.z / input.lightPos4.w;
-    //    }
-           
-    //    float SHADOW_EPSILON = 0.000125f;
-    //    float dx = 1.f / 1024.0f;
-    //    float dy = 1.f / 1024.0f;
-    //    float d0 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(0.0f, 0.0f), offset).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
-    //    float d1 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(dx, 0.0f), offset).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
-    //    float d2 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(0.0f, dy), offset).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
-    //    float d3 = (depthTexture.Sample(shadowSampler, smTexcoord + float2(dx, dy), offset).r + SHADOW_EPSILON < depth) ? 0.0f : 1.0f;
-    
-    //    shadowco += (d0 + d1 + d2 + d3) / 4;
-    //    if (shadowco <= 0.1) 
-    //        shadowco = 0.1f;
-    //    }
-    //shadowco /= 4.f;
     float2 smTexcoord1 = float2(0.5f * input.lightPos1.x + 0.5f, -0.5f * input.lightPos1.y + 0.5f);
     float2 smTexcoord2 = float2(0.5f * input.lightPos2.x + 0.5f, -0.5f * input.lightPos2.y + 0.5f);
     float2 smTexcoord3 = float2(0.5f * input.lightPos3.x + 0.5f, -0.5f * input.lightPos3.y + 0.5f);
@@ -96,10 +51,10 @@ PSout main(PixelShaderInput input) : SV_TARGET
     float SHADOW_EPSILON = 0.000125f;
     float dx = 1.f / 1024.0f;
     float dy = 1.f / 1024.0f;
-    float d0 = (depthTexture.Sample(shadowSampler, smTexcoord1 + float2(0.0f, 0.0f)).r + SHADOW_EPSILON < depth1) ? 0.0f : 1.0f;
-    float d1 = (depthTexture.Sample(shadowSampler, smTexcoord2 + float2(dx, 0.0f)).r + SHADOW_EPSILON < depth2) ? 0.0f : 1.0f;
-    float d2 = (depthTexture.Sample(shadowSampler, smTexcoord3 + float2(0.0f, dy)).r + SHADOW_EPSILON < depth3) ? 0.0f : 1.0f;
-    float d3 = (depthTexture.Sample(shadowSampler, smTexcoord4 + float2(dx, dy)).r + SHADOW_EPSILON < depth4) ? 0.0f : 1.0f;
+    float d0 = (depthTexture.Sample(shadowSampler, smTexcoord1).r + SHADOW_EPSILON < depth1) ? 0.0f : 1.0f;
+    float d1 = (depthTexture.Sample(shadowSampler, smTexcoord2).r + SHADOW_EPSILON < depth2) ? 0.0f : 1.0f;
+    float d2 = (depthTexture.Sample(shadowSampler, smTexcoord3).r + SHADOW_EPSILON < depth3) ? 0.0f : 1.0f;
+    float d3 = (depthTexture.Sample(shadowSampler, smTexcoord4).r + SHADOW_EPSILON < depth4) ? 0.0f : 1.0f;
     
     shadowco = (d0 + d1 + d2 + d3) / 4;
     if (shadowco <= 0.3) 
@@ -107,8 +62,8 @@ PSout main(PixelShaderInput input) : SV_TARGET
     
     output.position = input.worldPos;
     output.normal = input.normal;
-    output.ambient = shadowco * float4(ambientMap.Sample(sampl, input.uv).xyz, 1.0f);
-    output.diffuse = shadowco * float4(diffuseMap.Sample(sampl, input.uv).xyz, 1.0f);
-    output.specular = shadowco * float4(specularMap.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
+    output.ambient = float4(ambientMap.Sample(sampl, input.uv).xyz, 1.0f);
+    output.diffuse = float4(diffuseMap.Sample(sampl, input.uv).xyz, 1.0f);
+    output.specular = float4(specularMap.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
     return output;
 }

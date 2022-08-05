@@ -81,12 +81,12 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 	}
 
 
-	if (GetAsyncKeyState('1')) cam.SetRotation(0.0f, XM_PI/2, 0.0f, immediateContext);
+	/*if (GetAsyncKeyState('1')) cam.SetRotation(0.0f, XM_PI/2, 0.0f, immediateContext);
 	if (GetAsyncKeyState('2')) cam.SetRotation(0.0f, -XM_PI / 2, 0.0f, immediateContext);
 	if (GetAsyncKeyState('3')) cam.SetRotation(-XM_PI / 2, 0.0f, 0.0f, immediateContext);
 	if (GetAsyncKeyState('4')) cam.SetRotation(XM_PI / 2, 0.0f, 0.0f, immediateContext);
 	if (GetAsyncKeyState('5')) cam.SetRotation(0.0f, 0.0f, 0.0f, immediateContext);
-	if (GetAsyncKeyState('6')) cam.SetRotation(0.0f, XM_PI / 2 * 2, 0.0, immediateContext);
+	if (GetAsyncKeyState('6')) cam.SetRotation(0.0f, XM_PI / 2 * 2, 0.0, immediateContext);*/
 
 
 	if (GetAsyncKeyState(' '))
@@ -363,7 +363,7 @@ void Camera::updateFrustum()
 {
 	//frustumBB.Transform(frustumBB, 1, rotVector, cameraPos);
 	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
-	projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI * (90.f / 360.f), (32.f * 32.f) / (32.f * 32.f), 0.1f, 100.0f);
+	//projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI * (90.f / 360.f), (32.f * 32.f) / (32.f * 32.f), 0.1f, 100.0f);
 	DirectX::BoundingFrustum::CreateFromMatrix(frustumBB, projection);
 	frustumBB.Transform(frustumBB, DirectX::XMMatrixInverse(nullptr, XMMatrixLookAtLH(cameraPos, lookAtPos, upVector)));
 }

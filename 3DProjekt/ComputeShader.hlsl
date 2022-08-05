@@ -28,7 +28,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
     else if (imnormal == 1)
         backBuffer[DTid.xy] = inNormal[DTid.xy];
     else if (imcolour == 1)
-        backBuffer[DTid.xy] = inAmbient[DTid.xy];
+        backBuffer[DTid.xy] = inDiffuse[DTid.xy];
     else
     {
         float4 normal = inNormal[DTid.xy];

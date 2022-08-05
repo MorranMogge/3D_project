@@ -216,8 +216,9 @@ bool FrustumCuller::initiateCuller(std::vector<SceneObject> *objects, int width,
 	nodes.push_back(rootNode);
 	DirectX::XMFLOAT3 topLeft(-width, -50, -height);
 	DirectX::XMFLOAT3 bottomRight(width, 50, height);
-	this->recursiveNodeFunction(rootNode, topLeft, bottomRight, 0);
-	this->addObjectBB(nodes[0], objects);
+	this->rootNode = rootNode;
+	this->recursiveNodeFunction(this->rootNode, topLeft, bottomRight, 0);
+	this->addObjectBB(this->rootNode, objects);
 	return true;
 }
 
@@ -226,7 +227,7 @@ std::vector<SceneObject*> FrustumCuller::cullObjects(DirectX::BoundingFrustum fr
 	std::vector<SceneObject*> objects;
 	for (int i = 0; i < CHILDRENAMOUNT; i++)
 	{
-		this->newRecursiveIntersect(nodes[0]->children[i], frustum, objects);
+		this->newRecursiveIntersect(rootNode->children[i], frustum, objects);
 	}
 	return objects;
 }

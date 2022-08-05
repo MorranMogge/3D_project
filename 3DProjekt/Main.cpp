@@ -479,6 +479,12 @@ void newImGui(float bgClr[], ImGuiValues& imGuiStuff, bool &noIndexing, CamData&
 		float particleSize = cam.getParticleSize();
 		std::string currCam = "Main camera";
 		
+		if (GetAsyncKeyState('1')) currentCamera[0] = currentCamera[1] = currentCamera[2] = currentCamera[3] = false;
+		if (GetAsyncKeyState('2')) { currentCamera[0] = true; currentCamera[1] = currentCamera[2] = currentCamera[3] = false; }
+		if (GetAsyncKeyState('3')) { currentCamera[1] = true; currentCamera[0] = currentCamera[2] = currentCamera[3] = false; }
+		if (GetAsyncKeyState('4')) { currentCamera[2] = true; currentCamera[1] = currentCamera[0] = currentCamera[3] = false; }
+		if (GetAsyncKeyState('5')) { currentCamera[3] = true; currentCamera[1] = currentCamera[2] = currentCamera[0] = false; }
+
 		if (currentCamera[0] || currentCamera[1] || currentCamera[2] || currentCamera[3]) currCam = "Light camera";
 		bool begun = ImGui::Begin("Testing");
 		if (begun)
