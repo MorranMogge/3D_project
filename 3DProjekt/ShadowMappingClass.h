@@ -20,8 +20,6 @@ struct SpotLight
 
 struct DirLight
 {
-	DirectX::XMFLOAT3 position;
-	float padding1;
 	DirectX::XMFLOAT3 direction;
 	float padding2;
 	DirectX::XMFLOAT3 colour;
@@ -40,12 +38,15 @@ private:
 	ID3D11VertexShader* shadowVertex;
 	ID3D11SamplerState* shadowSampler;
 	ID3D11InputLayout* inputLayout;
-	SpotLight spotLight;
+	SpotLight spotLights[LIGHTAMOUNT-1];
+	DirLight directionalLight;
+	ID3D11Buffer* lightBuffers[LIGHTAMOUNT];
 
 	bool setUpShaders(ID3D11Device* device, std::string& vShaderByteCode);
 	bool setUpDepthStencilAndSRV(ID3D11Device* device);
 	bool setUpInputLayout(ID3D11Device* device, const std::string& vShaderByteCode);
 	bool setUpSamplerState(ID3D11Device* device);
+	bool setUpLightBuffers(ID3D11Device* device);
 	void setLightPosAndRot();
 
 public:
@@ -55,6 +56,7 @@ public:
 	void firstPass(std::vector<SceneObject> objects);
 	void firstPass(std::vector<SceneObject*> objects);
 	void secondPass(int index = 2);
+	void preDispatch(int index = 2);
 	void clearSecondPass();
 };
 

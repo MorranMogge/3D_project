@@ -409,6 +409,7 @@ void Render
 	immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
 	immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
 	
+	shadowMap.preDispatch();
 	deferred.secondPass();
 
 	immediateContext->CSSetShaderResources(0, 0, nullptr);

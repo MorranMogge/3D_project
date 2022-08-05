@@ -1,4 +1,2 @@
-﻿D:\School\Real3Dproject\3DProjekt\GeometryPass.hlsl(37,10-46): warning X3576: semantics in type overridden by variable/function or enclosing type
-  
-  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\GeometryPass.cso
-  3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe
+﻿  compilation object save succeeded; see C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\ComputeShader.cso
+  3DProjekt.vcxproj -> C:\Users\mogge\Documents\GitHub\Real3Dproject\x64\Debug\3DProjekt.exe

@@ -15,8 +15,8 @@ cbuffer materialInfo
 struct PSout
 {
     float4 position : SV_Target0;
-    float4 ambient : SV_Target1;
-    float4 normal : SV_Target2;
+    float4 normal : SV_Target1;
+    float4 ambient : SV_Target2;
     float4 diffuse : SV_Target3;
     float4 specular : SV_Target4;
 };
@@ -60,10 +60,10 @@ PSout main(PixelShaderInput input) : SV_TARGET
     if (shadowco <= 0.3) 
         shadowco = 0.3f;
     
-    output.position = input.worldPos;
-    output.normal = input.normal;
-    output.ambient = float4(ambientMap.Sample(sampl, input.uv).xyz, 1.0f);
-    output.diffuse = float4(diffuseMap.Sample(sampl, input.uv).xyz, 1.0f);
+    output.position = float4(input.worldPos.xyz, d0);
+    output.normal = float4(input.normal.xyz, d1);
+    output.ambient = float4(ambientMap.Sample(sampl, input.uv).xyz, d2);
+    output.diffuse = float4(diffuseMap.Sample(sampl, input.uv).xyz, d3);
     output.specular = float4(specularMap.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
     return output;
 }

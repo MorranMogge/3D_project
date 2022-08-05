@@ -108,6 +108,53 @@ bool ShadowMappingClass::setUpSamplerState(ID3D11Device* device)
     return !FAILED(hr);
 }
 
+bool ShadowMappingClass::setUpLightBuffers(ID3D11Device* device)
+{
+
+    D3D11_BUFFER_DESC bufferDesc = {};
+    bufferDesc.ByteWidth = sizeof(DirLight);
+    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bufferDesc.CPUAccessFlags = 0;
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
+
+    D3D11_SUBRESOURCE_DATA data = {};
+    data.pSysMem = &directionalLight;
+    data.SysMemPitch = 0;
+    data.SysMemSlicePitch = 0;
+
+    ID3D11Buffer* tempBuffer;
+
+    HRESULT hr = device->CreateBuffer(&bufferDesc, &data, &lightBuffers[0]);
+    if (FAILED(hr))
+    {
+        return false;
+    }
+
+    for (int i = 0; i < LIGHTAMOUNT-1; i++)
+    {
+        bufferDesc.ByteWidth = sizeof(SpotLight);
+        bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+        bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        bufferDesc.CPUAccessFlags = 0;
+        bufferDesc.MiscFlags = 0;
+        bufferDesc.StructureByteStride = 0;
+
+        data.pSysMem = &spotLights[i];
+        data.SysMemPitch = 0;
+        data.SysMemSlicePitch = 0;
+
+
+        hr = device->CreateBuffer(&bufferDesc, &data, &lightBuffers[i+1]);
+        if (FAILED(hr))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void ShadowMappingClass::setLightPosAndRot()
 {
     cameras[0].SetPosition(0, 50, 0);
@@ -125,12 +172,29 @@ void ShadowMappingClass::setLightPosAndRot()
 
 ShadowMappingClass::ShadowMappingClass()
 {
-    spotLight.position = DirectX::XMFLOAT3(10.f, 25.f, 10.f);
-    spotLight.direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
-    spotLight.colour = DirectX::XMFLOAT3(0.5f, 0.0f, 0.5f);
-    spotLight.cone = 10.f;
-    spotLight.reach = 10.f;
-    spotLight.attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+    directionalLight.direction = DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f);
+    directionalLight.colour = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+
+    spotLights[0].position = DirectX::XMFLOAT3(-10.f, 10.f, 10.f);
+    spotLights[0].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+    spotLights[0].colour = DirectX::XMFLOAT3(1.0f, 0.0f, 0.5f);
+    spotLights[0].cone = 10.f;
+    spotLights[0].reach = 50.f;
+    spotLights[0].attenuation = DirectX::XMFLOAT3(0.2f, 0.4f, 0.6f);
+
+    spotLights[1].position = DirectX::XMFLOAT3(-10.f, 25.f, 10.f);
+    spotLights[1].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+    spotLights[1].colour = DirectX::XMFLOAT3(0.0f, 1.0f, 0.5f);
+    spotLights[1].cone = 10.f;
+    spotLights[1].reach = 50.f;
+    spotLights[1].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+
+    spotLights[2].position = DirectX::XMFLOAT3(0.f, 10.f, -25.f);
+    spotLights[2].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
+    spotLights[2].colour = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
+    spotLights[2].cone = 10.f;
+    spotLights[2].reach = 50.f;
+    spotLights[2].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 }
 
 ShadowMappingClass::~ShadowMappingClass()
@@ -152,6 +216,7 @@ bool ShadowMappingClass::initiateShadowMapping(ID3D11DeviceContext* immediateCon
     if (!this->setUpShaders(device, vShaderByteCode))       return false;
     if (!this->setUpInputLayout(device, vShaderByteCode))   return false;
     if (!this->setUpSamplerState(device))                   return false;
+    if (!this->setUpLightBuffers(device))                   return false;
 	for (int i = 0; i < LIGHTAMOUNT; i++) { if (!cameras[i].CreateCBuffer(immediateContext, device)) return false; }
     this->setLightPosAndRot();
     return true;
@@ -209,6 +274,11 @@ void ShadowMappingClass::secondPass(int index)
 
     immediateContext->PSSetSamplers(1, 1, &shadowSampler);
     immediateContext->PSSetShaderResources(3, 1, &srv);
+}
+
+void ShadowMappingClass::preDispatch(int index)
+{
+    immediateContext->CSSetConstantBuffers(index, LIGHTAMOUNT, lightBuffers);
 }
 
 void ShadowMappingClass::clearSecondPass()
