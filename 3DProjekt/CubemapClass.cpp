@@ -313,7 +313,7 @@ bool CubemapClass::initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11
     if (!this->setUpInputLayout(device, vShaderByteCode))   return false;
     if (!this->setUpDepthStencil(device))                   return false;
     if (!this->setUpSRVAndRTV(device))                      return false;
-    if (!cam.CreateCBuffer(immediateContext, device))       return false;
+    if (!cam.initiateBuffers(immediateContext, device))     return false;
     if (!this->setUpVertexBuffer(device))                   return false;
     if (!this->setUpConstBuf(device))                       return false;
     if (!this->setUpCamBuffer(device))                      return false;
@@ -323,7 +323,7 @@ bool CubemapClass::initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11
 	return true;
 }
 
-void CubemapClass::createCube(newObjThing& vertices)
+void CubemapClass::createCube(objectInfo& vertices)
 {
     
     cube.indices = &vertices.indices;
@@ -340,14 +340,12 @@ void CubemapClass::createCube(newObjThing& vertices)
     }
 }
 
-void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view)
+void CubemapClass::draw(std::vector<SceneObject*>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view)
 {
-    immediateContext->HSSetShader(nullptr, nullptr, 0);	//Since we use tesselation for LOD in deferred
-    immediateContext->DSSetShader(nullptr, nullptr, 0); //and do not want it here
 
-    float clearColour[4]{ 0.0,0.0,0.0,0.0 }; //Blue sky
+    float clearColour[4]{ 0.0,0.0,0.0,0.0 };
 
-    immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
     //this->updateCamBuffer(); //Update Cam
 
@@ -363,12 +361,14 @@ void CubemapClass::draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, 
         this->setRot(c);
         for (int i = 0; i < o.size(); i++)
         {
-            o[i].draw();
+            o[i]->draw();
         }
     }
     
     immediateContext->VSSetShader(nullptr, nullptr, 0);
     immediateContext->PSSetShader(nullptr, nullptr, 0);
+    immediateContext->HSSetShader(nullptr, nullptr, 0);	//Since we use tesselation for LOD in deferred
+    immediateContext->DSSetShader(nullptr, nullptr, 0); //and do not want it here
 
    //Draw particles from the cubes perspective
    for (int c = 0; c < AMOUNTOFSIDESACUBEHAS; c++)

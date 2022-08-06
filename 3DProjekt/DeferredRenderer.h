@@ -12,11 +12,8 @@ struct ImGuiValues
 	float imwireframe;
 };
 
-
-
 //With this we decide the amount of gBuffers
 #define G_BUFFER_SIZE 5
-//const int G_BUFFER_SIZE = 5;
 
 class DeferredRenderer
 {
@@ -50,7 +47,6 @@ public:
 	DeferredRenderer(int width, int height);
 	~DeferredRenderer();
 
-	bool setComputeShader(ID3D11ComputeShader* cShader);
 	bool initiateDeferredRenderer(ID3D11DeviceContext* immediateContext, ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11DepthStencilView* dsView, Camera* camera, ImGuiValues* imGuiStruct);
 	void firstPass();
 	void secondPass();

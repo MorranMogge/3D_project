@@ -23,17 +23,9 @@ void SceneObject::updateWorldMatrix()
 	
 }
 
-SceneObject::SceneObject(std::vector<SimpleVertex> *inVertices)
-	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({1,1,1})
-{
-	
-	this->vertices = inVertices;
-	
-	worldMatrix = DirectX::XMMatrixIdentity();
-}
-
-SceneObject::SceneObject(newObjThing &inObj)
-	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({ 1,1,1 })
+SceneObject::SceneObject(objectInfo&inObj)
+	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({ 1,1,1 }), 
+	constantBuffer(nullptr), vertexBuffer(nullptr), indexBuffer(nullptr)
 {
 	for (int i = 0; i < inObj.indexes.size(); i++)
 	{
@@ -49,39 +41,21 @@ SceneObject::SceneObject(newObjThing &inObj)
 		this->verticeCount.push_back(&inObj.verticeCount[i]);
 	}
 
-	/*for (int i = 0; i < inObj.mesh.size(); i++)
-	{
-		vertices->push_back(inObj.mesh[i]);
-	}*/
-	//this->vertices = &inObj.mesh;
-	/*for (int i = 0; i < inObj.mesh.size(); i++)
-	{
-		textureSrv.push_back(inObj.textureSrvs[i]);
-	}*/
 	worldMatrix = DirectX::XMMatrixIdentity();
 	DirectX::XMVECTOR p1 = DirectX::XMLoadFloat3(&inObj.topLeft);
 	DirectX::XMVECTOR p2 = DirectX::XMLoadFloat3(&inObj.bottomRight);
 	DirectX::BoundingBox::CreateFromPoints(bb, p1, p2);
 }
 
-SceneObject::SceneObject()
-	:stride(sizeof(SimpleVertex)), offset(0), pos({ 0,0,0 }), rot({ 0,0,0 }), scale({ 1,1,1 })
-{
-	this->vertices->push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
-	this->vertices->push_back(SimpleVertex({ 10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
-	this->vertices->push_back(SimpleVertex({ -10.0, -0.5f, -10.0f }, { 0, 0, -1 }, { 0, 1 }));
-	this->vertices->push_back(SimpleVertex({ -10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 0, 0 }));
-	this->vertices->push_back(SimpleVertex({ 10.0f, -0.35f, 10.0f }, { 0, 0, -1 }, { 1, 0 }));
-	this->vertices->push_back(SimpleVertex({ 10.0f, -0.5f, -10.0f }, { 0, 0, -1 }, { 1, 1 }));
-
-	worldMatrix = DirectX::XMMatrixIdentity();
-	worldMatrix *= DirectX::XMMatrixTranslation(0.f, 0.f, -1.f);
-	worldMatrix *= DirectX::XMMatrixRotationY(0);
-	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
-}
-
 SceneObject::~SceneObject()
 {
+	if (this->constantBuffer != nullptr) constantBuffer->Release();
+	if (this->vertexBuffer != nullptr) vertexBuffer->Release();
+	if (this->indexBuffer != nullptr) indexBuffer->Release();
+	for (int i = 0; i < matBuffer.size(); i++)
+	{
+		if (this->matBuffer[i] != nullptr) matBuffer[i]->Release();
+	}
 }
 
 bool SceneObject::setImmediateContext(ID3D11DeviceContext* immediateContext)
@@ -90,44 +64,18 @@ bool SceneObject::setImmediateContext(ID3D11DeviceContext* immediateContext)
 	return this->immediateContext!=nullptr;
 }
 
-void SceneObject::initiateObject(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<SimpleVertex>* inVertices, std::vector<DWORD> *indices)
+bool SceneObject::initiateObject(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<SimpleVertex>* inVertices, std::vector<DWORD> *indices)
 {
-	this->setImmediateContext(immediateContext);
-	this->createConstBuf(device);
-	this->setVertices(inVertices);
-	this->setMatBuffer(device);
-	this->setIndices(indices);
-	this->createIndexBuffer(device);
+	if (!this->setImmediateContext(immediateContext))	return false;
+	if (!this->createConstBuf(device))					return false;
+	if (!this->setVertices(inVertices))					return false;
+	if (!this->setMatBuffer(device))					return false;
+	if (!this->setIndices(indices))						return false;
+	if (!this->createIndexBuffer(device))				return false;
+	return true;
 }
 
-void SceneObject::draw()
-{
-	//Some objects differ in their pipeline so we need
-	//to make sure each is correct for each object
-
-	//Update
-	updateWorldMatrix();
-	updateConstantBuffer();
-
-	//Set correct positions
-	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
-
-	//Set the correct vertices
-	immediateContext->IASetVertexBuffers(0,1, &vertexBuffer, &stride, &offset);
-
-	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
-
-	//Start the pipeline
-	for (int i = 0; i < indexes.size(); i++)
-	{
-		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
-		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
-		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
-		immediateContext->DrawIndexed(*verticeCount[i], *indexes[i], 0);
-	}
-}
-
-void SceneObject::draw(bool testDraw)
+void SceneObject::draw(int submeshAmount)
 {
 	//Some objects differ in their pipeline so we need
 	//to make sure each is correct for each object
@@ -147,40 +95,34 @@ void SceneObject::draw(bool testDraw)
 	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
 	//Start the pipeline
+	int counter = 0;
+	int loops = 0;
+	if (submeshAmount == 0)  loops = verticeCount.size();
+	else loops = submeshAmount;
+	if (loops > verticeCount.size()) loops = verticeCount.size();
 
-	if (!testDraw)
+	for (int i = 0; i < loops; i++)
 	{
-		immediateContext->PSSetShaderResources(0, 1, &textureSrv[0]);
-		immediateContext->Draw(indices->size(), 0);
-	}
-	else
-	{
-		int counter = 0;
-		for (int i = 0; i < verticeCount.size(); i++)
-		{
-			//immediateContext->PSSetConstantBuffers(0, 1, &matBuffer[i]);
-			immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
-			immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
-			immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
-			immediateContext->DrawIndexed(*verticeCount[i], counter, 0);
-			counter += *verticeCount[i];
-		}
+		immediateContext->PSSetConstantBuffers(0, 1, &matBuffer[i]);
+		immediateContext->PSSetShaderResources(0, 1, &textureSrv[i * 3 + 0]);
+		immediateContext->PSSetShaderResources(1, 1, &textureSrv[i * 3 + 1]);
+		immediateContext->PSSetShaderResources(2, 1, &textureSrv[i * 3 + 2]);
+		immediateContext->DrawIndexed(*verticeCount[i], counter, 0);
+		counter += *verticeCount[i];
 	}
 }
 
-void SceneObject::setVertices(objThing obj)
-{
-	this->vertices = &obj.mesh;
-}
 
-void SceneObject::setVertices(std::vector<SimpleVertex>* inVertices)
+bool SceneObject::setVertices(std::vector<SimpleVertex>* inVertices)
 {
 	this->vertices = inVertices;
+	return this->vertices != nullptr;
 }
 
-void SceneObject::setIndices(std::vector<DWORD>* indices)
+bool SceneObject::setIndices(std::vector<DWORD>* indices)
 {
 	this->indices = indices;
+	return this->indices != nullptr;
 }
 
 void SceneObject::setBoundingBox()
@@ -219,9 +161,9 @@ bool SceneObject::setMatBuffer(ID3D11Device* device)
 	{
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = sizeof(materialInfo);
-		bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		bufferDesc.MiscFlags = 0;
 		bufferDesc.StructureByteStride = 0;
 
@@ -246,7 +188,6 @@ bool SceneObject::setMatBuffer(ID3D11Device* device)
 bool SceneObject::setTextureSrv(ID3D11ShaderResourceView*& texture)
 {
 	textureSrv.push_back(texture);
-	//textureSrv[0] = texture;
 	return textureSrv[0]!=nullptr;
 }
 
@@ -279,17 +220,6 @@ bool SceneObject::createIndexBuffer(ID3D11Device* device)
 	indexBufferData.pSysMem = indices->data();
 	HRESULT hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
 	return !FAILED(hr);
-}
-
-void SceneObject::releaseCom()
-{
-	constantBuffer->Release();
-	vertexBuffer->Release();
-	indexBuffer->Release();
-	for (int i = 0; i < shinyness.size(); i++)
-	{
-		matBuffer[i]->Release();
-	}
 }
 
 int SceneObject::getVerticeAmount() const
@@ -352,4 +282,11 @@ void SceneObject::setWorldPos(DirectX::XMFLOAT3 newPos)
 	pos.x = newPos.x;
 	pos.y = newPos.y;
 	pos.z = newPos.z;
+}
+
+void SceneObject::setScale(float x, float y, float z)
+{
+	scale.x = x;
+	scale.y = y;
+	scale.z = x;
 }

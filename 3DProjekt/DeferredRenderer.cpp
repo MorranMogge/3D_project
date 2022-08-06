@@ -162,11 +162,6 @@ DeferredRenderer::~DeferredRenderer()
 	cShader->Release();
 }
 
-bool DeferredRenderer::setComputeShader(ID3D11ComputeShader* cShader)
-{
-	return ((this->cShader=cShader)!=nullptr);
-}
-
 bool DeferredRenderer::setUpInputLayout(ID3D11Device* device, const std::string& vShaderByteCode)
 {
 	D3D11_INPUT_ELEMENT_DESC inputDesc[3] =
@@ -221,15 +216,12 @@ void DeferredRenderer::secondPass()
 	immediateContext->DSSetShader(nullptr, nullptr, 0); //-||-
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 
-
-
-	ID3D11RenderTargetView* nullRtv[G_BUFFER_SIZE]{ nullptr };// = nullptr;
+	ID3D11RenderTargetView* nullRtv[G_BUFFER_SIZE]{ nullptr };
 	immediateContext->OMSetRenderTargets(5, nullRtv, nullptr);
 	immediateContext->CSSetShader(cShader, nullptr, 0);
 	immediateContext->CSSetUnorderedAccessViews(0, 1, &uaView, nullptr);
 	immediateContext->CSSetShaderResources(0, G_BUFFER_SIZE, srv);
-	//immediateContext->CSSetConstantBuffers(0, 1, &camBuffer);
-	//immediateContext->CSSetConstantBuffers(1, 1, &imGuiBuffer);
+
 	immediateContext->Dispatch(width/32, height/32, 1);
 
 	//Set everything to null

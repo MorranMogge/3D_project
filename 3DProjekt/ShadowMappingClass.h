@@ -21,9 +21,9 @@ struct SpotLight
 struct DirLight
 {
 	DirectX::XMFLOAT3 direction;
-	float padding2;
+	float padding;
 	DirectX::XMFLOAT3 colour;
-	float padding3;
+	float padding1;
 };
 
 class ShadowMappingClass
@@ -55,11 +55,20 @@ public:
 	bool initiateShadowMapping(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
 	void firstPass(std::vector<SceneObject> objects);
 	void firstPass(std::vector<SceneObject*> objects);
-	void secondPass(int index = 2);
+	void secondPass(int index = 1);
 	void preDispatch(int index = 2);
+	void preCubeDraw(int index = 1);
 	void clearSecondPass();
+
+	//ImGui related functions
 	void setCameraPosAndRot(Camera cameras[]);
-	void setLightDirection(DirectX::XMFLOAT3 dir, int index);
-	DirectX::XMFLOAT3 getDir(int index)const;
+	void setLightColour(DirectX::XMFLOAT3 clr, int index);
+	DirectX::XMFLOAT3 getColour(int index)const;
+	void setIsolation(float isolation, int index);
+	float getIsolation(int index)const;
+	float getCone(int index)const;
+	void setCone(float cone, int index);
+	float getReach(int index)const;
+	void setReach(float reach, int index);
 };
 

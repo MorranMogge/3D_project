@@ -16,9 +16,7 @@ private:
 	ID3D11RasterizerState* wireFrameRasterizerState;
 	ID3D11HullShader* hullShader;					
 	ID3D11DomainShader* domainShader;	
-	ID3D11Buffer* cameraBuffer;
 
-	bool setUpCameraBuffer(ID3D11Device* device);
 	bool setUpShaders(ID3D11Device* device);
 	bool setUpRasterizerState(ID3D11Device* device);
 public:

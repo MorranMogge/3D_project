@@ -1,7 +1,8 @@
 #pragma once
-
+#include "Camera.h"
 #include <array>
 #include <d3d11.h>
+#include "DeferredRenderer.h"
 
 struct SimpleVertex
 {
@@ -37,4 +38,4 @@ struct SimpleVertex
 
 
 
-bool SetupPipeline(ID3D11Device* device, ID3D11SamplerState*& samplerState);
+bool SetupPipeline(ID3D11Device* device, ID3D11SamplerState*& samplerState, ID3D11Buffer* &camBuffer, CamData& camData, ID3D11Buffer* &imGuiBuffer, ImGuiValues& imGuiStuff);

@@ -1,10 +1,5 @@
 #include "TesselatorClass.h"
 
-bool TesselatorClass::setUpCameraBuffer(ID3D11Device* device)
-{
-	return false;
-}
-
 bool TesselatorClass::setUpShaders(ID3D11Device* device)
 {
 	std::string shaderData;
@@ -92,7 +87,7 @@ bool TesselatorClass::setUpRasterizerState(ID3D11Device* device)
 }
 
 TesselatorClass::TesselatorClass()
-	:cameraBuffer(nullptr), cameraPtr(nullptr), currentRasterizer(nullptr), domainShader(nullptr),
+	:cameraPtr(nullptr), currentRasterizer(nullptr), domainShader(nullptr),
 	hullShader(nullptr), immediateContext(nullptr), rasterizerState(nullptr), wireFrameRasterizerState(nullptr)
 {
 }
@@ -103,7 +98,6 @@ TesselatorClass::~TesselatorClass()
 	hullShader->Release();
 	domainShader->Release();
 	wireFrameRasterizerState->Release();
-	//cameraBuffer->Release();
 }
 
 bool TesselatorClass::setUpTesselator(ID3D11DeviceContext* immediateContext, ID3D11Device* device, Camera* camera)
@@ -112,7 +106,6 @@ bool TesselatorClass::setUpTesselator(ID3D11DeviceContext* immediateContext, ID3
 	if ((this->cameraPtr = camera) == nullptr)	return false;
 	if (!this->setUpShaders(device))			return false;
 	if (!this->setUpRasterizerState(device))	return false;
-	if (!this->setUpCameraBuffer(device))		return false;
 	return true;
 }
 

@@ -19,7 +19,7 @@ struct materialChecker
 	std::vector<std::string> textureNames;
 };
 
-struct newObjThing
+struct objectInfo
 {
 	std::vector<int> indexes;
 	std::vector<float> specularComp;
@@ -31,6 +31,4 @@ struct newObjThing
 	DirectX::XMFLOAT3 bottomRight;
 };
 
-void readModels(std::vector<objThing> &test);
-void newReadModels(ID3D11Device* device, ID3D11ShaderResourceView* &missingTexture, materialChecker &mat, std::vector<newObjThing>& objArr);
-void newerReadModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTexture, materialChecker& mat, std::vector<newObjThing>& objArr);
+void readModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTexture, materialChecker& mat, std::vector<objectInfo>& objArr);

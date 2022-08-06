@@ -42,7 +42,6 @@ public:
 	void moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, float dt);
 
 	const XMMATRIX& GetViewMatrix() const;
-	const XMVECTOR& GetPositionVector() const;
 	const XMFLOAT3& GetPositionFloat3() const;
 	const XMFLOAT3& GetRotationFloat3() const;
 
@@ -50,25 +49,19 @@ public:
 	void SetRotation(float x, float y, float z, ID3D11DeviceContext* immediateContext);
 	void AdjustRotation(float x, float y, ID3D11DeviceContext* immediateContext);
 
-	const XMVECTOR& GetForwardVector();
-	const XMVECTOR& GetRightVector();
-	const XMVECTOR& GetBackwardVector();
-	const XMVECTOR& GetLeftVector();
-
 	void ChangeProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
-	bool CreateCBuffer(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
+	bool initiateBuffers(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
 	void sendProjection(ID3D11DeviceContext* immediateContext, bool cs = false);
 	void sendGeometryMatrix(ID3D11DeviceContext* immediateContext);
 	void sendView(ID3D11DeviceContext* immediateContext, int index = 1, bool cs = false);
 	void sendVectorsGeometry(ID3D11DeviceContext* immediateContext);
 	void changeParticleSize(float size);
 	void updateFrustum();
-	bool createFrustum();
+	void createFrustum();
 	float getParticleSize();
 	DirectX::BoundingFrustum getFrustumBB()const;
 
 private:
-	bool temps[4]{ true, true, true, true };
 	ID3D11Buffer* ConstBuf;
 	ID3D11Buffer* computeConstBuf;
 	ID3D11Buffer* vectorBuffer;
@@ -99,6 +92,6 @@ private:
 	XMVECTOR rotVector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMFLOAT3 rotationFor;
 	XMVECTOR rotVectorFor = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR temp;
-	bool running;
+
+	void resetCamera();
 };

@@ -1,39 +1,47 @@
 newmtl submesh_0
+Ns 100.00
 map_Ka submesh_0.png
 map_Kd submesh_0.png
 map_Ks submesh_0.png
 
 newmtl submesh_1
+Ns 100.00
 map_Ka submesh_3.png
 map_Kd submesh_3.png
 map_Ks submesh_3.png
 
 newmtl submesh_2
+Ns 100.00
 map_Ka submesh_1.png
 map_Kd submesh_1.png
 map_Ks submesh_1.png
 
 newmtl submesh_3
+Ns 100.00
 map_Ka submesh_6.png
 map_Kd submesh_6.png
 map_Ks submesh_6.png
 
 newmtl submesh_4
+Ns 100.00
 map_Ka submesh_7.png
 map_Kd submesh_7.png
 map_Ks submesh_7.png
 
 newmtl submesh_5
+Ns 100.00
 map_Ka submesh_5.png
 map_Kd submesh_5.png
 map_Ks submesh_5.png
 
 newmtl submesh_6
+Ns 100.00
 map_Ka submesh_2.png
 map_Kd submesh_2.png
 map_Ks submesh_2.png
 
 newmtl submesh_7
+Ns 100.00
 map_Ka submesh_4.png
 map_Kd submesh_4.png
 map_Ks submesh_4.png

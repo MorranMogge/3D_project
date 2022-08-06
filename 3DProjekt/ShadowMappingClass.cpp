@@ -196,22 +196,22 @@ ShadowMappingClass::ShadowMappingClass()
     spotLights[0].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     spotLights[0].colour = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
     spotLights[0].cone = 10.f;
-    spotLights[0].reach = 50.f;
+    spotLights[0].reach = 5.f;
     //spotLights[0].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-    spotLights[0].attenuation = DirectX::XMFLOAT3(0.7f, 0.2f, 0.0f);
+    spotLights[0].attenuation = DirectX::XMFLOAT3(0.7f, 0.35f, 0.0f);
 
     spotLights[1].position = DirectX::XMFLOAT3(-15.f, 25.f, 10.f);
     spotLights[1].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     spotLights[1].colour = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
     spotLights[1].cone = 10.f;
     spotLights[1].reach = 50.f;
-    spotLights[1].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+    spotLights[1].attenuation = DirectX::XMFLOAT3(0.7f, 0.2f, 0.0f);
 
     spotLights[2].position = DirectX::XMFLOAT3(0.f, 25.f, -25.f);
     spotLights[2].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     spotLights[2].colour = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
     spotLights[2].cone = 10.f;
-    spotLights[2].reach = 10.f;
+    spotLights[2].reach = 50.f;
     spotLights[2].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
 }
 
@@ -233,7 +233,7 @@ bool ShadowMappingClass::initiateShadowMapping(ID3D11DeviceContext* immediateCon
     if (!this->setUpShaders(device, vShaderByteCode))       return false;
     if (!this->setUpInputLayout(device, vShaderByteCode))   return false;
     if (!this->setUpSamplerState(device))                   return false;
-	for (int i = 0; i < LIGHTAMOUNT; i++) { if (!cameras[i].CreateCBuffer(immediateContext, device)) return false; }
+	for (int i = 0; i < LIGHTAMOUNT; i++) { if (!cameras[i].initiateBuffers(immediateContext, device)) return false; }
     if (!this->setUpLightBuffers(device))                   return false;
     this->setLightPosAndRot();
     return true;
@@ -285,7 +285,7 @@ void ShadowMappingClass::secondPass(int index)
 {
     for (int i = 0; i < LIGHTAMOUNT; i++)
     {
-        cameras[i].sendView(immediateContext, 1+i, true);
+        cameras[i].sendView(immediateContext, index+i, true);
     } 
 
     immediateContext->PSSetSamplers(1, 1, &shadowSampler);
@@ -294,8 +294,14 @@ void ShadowMappingClass::secondPass(int index)
 
 void ShadowMappingClass::preDispatch(int index)
 {
-    //this->updateBuffers();
+    this->updateBuffers();
     immediateContext->CSSetConstantBuffers(index, LIGHTAMOUNT, lightBuffers);
+}
+
+void ShadowMappingClass::preCubeDraw(int index)
+{
+    this->updateBuffers();
+    immediateContext->PSSetConstantBuffers(index, LIGHTAMOUNT, lightBuffers);
 }
 
 void ShadowMappingClass::clearSecondPass()
@@ -308,21 +314,57 @@ void ShadowMappingClass::clearSecondPass()
 
 void ShadowMappingClass::setCameraPosAndRot(Camera cameras[])
 {
-    for (int i = 0; i < LIGHTAMOUNT; i++)
-    {
-        cameras[i].SetPosition(this->cameras[i].GetPositionFloat3().x, this->cameras[i].GetPositionFloat3().y, this->cameras[i].GetPositionFloat3().z);
-        cameras[i].SetRotation(this->cameras[i].GetRotationFloat3().x, this->cameras[i].GetRotationFloat3().y, this->cameras[i].GetRotationFloat3().z, immediateContext);
-    }
+    cameras[0].SetPosition(0, 25, 50);
+    cameras[0].SetRotation(XM_PI / 4, XM_PI, 0, immediateContext);
+    cameras[1].SetPosition(spotLights[0].position.x, spotLights[0].position.y, spotLights[0].position.z);
+    cameras[1].SetRotation(XM_PI / 2, 0, 0, immediateContext);
+    cameras[2].SetPosition(spotLights[1].position.x, spotLights[1].position.y, spotLights[1].position.z);
+    cameras[2].SetRotation(XM_PI / 2, 0, 0, immediateContext);
+    cameras[3].SetPosition(spotLights[2].position.x, spotLights[2].position.y, spotLights[2].position.z);
+    cameras[3].SetRotation(XM_PI / 2, 0, 0, immediateContext);
 }
 
-void ShadowMappingClass::setLightDirection(DirectX::XMFLOAT3 dir, int index)
+float ShadowMappingClass::getIsolation(int index) const
 {
-    if (index == 0) directionalLight.direction = dir;
-    else spotLights[index-1].direction = dir;
+    if (index == 0) return directionalLight.padding;
+    else return spotLights[index - 1].padding1;
 }
 
-DirectX::XMFLOAT3 ShadowMappingClass::getDir(int index) const
+float ShadowMappingClass::getCone(int index) const
 {
-    if (index == 0) return directionalLight.direction;
-    else return spotLights[index-1].direction;
+    return spotLights[index].cone;
+}
+
+float ShadowMappingClass::getReach(int index) const
+{
+    return spotLights[index].reach;
+}
+
+
+void ShadowMappingClass::setCone(float cone, int index)
+{
+    spotLights[index].cone = cone;
+}
+
+void ShadowMappingClass::setReach(float reach, int index)
+{
+    spotLights[index].reach = reach;
+}
+
+void ShadowMappingClass::setIsolation(float isolation, int index)
+{
+    if (index == 0) directionalLight.padding = isolation;
+    else spotLights[index - 1].padding1 = isolation;
+}
+
+void ShadowMappingClass::setLightColour(DirectX::XMFLOAT3 clr, int index)
+{
+    if (index == 0) directionalLight.colour = clr;
+    else spotLights[index-1].colour = clr;
+}
+
+DirectX::XMFLOAT3 ShadowMappingClass::getColour(int index) const
+{
+    if (index == 0) return directionalLight.colour;
+    else return spotLights[index-1].colour;
 }

@@ -156,9 +156,7 @@
     <ClCompile Include="imGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="imGUI\imgui_tables.cpp" />
     <ClCompile Include="imGUI\imgui_widgets.cpp" />
-    <ClCompile Include="LightBuffer.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="ObjParser.cpp" />
     <ClCompile Include="ParticleHandler.cpp" />
     <ClCompile Include="PipelineHelper.cpp" />
@@ -182,8 +180,6 @@
     <ClInclude Include="imGUI\imstb_rectpack.h" />
     <ClInclude Include="imGUI\imstb_textedit.h" />
     <ClInclude Include="imGUI\imstb_truetype.h" />
-    <ClInclude Include="LightBuffer.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="memoryLeakChecker.h" />
     <ClInclude Include="ObjParser.h" />
     <ClInclude Include="ParticleHandler.h" />
@@ -192,7 +188,6 @@
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="ShadowMappingClass.h" />
     <ClInclude Include="stb_image.h" />
-    <ClInclude Include="structs.h" />
     <ClInclude Include="TesselatorClass.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="WindowHelper.h" />

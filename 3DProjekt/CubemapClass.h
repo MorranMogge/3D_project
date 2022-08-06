@@ -73,8 +73,8 @@ public:
 
 	bool initiateCubemap(ID3D11DeviceContext* immediateContext, ID3D11Device* device, ID3D11DepthStencilView* dsView);
 
-	void createCube(newObjThing& vertices);
-	void draw(std::vector<SceneObject>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view);
+	void createCube(objectInfo& vertices);
+	void draw(std::vector<SceneObject*>& o, ParticleHandler& pHandler, ID3D11DepthStencilView* &view);
 	void drawCube();
 
 };
