@@ -1,7 +1,2 @@
-﻿  FrustumCuller.cpp
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(89,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(100,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(100,28): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(101,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(101,32): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+﻿  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\ComputeShader.cso
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe

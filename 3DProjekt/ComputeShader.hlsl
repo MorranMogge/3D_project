@@ -159,7 +159,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
         float3 lightDirection = -normalize(direction);
         diffuse *= max(dot(normal.xyz, lightDirection), 0.0f) * colour;
         reflection = normalize(reflect(direction, normal.xyz));
-        float3 specularClr = colour * inSpecular[DTid.xy].xyz * pow(max(dot(reflection, vectorToCam), 0.0f), shinyness);
+        float3 specularClr = colour * inSpecular[DTid.xy].xyz * pow(max(dot(-reflection, vectorToCam), 0.0f), shinyness);
         
         diffuse += specularClr;
         float3 ambient = 0.25 * inAmbient[DTid.xy].xyz;
