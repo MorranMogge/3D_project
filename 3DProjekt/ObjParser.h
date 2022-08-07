@@ -8,11 +8,6 @@
 #include <vector>
 #include <sstream>
 
-struct objThing
-{
-	std::vector<SimpleVertex> mesh;
-};
-
 struct materialChecker
 {
 	std::vector<ID3D11ShaderResourceView*> textureSrvs;

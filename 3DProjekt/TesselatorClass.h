@@ -10,7 +10,6 @@ private:
 	ID3D11DeviceContext* immediateContext;
 	Camera* cameraPtr;
 
-	//Need to release
 	ID3D11RasterizerState* currentRasterizer;
 	ID3D11RasterizerState* rasterizerState;
 	ID3D11RasterizerState* wireFrameRasterizerState;

@@ -120,7 +120,6 @@ float4 main(PixelShaderInput input) : SV_TARGET
         
     float lightAmount;
         
-        //If the light should affect the pixel
     if (distanceToLight1 < reach1)
     {
         vecToLight1 /= distanceToLight1;
@@ -129,10 +128,8 @@ float4 main(PixelShaderInput input) : SV_TARGET
         {
             float3 fallOff = pow(max(dot(-vecToLight1, spotDirection1), 0.0f), cone1);
                 
-            //Diffuse part
             spotLightFactor1 = diffuseColour * spotColour1 * fallOff;
                 
-            //Specular part
             reflection = normalize(reflect(-vecToLight1, normal.xyz));
             float3 specComp = fallOff * spotColour1 * specularColour * pow(max(dot(reflection, vectorToCam), 0.0f), shinyness);
 

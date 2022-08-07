@@ -51,7 +51,6 @@ public:
 	ShadowMappingClass();
 	~ShadowMappingClass();
 	bool initiateShadowMapping(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
-	void firstPass(std::vector<SceneObject> objects);
 	void firstPass(std::vector<SceneObject*> objects);
 	void secondPass(int index = 1);
 	void preDispatch(int index = 2);

@@ -163,11 +163,6 @@ void ShadowMappingClass::setLightPosAndRot()
     cameras[2].SetRotation(XM_PI / 2, 0, 0, immediateContext);
     cameras[3].SetPosition(spotLights[2].position.x, spotLights[2].position.y, spotLights[2].position.z);
     cameras[3].SetRotation(XM_PI / 2, 0, 0, immediateContext);
-   /* for (int i = 1; i < LIGHTAMOUNT; i++)
-    {
-        cameras[i].SetPosition(spotLights[i-1].position.x, spotLights[i - 1].position.y, spotLights[i - 1].position.z);
-        cameras[i].SetRotation(-spotLights[i - 1].direction.y * (XM_PI / 2), spotLights[i - 1].direction.x * (XM_PI / 2), spotLights[i - 1].direction.z * (XM_PI / 2), immediateContext);
-    }*/
 }
 
 void ShadowMappingClass::updateBuffers()
@@ -235,27 +230,6 @@ bool ShadowMappingClass::initiateShadowMapping(ID3D11DeviceContext* immediateCon
     return true;
 }
 
-void ShadowMappingClass::firstPass(std::vector<SceneObject> objects)
-{
-    immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    immediateContext->IASetInputLayout(inputLayout);
-    immediateContext->VSSetShader(shadowVertex, nullptr, 0);
-
-    for (int s = 0; s < LIGHTAMOUNT; s++)
-    {
-        immediateContext->ClearDepthStencilView(dsView[s], D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-        immediateContext->OMSetRenderTargets(0, nullptr, dsView[s]);
-        cameras[s].sendView(immediateContext);
-        for (int i = 0; i < objects.size(); i++)
-        {
-            objects[i].draw(true);
-        }
-
-    }
-
-    immediateContext->VSSetShader(nullptr, nullptr, 0);
-}
-
 void ShadowMappingClass::firstPass(std::vector<SceneObject*> objects)
 {
     immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -269,7 +243,7 @@ void ShadowMappingClass::firstPass(std::vector<SceneObject*> objects)
         cameras[s].sendView(immediateContext);
         for (int i = 0; i < objects.size(); i++)
         {
-            objects[i]->draw(true);
+            objects[i]->draw(0);
         }
 
     }

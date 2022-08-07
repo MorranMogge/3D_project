@@ -11,8 +11,8 @@ illum 2
 
 newmtl None2
 Ns 5.00
-map_Ka metalSpec.png
-map_Kd metalSpec.png
+map_Ka wheel.png
+map_Kd wheel.png
 map_Ks White.png
 
 newmtl None3

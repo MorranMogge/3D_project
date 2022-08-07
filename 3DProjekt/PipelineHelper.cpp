@@ -39,7 +39,7 @@ bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamD
 	desc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = (void*)&camData;
+	data.pSysMem = &camData;
 	data.SysMemPitch = data.SysMemPitch = 0;
 
 	HRESULT hr = device->CreateBuffer(&desc, &data, &camBuffer);
@@ -68,7 +68,7 @@ bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct 
 
 	D3D11_SUBRESOURCE_DATA data;
 	data.pSysMem = &imGuiStuff;
-	data.SysMemPitch = data.SysMemPitch = 0; // 1D resource 
+	data.SysMemPitch = data.SysMemPitch = 0;
 
 	HRESULT hr = device->CreateBuffer(&desc, &data, &imGuiBuffer);
 	if (FAILED(hr))

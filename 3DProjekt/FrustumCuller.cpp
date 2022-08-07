@@ -102,7 +102,7 @@ bool FrustumCuller::initiateCuller(std::vector<SceneObject*> *objects, int width
 	this->rootNode = rootNode;
 	this->recursiveNodeFunction(this->rootNode, topLeft, bottomRight, 0);
 	this->addObjectBB(this->rootNode, objects);
-	return true;
+	return rootNode != nullptr;
 }
 
 std::vector<SceneObject*> FrustumCuller::cullObjects(DirectX::BoundingFrustum frustum)

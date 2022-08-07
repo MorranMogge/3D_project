@@ -182,7 +182,6 @@ void ParticleHandler::updateTimer()
 
 bool ParticleHandler::setUpVertexBuffer(ID3D11Device* device)
 {
-	//Setup description
 	D3D11_BUFFER_DESC bufferDesc;
 	bufferDesc.ByteWidth = sizeof(DirectX::XMFLOAT3) * this->particles.size();
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;

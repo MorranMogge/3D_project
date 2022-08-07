@@ -29,7 +29,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 bool SetupWindow(HINSTANCE instance, UINT width, UINT height, int nCmdShow, HWND& window)
 {
-	const wchar_t CLASS_NAME[] = L"Demo Window Class";
+	const wchar_t CLASS_NAME[] = L"Window Class";
 
 	WNDCLASS wc			= {};
 	wc.lpfnWndProc		= WindowProc;

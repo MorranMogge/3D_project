@@ -25,7 +25,7 @@ cbuffer cameraPos : register(b0)
 HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> inputPatch, uint patchID : SV_PrimitiveID)
 {
     HS_CONSTANT_DATA_OUTPUT output;
-    float maxdistance = tesselationConst*tesselationConst;
+    float maxdistance = tesselationConst*tesselationConst; //This way we do not need to calculate square root
     float maxTesselation = 10.0f;
     float3 middlePoint = (inputPatch[0].worldPos + inputPatch[1].worldPos + inputPatch[2].worldPos) / 3;
     float3 distToTriangle = cameraPosition - middlePoint;

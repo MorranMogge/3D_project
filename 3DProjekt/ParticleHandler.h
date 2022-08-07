@@ -33,9 +33,7 @@ private:
 	ID3D11DeviceContext* immediateContext;
 	Camera* cameraPtr;
 
-	//Need to release
 
-	//Information senders
 	ID3D11InputLayout* inputLayout;
 	ID3D11UnorderedAccessView* particleUAV;
 

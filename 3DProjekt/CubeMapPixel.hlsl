@@ -17,13 +17,13 @@ struct VertexShaderOutput
 
 float4 main(VertexShaderOutput input) : SV_TARGET
 {
-    float3 temp = input.worldPos - camPos;
+    float3 vecFromCam = input.worldPos - camPos;
     
-    temp = normalize(temp);
+    vecFromCam = normalize(vecFromCam);
     input.normal = normalize(input.normal);
     float3 loc;
     
-    loc = reflect(temp, input.normal);
+    loc = reflect(vecFromCam, input.normal);
     loc = normalize(loc);
     
     float3 colour = tex.Sample(sampl, loc).xyz;

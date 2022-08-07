@@ -48,7 +48,7 @@ bool TesselatorClass::setUpShaders(ID3D11Device* device)
 	shaderData.clear();
 	reader.close();
 
-	return true;	//If both shaders were setup correctly
+	return true;
 }
 
 bool TesselatorClass::setUpRasterizerState(ID3D11Device* device)

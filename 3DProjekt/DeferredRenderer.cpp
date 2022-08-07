@@ -187,7 +187,7 @@ bool DeferredRenderer::initiateDeferredRenderer(ID3D11DeviceContext* immediateCo
 	if (!this->setUpShaders(device, vShaderByteCode))		return false;
 	if (!this->setUpInputLayout(device, vShaderByteCode))	return false;
 	if (!this->setUpUav(device, swapChain))					return false;
-	if (!this->bindSrvAndRtv(device))		return false;
+	if (!this->bindSrvAndRtv(device))						return false;
 	return true;
 }
 

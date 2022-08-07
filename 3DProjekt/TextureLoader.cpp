@@ -8,16 +8,16 @@
 bool LoadTexutres(ID3D11Device* device, std::vector<ID3D11ShaderResourceView*>& textureSrvs)
 {
 	std::ifstream file("textureFile.txt");
-	if (!file.is_open()) { std::cout << "Could not open textureFile!\n"; return 0; }
+	if (!file.is_open()) { std::cout << "Could not open textureFile!\n"; return false; }
 	std::string textureName;
 	while (std::getline(file, textureName))
 	{
 		ID3D11ShaderResourceView* newSrv;
-		if (!createSRVforPic(device, newSrv, "Textures/"+textureName)) return 0;
+		if (!createSRVforPic(device, newSrv, "Textures/"+textureName)) return false;
 		textureSrvs.push_back(newSrv);
 	}
 	file.close();
-	return 1;
+	return true;
 }
 
 bool createSRVforPic(ID3D11Device* device, ID3D11ShaderResourceView*& srv, std::string fileName)
@@ -48,12 +48,12 @@ bool createSRVforPic(ID3D11Device* device, ID3D11ShaderResourceView*& srv, std::
 
 	ID3D11Texture2D* texture = {};
 	HRESULT hr = device->CreateTexture2D(&textureDesc, &subResource, &texture);
-	if (FAILED(hr)) { std::cout << "Could not create Texture2D!\n"; return 1; }
+	if (FAILED(hr)) { std::cout << "Could not create Texture2D!\n"; return false; }
 
 	if (texture != nullptr)
 	{
 		hr = device->CreateShaderResourceView(texture, nullptr, &srv);
-		if (FAILED(hr)) { std::cout << "Could not create srv!\n"; return 1; }
+		if (FAILED(hr)) { std::cout << "Could not create srv!\n"; return false; }
 	}
 
 	stbi_image_free(picture);

@@ -33,7 +33,6 @@ private:
 	ID3D11InputLayout* inputLayout;
 
 	ID3D11UnorderedAccessView* uaView;
-	//ID3D11Buffer* buffers[G_BUFFER_SIZE];
 	ID3D11Texture2D* texture[G_BUFFER_SIZE];
 	ID3D11ShaderResourceView* srv[G_BUFFER_SIZE];
 	ID3D11RenderTargetView* rtv[G_BUFFER_SIZE];

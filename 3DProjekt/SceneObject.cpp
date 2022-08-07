@@ -77,24 +77,14 @@ bool SceneObject::initiateObject(ID3D11DeviceContext* immediateContext, ID3D11De
 
 void SceneObject::draw(int submeshAmount)
 {
-	//Some objects differ in their pipeline so we need
-	//to make sure each is correct for each object
-
 	//Update
 	updateWorldMatrix();
 	updateConstantBuffer();
 
-
-	//Set correct positions
 	immediateContext->VSSetConstantBuffers(0, 1, &constantBuffer);
-
-	//Set the correct vertices
 	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-
-	//Set the correct texture
 	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
 
-	//Start the pipeline
 	int counter = 0;
 	int loops = 0;
 	if (submeshAmount == 0)  loops = verticeCount.size();
@@ -185,12 +175,6 @@ bool SceneObject::setMatBuffer(ID3D11Device* device)
 	return true;
 }
 
-bool SceneObject::setTextureSrv(ID3D11ShaderResourceView*& texture)
-{
-	textureSrv.push_back(texture);
-	return textureSrv[0]!=nullptr;
-}
-
 bool SceneObject::createConstBuf(ID3D11Device* device)
 {
 	D3D11_BUFFER_DESC bufferDesc = {};
@@ -220,21 +204,6 @@ bool SceneObject::createIndexBuffer(ID3D11Device* device)
 	indexBufferData.pSysMem = indices->data();
 	HRESULT hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
 	return !FAILED(hr);
-}
-
-int SceneObject::getVerticeAmount() const
-{
-	return this->vertices->size();
-}
-
-DirectX::XMMATRIX SceneObject::getWorldMatrix() const
-{
-	return this->worldMatrix;
-}
-
-ID3D11Buffer* SceneObject::getVertexBuffer()
-{
-	return this->vertexBuffer;
 }
 
 void SceneObject::setWorldPos(float arr[])

@@ -2,4 +2,4 @@ newmtl Material
 Ns 25.00
 map_Ka Ground.jpg
 map_Kd Ground.jpg
-map_Ks Ground.jpg
+map_Ks White.png
