@@ -95,17 +95,21 @@ void Camera::SetRotation(float pitch, float yaw, float roll, ID3D11DeviceContext
 	rotation.x = pitch;
 	rotation.y = yaw;
 	rotation.z = roll;
-	rotVector = XMLoadFloat3(&rotation);
-	rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
-	rightVec = XMVector3TransformCoord(DEFAULT_RIGHT, rotationMX);
-	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX);
-	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
-	upVector = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+
+	rotVector = DirectX::XMLoadFloat3(&rotation);
+	rotationMX = DirectX::XMMatrixRotationRollPitchYawFromVector(rotVector);
+	rightVec = DirectX::XMVector3TransformCoord(DEFAULT_RIGHT, rotationMX);
+	forwardVec = DirectX::XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX);
+	lookAtPos = DirectX::XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
+	upVector = DirectX::XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+
 
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 
+	if (immediateContext == nullptr) return;
+	
 	XMStoreFloat4x4(&VP.viewProj, viewMatrix);
 	D3D11_MAPPED_SUBRESOURCE subData = {};
 	ZeroMemory(&subData, sizeof(D3D11_MAPPED_SUBRESOURCE));
@@ -123,7 +127,6 @@ void Camera::ChangeProjectionMatrix(float FOV, float aspectRatio, float nearZ, f
 bool Camera::initiateBuffers(ID3D11DeviceContext* immediateContext, ID3D11Device* device)
 {
 	this->resetCamera();
-	//lookAtPos = XMVectorSet(0.0f, 6.0f, 5.0f, 0.0f);
 
 	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
 	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);

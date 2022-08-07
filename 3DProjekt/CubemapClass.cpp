@@ -347,10 +347,10 @@ void CubemapClass::draw(std::vector<SceneObject*>& o, ParticleHandler& pHandler,
 
     immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
-    //this->updateCamBuffer(); //Update Cam
+    this->updateCamBuffer(); //Update Cam
 
     immediateContext->PSSetShader(pShader, nullptr, 0);
-    immediateContext->PSSetConstantBuffers(0, 1, &camBuffer);
+    immediateContext->PSSetConstantBuffers(1, 1, &camBuffer);
 
     //Draw objects from the cubes perspective
     for (int c = 0; c < AMOUNTOFSIDESACUBEHAS; c++)

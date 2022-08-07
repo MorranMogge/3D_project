@@ -212,8 +212,8 @@ void DeferredRenderer::firstPass()
 void DeferredRenderer::secondPass()
 {
 	immediateContext->VSSetShader(nullptr, nullptr, 0);
-	immediateContext->HSSetShader(nullptr, nullptr, 0);	//Since we use tesselation for LOD
-	immediateContext->DSSetShader(nullptr, nullptr, 0); //-||-
+	immediateContext->HSSetShader(nullptr, nullptr, 0);
+	immediateContext->DSSetShader(nullptr, nullptr, 0);
 	immediateContext->PSSetShader(nullptr, nullptr, 0);
 
 	ID3D11RenderTargetView* nullRtv[G_BUFFER_SIZE]{ nullptr };

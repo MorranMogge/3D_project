@@ -46,7 +46,7 @@ public:
 	const XMFLOAT3& GetRotationFloat3() const;
 
 	void SetPosition(float x, float y, float z);
-	void SetRotation(float x, float y, float z, ID3D11DeviceContext* immediateContext);
+	void SetRotation(float x, float y, float z, ID3D11DeviceContext* immediateContext = nullptr);
 	void AdjustRotation(float x, float y, ID3D11DeviceContext* immediateContext);
 
 	void ChangeProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);

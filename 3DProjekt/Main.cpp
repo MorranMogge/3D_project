@@ -13,7 +13,7 @@
 
 using namespace DirectX;
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap, bool& cubeMap);
+void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap, bool& cubeMap);
 bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject*> &objects, int& submeshAmount, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], ShadowMappingClass& shadowMap, bool currentCamera[], bool& cubeMap);
@@ -187,6 +187,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 		objects[objects.size() - 1]->setRot(otherView[i].GetRotationFloat3());
 	
 	}
+	objects.push_back(new SceneObject(newObj[5]));
+	if (!objects[objects.size() - 1]->initiateObject(immediateContext, device, &newObj[5].mesh, &newObj[5].indices)) return false;
+	objects[objects.size() - 1]->setWorldPos(DirectX::XMFLOAT3(-30, 35, 0));
+	objects[objects.size() - 1]->setScale(3,3,3);
 
 	for (auto& o : objects)
 	{
@@ -262,8 +266,8 @@ void Render
 	D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData,
 	ID3D11Buffer*& camBuffer, std::vector<SceneObject*> &objects, int& submeshAmount, float clearColour[],
 	ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler& particles, TesselatorClass& tesselator, 
-	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], ShadowMappingClass& shadowMap, 
-	bool currentCamera[], bool& cubeMap
+	DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], 
+	ShadowMappingClass& shadowMap, bool currentCamera[], bool& cubeMap
 )
 {
 	D3D11_MAPPED_SUBRESOURCE subCam = {};
@@ -277,6 +281,7 @@ void Render
 	memcpy(values.pData, &imGuiStuff, sizeof(ImGuiValues));
 	immediateContext->Unmap(imGuiBuffer, 0);
 	immediateContext->ClearRenderTargetView(rtv, clearColour);
+
 	camera.updateFrustum();
 	std::vector<SceneObject*> culledObjects = culler.cullObjects(camera.getFrustumBB());
 	for (int i = 0; i < culledObjects.size(); i++) //This ensures we always see the camera
@@ -349,7 +354,7 @@ void Render
 	particles.updateParticles();
 
 	//ImGui
-	newImGui(clearColour, imGuiStuff, submeshAmount, camData, camera, currentCamera, shadowMap, cubeMap);
+	handleImGui(clearColour, imGuiStuff, submeshAmount, camData, camera, currentCamera, shadowMap, cubeMap);
 }
 
 std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<objectInfo> objData)
@@ -378,7 +383,7 @@ std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D1
 	return obj;
 }
 
-void newImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap, bool& cubeMap)
+void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap, bool& cubeMap)
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();

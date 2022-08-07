@@ -22,7 +22,7 @@ bool ParticleHandler::setUpUAV(ID3D11Device* device)
 
 void ParticleHandler::updateWorldMatrix(int index)
 {
-	if (index == 0) worldMatrix = DirectX::XMMatrixIdentity() * DirectX::XMMatrixTranslation(0,1,0);// *DirectX::XMMatrixTranslation(particles[index].x, particles[index].y, particles[index].z);
+	if (index == 0) worldMatrix = DirectX::XMMatrixIdentity() * DirectX::XMMatrixTranslation(-30,1,0);// *DirectX::XMMatrixTranslation(particles[index].x, particles[index].y, particles[index].z);
 	else worldMatrix = DirectX::XMMatrixTranspose(worldMatrix); worldMatrix *= DirectX::XMMatrixTranslation(1.0f / 144.0f, 0, 0);
 	worldMatrix = DirectX::XMMatrixTranspose(worldMatrix);
 	DirectX::XMStoreFloat4x4(&wrlMtx, worldMatrix);

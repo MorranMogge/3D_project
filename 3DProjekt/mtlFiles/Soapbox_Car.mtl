@@ -3,20 +3,20 @@
 
 newmtl wheel
 Ns 100.0000
-map_Ka wood.png
-map_Kd wood.png
-map_Ks woodSpec.png
+map_Ka wheel.png
+map_Kd wheel.png
+map_Ks White.png
 
 newmtl steer
 Ns 100.0000
 map_Ka Steerwheel_Albedo.png
 map_Kd Steerwheel_Albedo.png
-map_Ks Steerwheel_Specular.png
+map_Ks White.png
 
 newmtl default
 Ns 100.0000
-map_Ka metalSpec.png
-map_Kd metalSpec.png
+map_Ka wheel.png
+map_Kd wheel.png
 map_Ks White.png
 
 newmtl old_default

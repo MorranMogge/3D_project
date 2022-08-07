@@ -51,20 +51,6 @@ bool CreateRenderTargetView(ID3D11Device* device, IDXGISwapChain* swapChain, ID3
 	return !FAILED(hr);
 }
 
-bool CreateUAV(ID3D11Device* device, IDXGISwapChain* swapChain, ID3D11UnorderedAccessView*& uaView)
-{
-	ID3D11Texture2D* backBuffer = nullptr;
-	if (FAILED(swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer))))
-	{
-		std::cerr << "Failed to get back buffer!" << std::endl;
-		return false;
-	}
-
-	HRESULT hr = device->CreateUnorderedAccessView(backBuffer, NULL, &uaView);
-	backBuffer->Release();
-	return !FAILED(hr);
-}
-
 bool CreateDepthStencil(ID3D11Device* device, UINT width, UINT height, ID3D11Texture2D*& dsTexture, ID3D11DepthStencilView*& dsView)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;
@@ -119,12 +105,6 @@ bool SetupD3D11(UINT width, UINT height, HWND window, ID3D11Device*& device, ID3
 		std::cerr << "Error creating depth stencil view!" << std::endl;
 		return false;
 	}
-
-	/*if (!CreateUAV(device, swapChain, uaView))
-	{
-		std::cerr << "Error creating depth stencil view!" << std::endl;
-		return false;
-	}*/
 
 	SetViewport(viewport, width, height);
 

@@ -195,24 +195,20 @@ ShadowMappingClass::ShadowMappingClass()
     spotLights[0].position = DirectX::XMFLOAT3(15.f, 25.f, 10.f);
     spotLights[0].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     spotLights[0].colour = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-    spotLights[0].cone = 10.f;
-    spotLights[0].reach = 5.f;
-    //spotLights[0].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
-    spotLights[0].attenuation = DirectX::XMFLOAT3(0.7f, 0.35f, 0.0f);
+    spotLights[0].cone = 15.f;
+    spotLights[0].reach = 35.f;
 
     spotLights[1].position = DirectX::XMFLOAT3(-15.f, 25.f, 10.f);
     spotLights[1].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     spotLights[1].colour = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
     spotLights[1].cone = 10.f;
     spotLights[1].reach = 50.f;
-    spotLights[1].attenuation = DirectX::XMFLOAT3(0.7f, 0.2f, 0.0f);
 
     spotLights[2].position = DirectX::XMFLOAT3(0.f, 25.f, -25.f);
     spotLights[2].direction = DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f);
     spotLights[2].colour = DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f);
-    spotLights[2].cone = 10.f;
-    spotLights[2].reach = 50.f;
-    spotLights[2].attenuation = DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f);
+    spotLights[2].cone = 13.5f;
+    spotLights[2].reach = 40.f;
 }
 
 ShadowMappingClass::~ShadowMappingClass()

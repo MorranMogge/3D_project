@@ -14,8 +14,6 @@ struct SpotLight
 	float reach;
 	DirectX::XMFLOAT3 colour;
 	float padding1;
-	DirectX::XMFLOAT3 attenuation;
-	float padding2;
 };
 
 struct DirLight
@@ -57,7 +55,7 @@ public:
 	void firstPass(std::vector<SceneObject*> objects);
 	void secondPass(int index = 1);
 	void preDispatch(int index = 2);
-	void preCubeDraw(int index = 1);
+	void preCubeDraw(int index = 2);
 	void clearSecondPass();
 
 	//ImGui related functions
