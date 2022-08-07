@@ -4,7 +4,7 @@
 #include <d3d11.h>
 #include <DirectXCollision.h>
 
-#define DEPTH 4
+#define DEPTH 3
 #define CHILDRENAMOUNT 4
 
 struct Node	//Root node fits whole scene

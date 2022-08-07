@@ -1,12 +1,7 @@
-﻿  Main.cpp
-D:\School\Real3Dproject\3DProjekt\Main.cpp(318,29): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(320,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(301,100): warning C4390: ';': empty controlled statement found; is this the intent?
-D:\School\Real3Dproject\3DProjekt\Main.cpp(371,36): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(371,64): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(371,90): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(392,44): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(392,71): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(392,99): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(392,127): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+﻿  FrustumCuller.cpp
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(89,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(100,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(100,28): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(101,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(101,32): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe
