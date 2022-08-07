@@ -1,19 +1,12 @@
-﻿  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\DomainShader.cso
-D:\School\Real3Dproject\3DProjekt\HullShader.hlsl(30,12-103): warning X3206: implicit truncation of vector type
-D:\School\Real3Dproject\3DProjekt\HullShader.hlsl(42,9-32): warning X3550: array reference cannot be used as an l-value; not natively addressable, forcing loop to unroll
-  
-  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\HullShader.cso
-  Main.cpp
-D:\School\Real3Dproject\3DProjekt\Main.cpp(327,29): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(329,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\School\Real3Dproject\3DProjekt\Main.cpp(310,100): warning C4390: ';': empty controlled statement found; is this the intent?
-D:\School\Real3Dproject\3DProjekt\Main.cpp(380,36): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(380,64): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(380,90): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(401,44): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(401,71): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(401,99): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-D:\School\Real3Dproject\3DProjekt\Main.cpp(401,127): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
-  TesselatorClass.cpp
-  Generating Code...
+﻿  Main.cpp
+D:\School\Real3Dproject\3DProjekt\Main.cpp(318,29): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(320,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(301,100): warning C4390: ';': empty controlled statement found; is this the intent?
+D:\School\Real3Dproject\3DProjekt\Main.cpp(371,36): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(371,64): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(371,90): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(392,44): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(392,71): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(392,99): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(392,127): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe

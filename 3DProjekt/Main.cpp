@@ -53,15 +53,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	};
 
 	//First we set some values
-	float xyzPos[3] = { 0.f,0.f,0.0f,};
-	float xyzRot[3] = { 0.f,0.f,0.f };
-	float xyzRotSpeed[3] = { 1.f,1.f,1.f };
-	float xyzScale[3] = { 1.f,1.f,1.f };
-	float testValues[3] = { -8.5f,10.0f,-8.5f };
-	float testValues2[3] = { 10.0f,1.0f,5.0f };
-	bool rotation = false;
-	bool normal = false;
-	bool test = true;
 	float bgColour[4] = { 0.0, 0.0, 0.0, 0.0 };
 	bool currentCamera[4]{ false };
 	bool cubeMap = true;
@@ -109,7 +100,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	ShadowMappingClass shadowMap;
 
 	//Classes
-	std::vector<objectInfo> newObj;
+	std::vector<objectInfo> sceneObjInfo;
 	materialChecker material;
 	std::vector<SceneObject *> objects;
 	Camera camera;
@@ -133,8 +124,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 	for (int i = 0; i < 4; i++) { if (!otherView[i].initiateBuffers(immediateContext, device)) return 1; }
 	if (!camera.initiateBuffers(immediateContext, device)) return 1;
 
-	readModels(device, missingTexture, material, newObj);
-	cubemap.createCube(newObj[4]);
+	readModels(device, missingTexture, material, sceneObjInfo);
+	cubemap.createCube(sceneObjInfo[4]);
 
 	//Initiates all the handlers
 	if (!shadowMap.initiateShadowMapping(immediateContext, device))		return 1;
@@ -151,7 +142,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	MSG msg = {};
 
-	objects = setUpScene(immediateContext, device, newObj, cubePositions, otherView);
+	objects = setUpScene(immediateContext, device, sceneObjInfo, cubePositions, otherView);
 
 	int quadTreeSize = 64;
 	if (!culler.initiateCuller(&objects, quadTreeSize, quadTreeSize)) return 1;
