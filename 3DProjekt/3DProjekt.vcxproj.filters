@@ -40,6 +40,9 @@
     <Filter Include="Frustum Culling">
       <UniqueIdentifier>{70709342-908d-4255-a524-d1f3f15f03ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ShadowMapping">
+      <UniqueIdentifier>{2c89c5b6-b450-4ee7-a7b7-7d2a5e58c7c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PipelineHelper.cpp">
@@ -103,20 +106,11 @@
       <Filter>Frustum Culling</Filter>
     </ClCompile>
     <ClCompile Include="ShadowMappingClass.cpp">
-      <Filter>Resource Files\Source Files</Filter>
+      <Filter>ShadowMapping</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PipelineHelper.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="stb_image.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowHelper.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D11Helper.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="imGUI\imconfig.h">
@@ -177,6 +171,15 @@
       <Filter>Frustum Culling</Filter>
     </ClInclude>
     <ClInclude Include="ShadowMappingClass.h">
+      <Filter>ShadowMapping</Filter>
+    </ClInclude>
+    <ClInclude Include="PipelineHelper.h">
+      <Filter>Resource Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D3D11Helper.h">
+      <Filter>Resource Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowHelper.h">
       <Filter>Resource Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -217,6 +220,8 @@
     <FxCompile Include="CubeMapVertex.hlsl">
       <Filter>Cubemap</Filter>
     </FxCompile>
-    <FxCompile Include="ShadowVertexShader.hlsl" />
+    <FxCompile Include="ShadowVertexShader.hlsl">
+      <Filter>ShadowMapping</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

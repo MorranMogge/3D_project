@@ -41,17 +41,14 @@ public:
 
 	void moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, float dt);
 
-	const XMMATRIX& GetViewMatrix() const;
 	const XMFLOAT3& GetPositionFloat3() const;
 	const XMFLOAT3& GetRotationFloat3() const;
 
 	void SetPosition(float x, float y, float z);
 	void SetRotation(float x, float y, float z, ID3D11DeviceContext* immediateContext = nullptr);
-	void AdjustRotation(float x, float y, ID3D11DeviceContext* immediateContext);
 
 	void ChangeProjectionMatrix(float FOV, float aspectRatio, float nearZ, float farZ);
 	bool initiateBuffers(ID3D11DeviceContext* immediateContext, ID3D11Device* device);
-	void sendProjection(ID3D11DeviceContext* immediateContext, bool cs = false);
 	void sendGeometryMatrix(ID3D11DeviceContext* immediateContext);
 	void sendView(ID3D11DeviceContext* immediateContext, int index = 1, bool cs = false);
 	void sendVectorsGeometry(ID3D11DeviceContext* immediateContext);
@@ -65,7 +62,6 @@ private:
 	ID3D11Buffer* ConstBuf;
 	ID3D11Buffer* computeConstBuf;
 	ID3D11Buffer* vectorBuffer;
-	XMMATRIX VMBB;
 	XMMATRIX viewMatrix;
 	XMMATRIX projection;
 	WorldProjMatrix VP;
@@ -73,7 +69,6 @@ private:
 	GeometryVectors vectors;
 	BoundingFrustum frustumBB;
 
-	//New ones
 	XMMATRIX rotationMX;
 	XMMATRIX rotationForward;
 	XMVECTOR cameraPos = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
@@ -83,10 +78,9 @@ private:
 	const XMVECTOR DEFAULT_UP = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	const XMVECTOR DEFAULT_FORWARD = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
-	XMVECTOR forwardVec = DEFAULT_FORWARD;
-	XMVECTOR upVector = DEFAULT_UP;
-	XMVECTOR rightVec = DEFAULT_RIGHT;
-	XMVECTOR upVec = DEFAULT_UP;
+	XMVECTOR forwardVec;
+	XMVECTOR rightVec;
+	XMVECTOR upVec;
 
 	XMFLOAT3 rotation;
 	XMVECTOR rotVector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
@@ -94,4 +88,5 @@ private:
 	XMVECTOR rotVectorFor = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 
 	void resetCamera();
+	void AdjustRotation(float x, float y, ID3D11DeviceContext* immediateContext);
 };

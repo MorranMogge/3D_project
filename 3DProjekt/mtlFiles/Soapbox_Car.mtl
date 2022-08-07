@@ -3,14 +3,14 @@
 
 newmtl wheel
 Ns 100.0000
-map_Ka wheel.png
-map_Kd wheel.png
+map_Ka Ground.jpg
+map_Kd Ground.jpg
 map_Ks White.png
 
 newmtl steer
 Ns 100.0000
-map_Ka Steerwheel_Albedo.png
-map_Kd Steerwheel_Albedo.png
+map_Ka steer.png
+map_Kd steer.png
 map_Ks White.png
 
 newmtl default
@@ -18,20 +18,3 @@ Ns 100.0000
 map_Ka wheel.png
 map_Kd wheel.png
 map_Ks White.png
-
-newmtl old_default
-	Ns 100.0000
-	Ni 1.5000
-	d 1.0000
-	Tr 0.0000
-	Tf 1.0000 1.0000 1.0000 
-	illum 2
-	Ka 0.0000 0.0000 0.0000
-	Kd 1.0000 1.0000 1.0000
-	Ks 1.0000 1.0000 1.0000
-	Ke 0.0000 0.0000 0.0000
-	map_Ka F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Albedo.png
-	map_Kd F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Albedo.png
-	map_Ks F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Specular.png
-	map_bump F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Normal.png
-	bump F:\DATOS\PROYECTOS 3DS\MODELOS\Soapbox_car\Textures\Chassis_Normal.png

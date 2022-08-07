@@ -101,9 +101,8 @@ float4 main(PixelShaderInput input) : SV_TARGET
     float3 position = input.worldPos.xyz;
     float3 normal = input.normal.xyz;
     
-    //float3 specularClr = (1.0 * specularColour * pow(max(dot(reflection, vectorToCam), 0.0f), 25));
         
-        //For each of the spot lights
+    //For each of the spot lights
     float3 vecToLight1 = spotPosition1 - position.xyz;
     float3 vecToLight2 = spotPosition2 - position.xyz;
     float3 vecToLight3 = spotPosition3 - position.xyz;
@@ -130,10 +129,10 @@ float4 main(PixelShaderInput input) : SV_TARGET
         {
             float3 fallOff = pow(max(dot(-vecToLight1, spotDirection1), 0.0f), cone1);
                 
-                //Diffuse part
+            //Diffuse part
             spotLightFactor1 = diffuseColour * spotColour1 * fallOff;
                 
-                //Specular part
+            //Specular part
             reflection = normalize(reflect(-vecToLight1, normal.xyz));
             float3 specComp = fallOff * spotColour1 * specularColour * pow(max(dot(reflection, vectorToCam), 0.0f), shinyness);
 
@@ -149,10 +148,8 @@ float4 main(PixelShaderInput input) : SV_TARGET
         {
             float3 fallOff = pow(max(dot(-vecToLight2, spotDirection2), 0.0f), cone2);
                 
-                //Diffuse part
             spotLightFactor2 = diffuseColour * spotColour2 * fallOff;
                 
-                //Specular part
             reflection = normalize(reflect(-vecToLight2, normal.xyz));
             float3 specComp = fallOff * spotColour2 * specularColour * pow(max(dot(reflection, normalize(vectorToCam)), 0.0f), shinyness);
 
@@ -168,10 +165,8 @@ float4 main(PixelShaderInput input) : SV_TARGET
         {
             float3 fallOff = pow(max(dot(-vecToLight3, spotDirection3), 0.0f), cone3);
                 
-                //Diffuse part
             spotLightFactor3 = diffuseColour * spotColour3 * fallOff;
                 
-                //Specular part
             reflection = normalize(reflect(-vecToLight3, normal.xyz));
             float3 specComp = fallOff * spotColour3 * specularColour * pow(max(dot(reflection, vectorToCam), 0.0f), shinyness);
 
@@ -190,7 +185,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
                                          spotLightFactor1 * shadowComp1 +
                                          spotLightFactor2 * shadowComp2 +
                                          spotLightFactor3 * shadowComp3);
-        
+    
     if (padding1 == 1)
         return float4(diffuseColour * shadowComp0, 1.0f);
     else if (spot1Padding1 == 1) 

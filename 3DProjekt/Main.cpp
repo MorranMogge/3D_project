@@ -13,11 +13,12 @@
 
 using namespace DirectX;
 
+void updateBuffers(ID3D11DeviceContext* immediateContext, Camera &camera, ID3D11Buffer*& camBuffer, CamData& camData, ID3D11Buffer*& imGuiBuffer, ImGuiValues& imGuiStuff);
 void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap, bool& cubeMap);
 bool createImGuiBuffer(ID3D11Device* device, ID3D11Buffer*& imGuiBuffer, struct ImGuiValues& imGuiStuff);
 bool createCamBuffer(ID3D11Device* device, ID3D11Buffer*& camBuffer, struct CamData& camData);
 void Render(ID3D11DeviceContext* immediateContext, ID3D11RenderTargetView* &rtv, ID3D11DepthStencilView* dsView, D3D11_VIEWPORT& viewport, ID3D11SamplerState* samplerState, Camera& camera, CamData& camData, ID3D11Buffer*& camBuffer, std::vector<SceneObject*> &objects, int& submeshAmount, float clearColour[], ImGuiValues &imGuiStuff, ID3D11Buffer* imGuiBuffer, ParticleHandler &particles, TesselatorClass& tesselator, DeferredRenderer& deferred, CubemapClass& cubemap, FrustumCuller& culler, Camera otherView[], ShadowMappingClass& shadowMap, bool currentCamera[], bool& cubeMap);
-std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<objectInfo> objData);
+std::vector<SceneObject*> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<objectInfo>& objData, DirectX::XMFLOAT3 cubePositions[], Camera otherView[]);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace, _In_ LPWSTR lpCmdLine, _In_ int nCmdShhow)
 {
@@ -150,56 +151,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstace,
 
 	MSG msg = {};
 
-	for (int i = 0; i < 4; i++)
-	{
-		objects.push_back(new SceneObject(newObj[i]));
-		if (!objects[i]->initiateObject(immediateContext, device, &newObj[i].mesh, &newObj[i].indices));
-	}
-
-
-	objects[1]->setWorldPos(testValues);
-	objects[0]->setWorldPos(testValues2);
-	testValues[1] = -1;
-	objects[2]->setScale(2,2,2);
-
-	testValues[0] = 1.0f;
-	testValues[1] = 1.0f;
-	testValues[2] = 1.0f;
-
-	objects[1]->setScale(testValues);
-	objects.push_back(new SceneObject(newObj[0]));
-	if (!objects[4]->initiateObject(immediateContext, device, &newObj[0].mesh, &newObj[0].indices)) return false;
-
-	int amount = objects.size();
-	int counter = 0;
-	for (int i = objects.size(); i < 20 + amount; i++)
-	{
-		objects.push_back(new SceneObject(newObj[0]));
-		if (!objects[i]->initiateObject(immediateContext, device, &newObj[0].mesh, &newObj[0].indices)) return 1;
-		objects[i]->setWorldPos(cubePositions[counter++]);
-	}
-
-	for (int i = 0; i < 4; i++)
-	{
-		objects.push_back(new SceneObject(newObj[0]));
-		if (!objects[objects.size()-1]->initiateObject(immediateContext, device, &newObj[0].mesh, &newObj[0].indices)) return 1;
-		objects[objects.size() - 1]->setWorldPos(otherView[i].GetPositionFloat3());
-		objects[objects.size() - 1]->setRot(otherView[i].GetRotationFloat3());
-	
-	}
-	objects.push_back(new SceneObject(newObj[5]));
-	if (!objects[objects.size() - 1]->initiateObject(immediateContext, device, &newObj[5].mesh, &newObj[5].indices)) return false;
-	objects[objects.size() - 1]->setWorldPos(DirectX::XMFLOAT3(-30, 35, 0));
-	objects[objects.size() - 1]->setScale(3,3,3);
-
-	for (auto& o : objects)
-	{
-		o->setBoundingBox();
-		if (!o->setVertexBuffer(device))
-		{
-			return -6;
-		}
-	}
+	objects = setUpScene(immediateContext, device, newObj, cubePositions, otherView);
 
 	int quadTreeSize = 64;
 	if (!culler.initiateCuller(&objects, quadTreeSize, quadTreeSize)) return 1;
@@ -270,16 +222,7 @@ void Render
 	ShadowMappingClass& shadowMap, bool currentCamera[], bool& cubeMap
 )
 {
-	D3D11_MAPPED_SUBRESOURCE subCam = {};
-	camData.cameraPosition = camera.GetPositionFloat3();
-	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
-	memcpy(subCam.pData, &camData, sizeof(CamData));
-	immediateContext->Unmap(camBuffer, 0);
-
-	D3D11_MAPPED_SUBRESOURCE values = {};
-	immediateContext->Map(imGuiBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &values);
-	memcpy(values.pData, &imGuiStuff, sizeof(ImGuiValues));
-	immediateContext->Unmap(imGuiBuffer, 0);
+	updateBuffers(immediateContext, camera, camBuffer, camData, imGuiBuffer, imGuiStuff);
 	immediateContext->ClearRenderTargetView(rtv, clearColour);
 
 	camera.updateFrustum();
@@ -334,9 +277,7 @@ void Render
 	immediateContext->CSSetShaderResources(0, 0, nullptr);
 	immediateContext->CSSetShader(nullptr, nullptr, 0);
 
-	//Particle Draw call
 	immediateContext->OMSetRenderTargets(1, &rtv, dsView);
-
 	if (currentCamera[0]) otherView[0].sendView(immediateContext);
 	else if (currentCamera[1]) otherView[1].sendView(immediateContext);
 	else if (currentCamera[2]) otherView[2].sendView(immediateContext);
@@ -357,30 +298,77 @@ void Render
 	handleImGui(clearColour, imGuiStuff, submeshAmount, camData, camera, currentCamera, shadowMap, cubeMap);
 }
 
-std::vector<SceneObject> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<objectInfo> objData)
+std::vector<SceneObject*> setUpScene(ID3D11DeviceContext* immediateContext, ID3D11Device* device, std::vector<objectInfo>& objData, DirectX::XMFLOAT3 cubePositions[], Camera otherView[])
 {
-	std::vector<SceneObject> obj;
-	float testValues[3] = { 0.0f,10.0f,0.0f };
+	float testValues[3] = { -8.5f,10.0f,-8.5f };
 	float testValues2[3] = { 10.0f,1.0f,5.0f };
+
+	std::vector<SceneObject*> objects;
 	for (int i = 0; i < 4; i++)
 	{
-		obj.push_back(SceneObject(objData[i]));
-		obj[i].initiateObject(immediateContext, device, &objData[i].mesh, &objData[i].indices);
+		objects.push_back(new SceneObject(objData[i]));
+		if (!objects[i]->initiateObject(immediateContext, device, &objData[i].mesh, &objData[i].indices));
 	}
 
 
-	obj.push_back(SceneObject(objData[5]));
-	obj[4].initiateObject(immediateContext, device, &objData[5].mesh, &objData[5].indices);
-	obj[1].setWorldPos(testValues);
-	obj[0].setWorldPos(testValues2);
+	objects[1]->setWorldPos(testValues);
+	objects[0]->setWorldPos(testValues2);
 	testValues[1] = -1;
-	obj[3].setWorldPos(testValues);
-	testValues[0] = 0.25f;
-	testValues[1] = 0.25f;
-	testValues[2] = 0.25f;
+	objects[2]->setScale(2, 2, 2);
 
-	obj[1].setScale(testValues);
-	return obj;
+	testValues[0] = 1.0f;
+	testValues[1] = 1.0f;
+	testValues[2] = 1.0f;
+
+	objects[1]->setScale(testValues);
+	objects.push_back(new SceneObject(objData[0]));
+	if (!objects[4]->initiateObject(immediateContext, device, &objData[0].mesh, &objData[0].indices)) return objects;
+
+	int amount = objects.size();
+	int counter = 0;
+	for (int i = objects.size(); i < 20 + amount; i++)
+	{
+		objects.push_back(new SceneObject(objData[0]));
+		if (!objects[i]->initiateObject(immediateContext, device, &objData[0].mesh, &objData[0].indices)) return objects;
+		objects[i]->setWorldPos(cubePositions[counter++]);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		objects.push_back(new SceneObject(objData[0]));
+		if (!objects[objects.size() - 1]->initiateObject(immediateContext, device, &objData[0].mesh, &objData[0].indices)) return objects;
+		objects[objects.size() - 1]->setWorldPos(otherView[i].GetPositionFloat3());
+		objects[objects.size() - 1]->setRot(otherView[i].GetRotationFloat3());
+
+	}
+	objects.push_back(new SceneObject(objData[5]));
+	if (!objects[objects.size() - 1]->initiateObject(immediateContext, device, &objData[5].mesh, &objData[5].indices)) return objects;
+	objects[objects.size() - 1]->setWorldPos(DirectX::XMFLOAT3(-30, 35, 0));
+	objects[objects.size() - 1]->setScale(3, 3, 3);
+
+	for (auto& o : objects)
+	{
+		o->setBoundingBox();
+		if (!o->setVertexBuffer(device))
+		{
+			return objects;
+		}
+	}
+	return objects;
+}
+
+void updateBuffers(ID3D11DeviceContext* immediateContext, Camera& camera, ID3D11Buffer*& camBuffer, CamData& camData, ID3D11Buffer*& imGuiBuffer, ImGuiValues& imGuiStuff)
+{
+	D3D11_MAPPED_SUBRESOURCE subCam = {};
+	camData.cameraPosition = camera.GetPositionFloat3();
+	immediateContext->Map(camBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &subCam);
+	memcpy(subCam.pData, &camData, sizeof(CamData));
+	immediateContext->Unmap(camBuffer, 0);
+
+	D3D11_MAPPED_SUBRESOURCE values = {};
+	immediateContext->Map(imGuiBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &values);
+	memcpy(values.pData, &imGuiStuff, sizeof(ImGuiValues));
+	immediateContext->Unmap(imGuiBuffer, 0);
 }
 
 void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, CamData& camData, Camera& cam, bool currentCamera[], ShadowMappingClass& shadowMap, bool& cubeMap)
@@ -392,7 +380,6 @@ void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, Cam
 		bool temps[3] = { (int)imGuiStuff.imposition, (int)imGuiStuff.imnormal, (int)imGuiStuff.imcolour };
 		bool wireframe = imGuiStuff.imwireframe;
 		float tesselationConst = camData.tesselationConst;
-		bool reflectionType = (tesselationConst >= 25.f);
 		float particleSize = cam.getParticleSize();
 		std::string currCam = "Main camera";
 		float lightColour[3];
@@ -464,15 +451,11 @@ void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, Cam
 			ImGui::Text("");
 			ImGui::Text("Tesselation");
 			ImGui::Checkbox("Wireframe", &wireframe);
-			ImGui::SliderFloat("Min Distance", &tesselationConst, 0.1f, 50.f);
+			ImGui::SliderFloat("Distance", &tesselationConst, 0.1f, 50.f);
 
 			ImGui::Text("");
 			ImGui::Text("Particles");
 			ImGui::SliderFloat("Particle size", &particleSize, 0.01f, 0.5f);
-
-			ImGui::Text("");
-			ImGui::Text("Cubemap");
-			ImGui::Checkbox("Reflection", &reflectionType);
 		}
 		ImGui::End();
 		DirectX::XMFLOAT3 clr(lightColour[0], lightColour[1], lightColour[2]);
@@ -490,8 +473,6 @@ void handleImGui(float bgClr[], ImGuiValues& imGuiStuff, int& submeshAmount, Cam
 		imGuiStuff.imcolour = temps[2];
 		imGuiStuff.imwireframe = wireframe;
 		camData.tesselationConst = tesselationConst;
-		if (reflectionType && tesselationConst < 25) camData.tesselationConst = 25.f;
-		else if (!reflectionType && tesselationConst >= 25) camData.tesselationConst = 20.f;
 
 		cam.changeParticleSize(particleSize);
 	}

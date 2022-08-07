@@ -132,7 +132,7 @@ void readModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTexture,
 	std::string fileName;
 	bool going = true;
 	if (!objFile.is_open()) { std::cout << "Could not open objFile.txt!\n"; return; }
-	if (!createSRVforPic(device, missingTexture, "Textures/noTexture.png")) return;
+	if (!createSRVforPic(device, missingTexture, "Textures/White.png")) return;
 	while (std::getline(objFile, fileName))
 	{
 		std::ifstream file("Models/" + fileName + ".obj");
@@ -175,10 +175,21 @@ void readModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTexture,
 				std::getline(readCharacters, wantedString);
 				std::string savedMtlName = wantedString;
 				std::ifstream mtilFile("mtlFiles/" + mtlFileName);
-				if (!mtilFile.is_open()) { std::cout << "Could not open mtl!\n"; continue; }
 				for (int i = 0; i < 3; i++)
 				{
 					objPtr->textureSrvs.push_back(nullptr);
+				}
+				if (!mtilFile.is_open()) 
+				{ 
+					std::cout << "Could not open mtl!\n";
+					for (int i = 0; i < 3; i++)
+					{
+						if (objPtr->textureSrvs[i + objPtr->indexes.size() * 3] == nullptr)
+						{
+							objPtr->textureSrvs[i + objPtr->indexes.size() * 3] = missingTexture;
+						}
+					}
+					continue; 
 				}
 
 				while (std::getline(mtilFile, loadLines) && going)
@@ -239,6 +250,19 @@ void readModels(ID3D11Device* device, ID3D11ShaderResourceView*& missingTexture,
 			int tempIndex = objPtr->indexes.size() - 1;
 			objPtr->verticeCount.push_back(objPtr->indices.size() - objPtr->indexes[tempIndex]);
 		}
+		if (objPtr->specularComp.size() <= 0)
+		{	
+			objPtr->specularComp.push_back(0);
+		}
+		if (objPtr->textureSrvs.size() == 0)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				objPtr->textureSrvs.push_back(missingTexture);
+			}
+		}
+		if (objPtr->verticeCount.size() == 0) objPtr->verticeCount.push_back(objPtr->indices.size());
+		if (objPtr->indexes.size() == 0) objPtr->indexes.push_back(0);
 		file.close();
 	}
 

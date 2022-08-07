@@ -2,6 +2,7 @@
 #include "memoryLeakChecker.h"
 
 Camera::Camera()
+	:forwardVec(DEFAULT_FORWARD), upVec(DEFAULT_UP), rightVec(DEFAULT_RIGHT)
 {
 	vectors.padding1 = 0.05f;
 }
@@ -57,15 +58,7 @@ void Camera::moveCamera(ID3D11DeviceContext* immediateContext, Camera& cam, floa
 
 	if (GetAsyncKeyState('L')) this->AdjustRotation(0, multiplier * 2.5f * dt, immediateContext);
 
-	if (GetAsyncKeyState(' '))
-	{
-		
-	}
-}
-
-const XMMATRIX& Camera::GetViewMatrix() const
-{
-	return this->VMBB;
+	if (GetAsyncKeyState(' ')) this->resetCamera();
 }
 
 const XMFLOAT3& Camera::GetPositionFloat3() const
@@ -101,10 +94,10 @@ void Camera::SetRotation(float pitch, float yaw, float roll, ID3D11DeviceContext
 	rightVec = DirectX::XMVector3TransformCoord(DEFAULT_RIGHT, rotationMX);
 	forwardVec = DirectX::XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX);
 	lookAtPos = DirectX::XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
-	upVector = DirectX::XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+	upVec = DirectX::XMVector3TransformCoord(DEFAULT_UP, rotationMX);
 
 
-	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
+	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVec);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 
@@ -128,8 +121,7 @@ bool Camera::initiateBuffers(ID3D11DeviceContext* immediateContext, ID3D11Device
 {
 	this->resetCamera();
 
-	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
-	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
+	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVec);
 	projection = DirectX::XMMatrixPerspectiveFovLH(XM_2PI*(90.f/360.f), (32.f*32.f) / (32.f*32.f), 0.1f, 100.0f);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
@@ -203,27 +195,15 @@ void Camera::AdjustRotation(float x, float y, ID3D11DeviceContext* immediateCont
 
 	rotationForward = XMMatrixRotationRollPitchYawFromVector(rotVectorFor);
 	rotationMX = XMMatrixRotationRollPitchYawFromVector(rotVector);
-	upVector = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
+	upVec = XMVector3TransformCoord(DEFAULT_UP, rotationMX);
 	forwardVec = XMVector3TransformCoord(DEFAULT_FORWARD, rotationForward);
 	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
 }
 
-void Camera::sendProjection(ID3D11DeviceContext* immediateContext, bool cs)
-{
-	XMStoreFloat4x4(&VP.viewProj, XMMatrixTranspose(projection));
-
-	D3D11_MAPPED_SUBRESOURCE subData = {};
-	immediateContext->Map(ConstBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subData);
-	memcpy(subData.pData, &VP, sizeof(VP));
-	immediateContext->Unmap(ConstBuf, 0);
-	if (!cs) immediateContext->VSSetConstantBuffers(1, 1, &ConstBuf);
-	else immediateContext->CSSetConstantBuffers(1, 1, &ConstBuf);
-}
-
 void Camera::sendGeometryMatrix(ID3D11DeviceContext* immediateContext)
 {
-	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
-	XMStoreFloat4x4(&computeMatrix.worldView, XMMatrixTranspose(VMBB));
+	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVec);
+	XMStoreFloat4x4(&computeMatrix.worldView, XMMatrixTranspose(viewMatrix));
 	XMStoreFloat4x4(&computeMatrix.proj, XMMatrixTranspose(projection));
 
 	D3D11_MAPPED_SUBRESOURCE subData = {};
@@ -235,8 +215,7 @@ void Camera::sendGeometryMatrix(ID3D11DeviceContext* immediateContext)
 
 void Camera::sendView(ID3D11DeviceContext* immediateContext, int index, bool ds)
 {
-	VMBB = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
-	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVector);
+	viewMatrix = XMMatrixLookAtLH(cameraPos, lookAtPos, upVec);
 	viewMatrix *= projection;
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 
@@ -274,7 +253,7 @@ void Camera::updateFrustum()
 {
 	lookAtPos = XMVector3TransformCoord(DEFAULT_FORWARD, rotationMX) + cameraPos;
 	DirectX::BoundingFrustum::CreateFromMatrix(frustumBB, projection);
-	frustumBB.Transform(frustumBB, DirectX::XMMatrixInverse(nullptr, XMMatrixLookAtLH(cameraPos, lookAtPos, upVector)));
+	frustumBB.Transform(frustumBB, DirectX::XMMatrixInverse(nullptr, XMMatrixLookAtLH(cameraPos, lookAtPos, upVec)));
 }
 
 void Camera::createFrustum()
@@ -304,7 +283,7 @@ void Camera::resetCamera()
 	rotVectorFor = XMLoadFloat3(&rotationFor);
 
 	forwardVec = DEFAULT_FORWARD;
-	upVector = DEFAULT_UP;
+
 	rightVec = DEFAULT_RIGHT;
 	upVec = DEFAULT_UP;
 

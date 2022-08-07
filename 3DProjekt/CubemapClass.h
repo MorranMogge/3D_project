@@ -25,9 +25,6 @@ struct CubeInfo
 class CubemapClass
 {
 private:
-	float timer;
-	float rot[3]{ 0.0f, 0.0f, 0.0f };
-
 	UINT stride;
 	UINT offset;
 
@@ -37,12 +34,12 @@ private:
 	Camera cam;
 	CamData camData;
 	
-	ID3D11PixelShader* pShader;								//Need to be released
-	ID3D11ShaderResourceView* srv;							//Need to be released
-	ID3D11Texture2D* dsTexture;								//Need to be released
-	ID3D11Buffer* camBuffer;								//Need to be released
-	ID3D11DepthStencilView* dsView;							//Need to be released
-	ID3D11RenderTargetView* rtv[AMOUNTOFSIDESACUBEHAS];		//Need to be released
+	ID3D11PixelShader* pShader;								
+	ID3D11ShaderResourceView* srv;							
+	ID3D11Texture2D* dsTexture;								
+	ID3D11Buffer* camBuffer;								
+	ID3D11DepthStencilView* dsView;							
+	ID3D11RenderTargetView* rtv[AMOUNTOFSIDESACUBEHAS];		
 
 	ID3D11VertexShader* cubeVshader;
 	ID3D11PixelShader* cubePshader;

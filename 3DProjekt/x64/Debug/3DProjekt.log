@@ -1,5 +1,64 @@
-﻿  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\PixelShader.cso
-D:\School\Real3Dproject\3DProjekt\GeometryPass.hlsl(37,10-46): warning X3576: semantics in type overridden by variable/function or enclosing type
-  
-  compilation object save succeeded; see D:\School\Real3Dproject\x64\Debug\GeometryPass.cso
+﻿  Camera.cpp
+  CubemapClass.cpp
+D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(204,65): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(231,144): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(258,69): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\CubemapClass.cpp(322,53): warning C4305: 'argument': truncation from 'double' to 'float'
+  DeferredRenderer.cpp
+  FrustumCuller.cpp
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(89,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(100,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(100,28): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(101,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\School\Real3Dproject\3DProjekt\FrustumCuller.cpp(101,32): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Main.cpp
+D:\School\Real3Dproject\3DProjekt\Main.cpp(327,29): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(329,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\Main.cpp(310,100): warning C4390: ';': empty controlled statement found; is this the intent?
+D:\School\Real3Dproject\3DProjekt\Main.cpp(380,36): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(380,64): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(380,90): warning C4838: conversion from 'int' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(401,44): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(401,71): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(401,99): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+D:\School\Real3Dproject\3DProjekt\Main.cpp(401,127): warning C4838: conversion from 'float' to 'bool' requires a narrowing conversion
+  ObjParser.cpp
+D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(42,49): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=DWORD
+          ]
+D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(240,53): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(250,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(251,86): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+D:\School\Real3Dproject\3DProjekt\ObjParser.cpp(264,94): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+  ParticleHandler.cpp
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(14,56): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(141,137): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(187,75): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\ParticleHandler.cpp(296,49): warning C4244: 'argument': conversion from 'float' to 'UINT', possible loss of data
+  PipelineHelper.cpp
+  SceneObject.cpp
+D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(100,54): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(102,62): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(141,68): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(213,61): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+D:\School\Real3Dproject\3DProjekt\SceneObject.cpp(227,31): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  ShadowMappingClass.cpp
+D:\School\Real3Dproject\3DProjekt\ShadowMappingClass.cpp(88,140): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
+  TesselatorClass.cpp
+  Generating Code...
+D:\School\Real3Dproject\3DProjekt\Camera.cpp(68): warning C4172: returning address of local variable or temporary: newPos
   3DProjekt.vcxproj -> D:\School\Real3Dproject\x64\Debug\3DProjekt.exe

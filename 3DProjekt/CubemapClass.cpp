@@ -149,7 +149,7 @@ bool CubemapClass::setUpShaders(ID3D11Device* device, std::string& vShaderByteCo
 
 bool CubemapClass::setUpCamBuffer(ID3D11Device* device)
 {
-    cam.SetPosition(0 + 5 * cos(timer * DirectX::XM_2PI), 5, 0 + 5 * std::sin(timer * DirectX::XM_2PI));
+    cam.SetPosition(0 + 5 * cos(DirectX::XM_2PI), 5, 0 + 5 * std::sin(DirectX::XM_2PI));
 
     D3D11_BUFFER_DESC desc;
     desc.ByteWidth = sizeof(CamData);
@@ -269,7 +269,7 @@ bool CubemapClass::setUpIndexBuffer(ID3D11Device* device)
 }
 
 CubemapClass::CubemapClass()
-    :camBuffer(nullptr), immediateContext(nullptr), pShader(nullptr), srv(nullptr), dsView(nullptr), timer(0.0f)
+    :camBuffer(nullptr), immediateContext(nullptr), pShader(nullptr), srv(nullptr), dsView(nullptr)
 {
     camData.cameraPosition = DirectX::XMFLOAT3(5, 5, 5);
     camData.tesselationConst = 0;
@@ -403,8 +403,4 @@ void CubemapClass::drawCube()
 
     immediateContext->VSSetShader(nullptr, nullptr, 0);
     immediateContext->PSSetShader(nullptr, nullptr, 0);
-
-    /*timer = timer + 0.2f *(1.f / 144.0f);
-    cam.SetPosition(0 + 5*cos(timer * XM_2PI), 5 ,0 + 5*std::sin(timer * XM_2PI));
-    if (timer >= 1.0f || timer <= 0.0f) timer = 0;*/
 }

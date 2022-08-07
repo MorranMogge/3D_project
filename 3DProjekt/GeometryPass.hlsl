@@ -65,6 +65,6 @@ PSout main(PixelShaderInput input) : SV_TARGET
     output.normal = float4(input.normal.xyz, shadowComp1);
     output.ambient = float4(ambientMap.Sample(sampl, input.uv).xyz, shadowComp2);
     output.diffuse = float4(diffuseMap.Sample(sampl, input.uv).xyz, shadowComp3);
-    output.specular = float4(specularMap.Sample(sampl, input.uv).xyz, shinyness); //Here we also save the information of the shinyness
+    output.specular = float4(specularMap.Sample(sampl, input.uv).xyz, shinyness);
     return output;
 }

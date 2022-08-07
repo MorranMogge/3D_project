@@ -30,9 +30,6 @@ HS_CONSTANT_DATA_OUTPUT ConstantPatchFunction(InputPatch<VertexShaderOutput, 3> 
     float3 middlePoint = (inputPatch[0].worldPos + inputPatch[1].worldPos + inputPatch[2].worldPos) / 3;
     float3 distToTriangle = cameraPosition - middlePoint;
     
-    
-    float3 distToEdge = inputPatch[0].worldPos.xyz - middlePoint; //Remove??
-    float sizefactor = (distToEdge.x * distToEdge.x + distToEdge.y * distToEdge.y + distToEdge.z * distToEdge.z); //Remove??
     float dist = distToTriangle.x * distToTriangle.x + distToTriangle.y * distToTriangle.y + distToTriangle.z * distToTriangle.z;
 
     float tessFactor;
